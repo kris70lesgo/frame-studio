@@ -26,8 +26,9 @@ dotnet test FrameStudio.sln --configuration Debug
 2. Choose a display and a small region. Record for several seconds, pause, resume, and stop. Verify that neither Frame Studio's home window nor the floating recorder controls appear in the captured frames.
 3. Confirm a `.fsp` project is written and opens in the editor. Check preview, playback, thumbnail rendering, frame durations, duplicate/delete, and move earlier/later.
 4. Drag a crop over the preview and apply it. Resize the project with aspect ratio retained, save, close, reopen, and confirm dimensions and edits persist.
-5. Export a looping GIF. In the completion window, verify Open GIF, Show in folder, and Copy path; then check the GIF in a separate viewer for animation, edited ordering and timing, and expected canvas dimensions.
-6. Repeat with a full display. On a multi-monitor setup, test a non-primary display and a mixed-DPI display if available.
+5. Add a text overlay and confirm it appears in every frame. Save and reopen the project, then verify the overlay remains in the preview.
+6. Export a looping GIF. In the completion window, verify Open GIF, Show in folder, and Copy path; then check the GIF in a separate viewer for animation, edited ordering, overlay, timing, and expected canvas dimensions.
+7. Repeat with a full display. On a multi-monitor setup, test a non-primary display and a mixed-DPI display if available.
 
 ## Challenge evidence to capture
 

@@ -9,6 +9,7 @@ using Avalonia.Threading;
 using FrameStudio.Avalonia.ViewModels;
 using CorePixelRect = FrameStudio.Core.Models.PixelRect;
 using CorePixelSize = FrameStudio.Core.Models.PixelSize;
+using CoreTextOverlayOptions = FrameStudio.Core.Models.TextOverlayOptions;
 using System.Runtime.InteropServices;
 
 namespace FrameStudio.Avalonia.Views;
@@ -76,7 +77,17 @@ public partial class EditorWindow : Window
 
     private async void EditorWindow_OnClosing(object? sender, WindowClosingEventArgs e)
     {
-        if (_allowClose || _viewModel is null || !_viewModel.IsDirty)
+        if (_allowClose || _viewModel is null)
+            return;
+
+        if (_viewModel.IsBusy)
+        {
+            e.Cancel = true;
+            _viewModel.ReportStatus("Wait for the current edit to finish before closing.");
+            return;
+        }
+
+        if (!_viewModel.IsDirty)
             return;
 
         e.Cancel = true;
@@ -254,6 +265,17 @@ public partial class EditorWindow : Window
         var targetSize = await new ResizeWindow(_viewModel.CanvasSize).ShowDialog<CorePixelSize?>(this);
         if (targetSize is { } size && size != _viewModel.CanvasSize)
             await _viewModel.ResizeAsync(size);
+    }
+
+    private async void TextTool_OnClick(object? sender, RoutedEventArgs e)
+    {
+        _playTimer.Stop();
+        _isPlaying = false;
+        _playButton.Content = "▶ Play";
+
+        var options = await new TextOverlayWindow(_viewModel.CanvasSize).ShowDialog<CoreTextOverlayOptions?>(this);
+        if (options is not null)
+            await _viewModel.AddTextOverlayAsync(options);
     }
 
     private async Task LoadPreviewAsync()

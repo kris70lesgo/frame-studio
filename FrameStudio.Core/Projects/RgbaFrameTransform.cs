@@ -1,4 +1,6 @@
 using FrameStudio.Core.Models;
+using SkiaSharp;
+using System.Runtime.InteropServices;
 
 namespace FrameStudio.Core.Projects;
 
@@ -43,6 +45,83 @@ public static class RgbaFrameTransform
 
         return output;
     }
+
+    public static byte[] DrawText(ReadOnlySpan<byte> rgbaPixels, PixelSize sourceSize, TextOverlayOptions options)
+    {
+        ArgumentNullException.ThrowIfNull(options);
+        ValidatePixels(rgbaPixels, sourceSize);
+        ValidateTextOverlay(sourceSize, options);
+
+        var output = rgbaPixels.ToArray();
+        var imageInfo = new SKImageInfo(sourceSize.Width, sourceSize.Height, SKColorType.Rgba8888, SKAlphaType.Unpremul);
+        using var bitmap = new SKBitmap(imageInfo);
+        var bitmapPixels = bitmap.GetPixels();
+        if (bitmapPixels == IntPtr.Zero)
+            throw new InvalidOperationException("Could not allocate a text overlay bitmap.");
+
+        var rowLength = checked(sourceSize.Width * 4);
+        for (var row = 0; row < sourceSize.Height; row++)
+            Marshal.Copy(output, row * rowLength, IntPtr.Add(bitmapPixels, row * bitmap.RowBytes), rowLength);
+
+        using var canvas = new SKCanvas(bitmap);
+        using var font = new SKFont(SKTypeface.Default, options.FontSize);
+        using var paint = new SKPaint
+        {
+            IsAntialias = true,
+            Color = new SKColor(options.Color.R, options.Color.G, options.Color.B, options.Color.A)
+        };
+        font.GetFontMetrics(out var metrics);
+        var lineHeight = Math.Max(options.FontSize, metrics.Descent - metrics.Ascent + metrics.Leading);
+        var firstBaseline = options.Y - metrics.Ascent;
+        var lines = NormalizeLines(options.Text);
+        for (var index = 0; index < lines.Length; index++)
+        {
+            if (lines[index].Length == 0)
+                continue;
+
+            var baseline = firstBaseline + index * lineHeight;
+            canvas.DrawText(lines[index], options.X, baseline, SKTextAlign.Left, font, paint);
+        }
+
+        for (var row = 0; row < sourceSize.Height; row++)
+            Marshal.Copy(IntPtr.Add(bitmapPixels, row * bitmap.RowBytes), output, row * rowLength, rowLength);
+
+        return output;
+    }
+
+    public static void ValidateTextOverlay(PixelSize canvasSize, TextOverlayOptions options)
+    {
+        ArgumentNullException.ThrowIfNull(options);
+        FrameProjectArchiveWriter.ValidateCanvasSize(canvasSize);
+        if (string.IsNullOrWhiteSpace(options.Text) || options.Text.Length > 512 ||
+            options.Text.Any(character => char.IsControl(character) && character is not ('\r' or '\n')))
+            throw new ArgumentException("Text must contain 1 to 512 printable characters.", nameof(options));
+        if (options.FontSize is < 6 or > 256)
+            throw new ArgumentOutOfRangeException(nameof(options), "Text size must be between 6 and 256 pixels.");
+        if (options.X < 0 || options.Y < 0 || options.X >= canvasSize.Width || options.Y >= canvasSize.Height)
+            throw new ArgumentOutOfRangeException(nameof(options), "Text position must be inside the project canvas.");
+
+        var lines = NormalizeLines(options.Text);
+        if (lines.Length > 8 || lines.Any(line => line.Length > 256))
+            throw new ArgumentException("Text can use at most 8 lines and 256 characters per line.", nameof(options));
+
+        using var font = new SKFont(SKTypeface.Default, options.FontSize);
+        using var paint = new SKPaint { IsAntialias = true };
+        font.GetFontMetrics(out var metrics);
+        var lineHeight = Math.Max(options.FontSize, metrics.Descent - metrics.Ascent + metrics.Leading);
+        var finalBottom = options.Y - metrics.Ascent + (lines.Length - 1) * lineHeight + metrics.Descent;
+        if (finalBottom > canvasSize.Height)
+            throw new ArgumentOutOfRangeException(nameof(options), "Text does not fit vertically inside the project canvas.");
+
+        foreach (var line in lines)
+        {
+            if (font.MeasureText(line, paint) > canvasSize.Width - options.X)
+                throw new ArgumentOutOfRangeException(nameof(options), "Text does not fit horizontally inside the project canvas.");
+        }
+    }
+
+    private static string[] NormalizeLines(string text) => text.Replace("\r\n", "\n", StringComparison.Ordinal)
+        .Replace('\r', '\n').Split('\n');
 
     private static void ValidatePixels(ReadOnlySpan<byte> rgbaPixels, PixelSize size)
     {

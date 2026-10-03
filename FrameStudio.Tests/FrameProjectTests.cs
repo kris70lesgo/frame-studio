@@ -2,6 +2,7 @@ using FrameStudio.Core.Models;
 using FrameStudio.Core.Codification.Gif.Encoder;
 using FrameStudio.Core.Export;
 using FrameStudio.Core.Projects;
+using FrameStudio.Avalonia.ViewModels;
 
 namespace FrameStudio.Tests;
 
@@ -67,6 +68,34 @@ public sealed class FrameProjectTests
 
         var resized = RgbaFrameTransform.ResizeNearestNeighbor(cropped, new PixelSize(1, 2), new PixelSize(2, 2));
         Assert.Equal<byte>([0, 255, 0, 255, 0, 255, 0, 255, 255, 255, 255, 255, 255, 255, 255, 255], resized);
+    }
+
+    [Fact]
+    public void RgbaFrameTransform_DrawsTextAndLeavesPixelsOutsideTheTextBoundsUntouched()
+    {
+        var size = new PixelSize(120, 60);
+        var pixels = Enumerable.Repeat(new byte[] { 24, 40, 56, 255 }, size.Width * size.Height)
+            .SelectMany(pixel => pixel).ToArray();
+        var options = new TextOverlayOptions("A", X: 6, Y: 6, FontSize: 24, Color: Rgba32.FromRgb(255, 255, 255));
+
+        var result = RgbaFrameTransform.DrawText(pixels, size, options);
+
+        Assert.NotEqual(pixels, result);
+        for (var y = 0; y < size.Height; y++)
+        for (var x = 80; x < size.Width; x++)
+        {
+            var offset = (y * size.Width + x) * 4;
+            Assert.Equal(pixels.AsSpan(offset, 4).ToArray(), result.AsSpan(offset, 4).ToArray());
+        }
+    }
+
+    [Fact]
+    public void RgbaFrameTransform_RejectsTextThatDoesNotFitInsideTheCanvas()
+    {
+        var options = new TextOverlayOptions("Too low", X: 2, Y: 56, FontSize: 24, Color: Rgba32.FromRgb(255, 255, 255));
+
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            RgbaFrameTransform.ValidateTextOverlay(new PixelSize(120, 60), options));
     }
 
     [Fact]
@@ -177,6 +206,65 @@ public sealed class FrameProjectTests
             Assert.Equal(new PixelSize(2, 2), gifMetadata.CanvasSize);
             Assert.Equal(new[] { 120, 70, 90 }, gifMetadata.FrameDurationsMilliseconds);
             Assert.Equal(0, gifMetadata.RepeatCount);
+        }
+        finally
+        {
+            Directory.Delete(directory, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task ProjectArchive_TextOverlayAppliesToEveryFrameAndExportsToGif()
+    {
+        var directory = Path.Combine(Path.GetTempPath(), $"frame-studio-text-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(directory);
+        var sourcePath = Path.Combine(directory, "source.fsp");
+        var sourceGifPath = Path.Combine(directory, "source.gif");
+        var overlayGifPath = Path.Combine(directory, "annotated.gif");
+        var size = new PixelSize(120, 60);
+        var firstPixels = Enumerable.Repeat(new byte[] { 24, 40, 56, 255 }, size.Width * size.Height)
+            .SelectMany(pixel => pixel).ToArray();
+        var secondPixels = Enumerable.Repeat(new byte[] { 56, 40, 24, 255 }, size.Width * size.Height)
+            .SelectMany(pixel => pixel).ToArray();
+
+        try
+        {
+            await using (var writer = await FrameProjectArchiveWriter.CreateAsync(sourcePath, "Text overlay", size))
+            {
+                await writer.WriteFrameAsync(size, firstPixels, 70);
+                await writer.WriteFrameAsync(size, secondPixels, 110);
+                await writer.CompleteAsync();
+            }
+
+            var project = await FrameProjectArchiveReader.ReadProjectAsync(sourcePath);
+            var editor = new EditorViewModel(sourcePath, project);
+            var options = new TextOverlayOptions("A", X: 6, Y: 6, FontSize: 24, Color: Rgba32.FromRgb(255, 255, 255));
+            Assert.True(await editor.AddTextOverlayAsync(options));
+            Assert.True(editor.IsDirty);
+
+            var annotatedFirst = await editor.ReadFrameAsync(0);
+            var annotatedSecond = await editor.ReadFrameAsync(1);
+            Assert.NotEqual(firstPixels, annotatedFirst);
+            Assert.NotEqual(secondPixels, annotatedSecond);
+            Assert.Equal(firstPixels.AsSpan(0, 4).ToArray(), annotatedFirst.AsSpan(0, 4).ToArray());
+            Assert.Equal(secondPixels.AsSpan(0, 4).ToArray(), annotatedSecond.AsSpan(0, 4).ToArray());
+
+            var exporter = new GifExportService();
+            await exporter.ExportAsync(sourcePath, sourceGifPath);
+            await editor.ExportGifAsync(overlayGifPath);
+            var sourceGif = await File.ReadAllBytesAsync(sourceGifPath);
+            var overlayGif = await File.ReadAllBytesAsync(overlayGifPath);
+            Assert.Equal("GIF89a", System.Text.Encoding.ASCII.GetString(overlayGif, 0, 6));
+            Assert.NotEqual(sourceGif, overlayGif);
+            Assert.Equal(new[] { 70, 110 }, ReadGifMetadata(overlayGif).FrameDurationsMilliseconds);
+
+            await editor.SaveProjectCommand.ExecuteAsync(null);
+            Assert.False(editor.IsDirty);
+            Assert.Equal("Project saved", editor.Status);
+            var savedProject = await FrameProjectArchiveReader.ReadProjectAsync(sourcePath);
+            Assert.Equal(new[] { 70, 110 }, savedProject.Frames.Select(frame => frame.DurationMilliseconds));
+            Assert.Equal(annotatedFirst, await FrameProjectArchiveReader.ReadFrameRgbaAsync(sourcePath, savedProject, 0));
+            Assert.Equal(annotatedSecond, await FrameProjectArchiveReader.ReadFrameRgbaAsync(sourcePath, savedProject, 1));
         }
         finally
         {

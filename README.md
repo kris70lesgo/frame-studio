@@ -18,11 +18,11 @@ The Avalonia app now connects Windows screen-region recording to a native `.fsp`
 | Platform service contracts | Defined |
 | Windows screen-region capture | Setup, display selection, area selection, frame rate, cursor option, pause, stop, and app-window exclusion are wired; Windows runtime still needs verification |
 | End-to-end recording workflow | Records frames into `.fsp` projects and opens the editor when recording stops |
-| Editor | Frame thumbnails, preview/playback, selection, earlier/later ordering, duplicate/delete, duration edits, drag crop, project-wide resize, save/discard, and GIF export implemented; keyboard shortcuts cover save, duplicate, reorder, delete, playback, and crop cancel |
+| Editor | Frame thumbnails, preview/playback, selection, earlier/later ordering, duplicate/delete, duration edits, drag crop, project-wide resize, all-frame text overlays, save/discard, and GIF export implemented; keyboard shortcuts cover save, duplicate, reorder, delete, playback, and crop cancel |
 | GIF export | Migrated encoder, editor export flow, and completion actions for opening the GIF, showing its folder, or copying its path |
-| Core workflow checks | 20 tests pass on macOS; recording-to-project handoff, editor commands, capture-request validation, capture-readiness reporting, archive editing, recent-project history, and exported GIF pixels, dimensions, frame timing, and looping are checked. Three Windows runtime checks are skipped here |
+| Core workflow checks | 23 tests pass on macOS; recording-to-project handoff, editor commands, text overlays, capture-request validation, capture-readiness reporting, archive editing, recent-project history, and exported GIF pixels, dimensions, frame timing, and looping are checked. Three Windows runtime checks are skipped here |
 | Webcam, isolated window capture, sketchboard | Not migrated yet; the current Win32 window service captures a desktop rectangle, which can include overlapping windows, so its UI remains disabled |
-| Text/drawing annotations and video export | Not migrated yet |
+| Text/drawing annotations and video export | Basic rasterized text overlays are implemented; freehand drawing and video export are not migrated yet |
 | Windows platform adapter | Win32 monitor/window enumeration and bounded GDI desktop-region recording implemented; runtime needs Windows verification |
 
 The original WPF application remains in this repository as the baseline in `GifRecorder.sln`. The new application is in `FrameStudio.sln` and does not reference the WPF UI projects.
@@ -34,7 +34,7 @@ The [capture notes](docs/before-after/README.md) link to the upstream screenshot
 
 ![Frame Studio early home shell on macOS](docs/before-after/after-home-shell-macos.png)
 
-The current editor has also had a macOS UI smoke check with a local sample project. It is visual evidence of the editor shell only; capture still requires Windows validation.
+The editor screenshot predates the text annotation tool and records a macOS UI smoke check with a local sample project. It shows the editor shell only; the text dialog still needs a visual smoke check, and capture still requires Windows validation.
 
 ![Frame Studio editor preview on macOS](docs/before-after/after-editor-preview-macos.jpg)
 

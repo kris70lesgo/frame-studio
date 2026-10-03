@@ -1,0 +1,50 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="FrameStudio.Avalonia.Views.TextOverlayWindow"
+        Title="Add text overlay"
+        Width="500" Height="510" MinWidth="500" MinHeight="510"
+        CanResize="False"
+        WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource BackgroundPrimary}"
+        FontFamily="Inter, Segoe UI, sans-serif">
+    <Border Padding="24" BorderBrush="{DynamicResource Border}" BorderThickness="1">
+        <Grid RowDefinitions="Auto,Auto,Auto,Auto,*,Auto" RowSpacing="14">
+            <StackPanel Spacing="4">
+                <TextBlock Text="ANNOTATION" Classes="Caption" />
+                <TextBlock Text="Add text to the recording" Classes="Title" FontSize="20" />
+                <TextBlock Text="The overlay is baked into every frame. Position uses canvas pixels."
+                           FontSize="11" Foreground="{DynamicResource TextSecondary}" TextWrapping="Wrap" />
+            </StackPanel>
+            <StackPanel Grid.Row="1" Spacing="6">
+                <TextBlock Text="Text · up to 8 lines" Classes="Caption" />
+                <TextBox x:Name="AnnotationInput" AcceptsReturn="True" TextWrapping="Wrap" MaxLength="512" Height="96"
+                         PlaceholderText="Type an annotation" AutomationProperties.Name="Text annotation" />
+            </StackPanel>
+            <Grid Grid.Row="2" ColumnDefinitions="*,*,*" ColumnSpacing="12">
+                <StackPanel Spacing="6">
+                    <TextBlock Text="Size · px" Classes="Caption" />
+                    <TextBox x:Name="FontSizeInput" AutomationProperties.Name="Text size in pixels" />
+                </StackPanel>
+                <StackPanel Grid.Column="1" Spacing="6">
+                    <TextBlock Text="Left · px" Classes="Caption" />
+                    <TextBox x:Name="XInput" AutomationProperties.Name="Text left position in pixels" />
+                </StackPanel>
+                <StackPanel Grid.Column="2" Spacing="6">
+                    <TextBlock Text="Top · px" Classes="Caption" />
+                    <TextBox x:Name="YInput" AutomationProperties.Name="Text top position in pixels" />
+                </StackPanel>
+            </Grid>
+            <StackPanel Grid.Row="3" Spacing="6">
+                <TextBlock Text="Color · #RRGGBB" Classes="Caption" />
+                <TextBox x:Name="ColorInput" MaxLength="7" AutomationProperties.Name="Text color in hexadecimal" />
+            </StackPanel>
+            <TextBlock Grid.Row="4" x:Name="ErrorLabel" Text="The overlay is baked in; discard unsaved edits to remove it."
+                       FontSize="10" Foreground="{DynamicResource TextTertiary}" TextWrapping="Wrap"
+                       VerticalAlignment="Center" />
+            <StackPanel Grid.Row="5" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+                <Button Classes="quiet-button" Click="Cancel_OnClick" Content="Cancel" />
+                <Button Classes="primary-button" Click="Apply_OnClick" Content="Apply to all frames" />
+            </StackPanel>
+        </Grid>
+    </Border>
+</Window>

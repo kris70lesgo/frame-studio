@@ -95,6 +95,10 @@ public partial class EditorViewModel : ObservableObject
     public Task<bool> ResizeAsync(PixelSize targetSize) => ApplyRasterEditAsync("Resize", (source, destination, project, frames) =>
         FrameProjectArchiveEditor.ResizeAsync(source, destination, project, frames, targetSize));
 
+    public Task<bool> AddTextOverlayAsync(TextOverlayOptions options) =>
+        ApplyRasterEditAsync("Text overlay", (source, destination, project, frames) =>
+            FrameProjectArchiveEditor.AddTextOverlayAsync(source, destination, project, frames, options));
+
     public void ReportStatus(string status) => Status = status;
 
     [RelayCommand]
@@ -222,8 +226,9 @@ public partial class EditorViewModel : ObservableObject
         try
         {
             var references = GetFrameReferences();
-            await new GifExportService().ExportSelectionAsync(_workingProjectPath, destinationPath, references,
-                new GifExportOptions(RepeatCount: 0), cancellationToken);
+            var sourcePath = _workingProjectPath;
+            await Task.Run(async () => await new GifExportService().ExportSelectionAsync(sourcePath, destinationPath, references,
+                new GifExportOptions(RepeatCount: 0), cancellationToken).ConfigureAwait(false), cancellationToken);
             Status = "GIF exported";
         }
         catch (Exception ex)
@@ -277,7 +282,10 @@ public partial class EditorViewModel : ObservableObject
         try
         {
             var sourcePath = _workingProjectPath;
-            var project = await edit(sourcePath, draftPath, _sourceProject, GetFrameReferences());
+            var sourceProject = _sourceProject;
+            var references = GetFrameReferences();
+            var project = await Task.Run(async () =>
+                await edit(sourcePath, draftPath, sourceProject, references).ConfigureAwait(false));
             _sourceProject = project;
             _workingProjectPath = draftPath;
             RefreshFrames(selectedIndex);

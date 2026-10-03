@@ -167,6 +167,13 @@ This log records the independent Avalonia port of ScreenToGif. The port uses new
 - Rebuilt the self-contained Windows x64 candidate from clean commit `5b589a6`. ZIP integrity and an independent SHA-256 check passed; its hash is `95c4a2271c919abd5ac0f80e2588e0cb7bf1998b888b05e1daf0152eaa00a157`.
 - The package includes the new request validation checks in its source revision record. It remains a local development candidate and has not been launched on Windows.
 
+## 2026-10-03 — Text overlays and background edits
+
+- Added a text dialog for content, font size, color, and canvas position. Applying it rasterizes the same overlay into every frame so the preview, saved `.fsp`, and GIF export share identical pixels. The UI explains that the overlay is baked in; unsaved edits can still be discarded.
+- Added canvas-bound validation and cross-platform pixel/archive tests. The editor-level test applies text to all frames, exports a GIF, saves the project, and confirms the pixels and frame durations survive reopening.
+- Moved crop, resize, text rasterization, and GIF encoding onto worker tasks so frame processing does not hold the UI thread. The editor blocks closing while a raster edit writes its temporary archive.
+- `dotnet test FrameStudio.sln --configuration Debug --no-restore` passes 23 tests and skips the three Windows desktop checks. Release build succeeds with zero warnings/errors. A fresh visual check of the text dialog has not yet been completed; the prior editor screenshot predates this feature.
+
 ## Migration decisions
 
 - Keep the original WPF projects intact as the baseline and source reference.

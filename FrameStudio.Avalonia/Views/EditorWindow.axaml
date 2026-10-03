@@ -60,7 +60,9 @@
                         <TextBlock Text="□" FontSize="16" />
                     </Button>
                     <Border Height="1" Margin="6,5" Background="{DynamicResource Border}" />
-                    <Button Classes="tool-button" IsEnabled="False" ToolTip.Tip="Text and drawing tools are planned">
+                    <Button Classes="tool-button" Click="TextTool_OnClick" IsEnabled="{Binding CanEdit}"
+                            ToolTip.Tip="Add a text overlay to every frame"
+                            AutomationProperties.Name="Add text annotation to all frames">
                         <TextBlock Text="T" FontSize="14" FontWeight="SemiBold" />
                     </Button>
                 </StackPanel>
