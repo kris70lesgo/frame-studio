@@ -30,6 +30,7 @@ The original WPF application remains in this repository as the baseline in `GifR
 ## Shell preview
 
 This macOS capture documents an early Avalonia shell only. It is not a Windows before/after comparison, and it predates the recording and editor workflow shown in the status table.
+The [capture notes](docs/before-after/README.md) link to the upstream screenshots and list the fresh Windows pairs still needed for submission.
 
 ![Frame Studio early home shell on macOS](docs/before-after/after-home-shell-macos.png)
 
