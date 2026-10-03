@@ -152,6 +152,11 @@ This log records the independent Avalonia port of ScreenToGif. The port uses new
 - Registered the handler in the tunnel phase so the timeline does not consume Space or Delete before the editor can handle them. Live UI checks confirmed save, duplicate, reorder, delete, playback, and crop cancel against a temporary 24-frame project; the temporary edits were discarded.
 - Window capture remains disabled in the home screen because the current Win32 implementation captures the target's desktop rectangle, which can include windows above the selected app.
 
+## 2026-10-03 — Candidate rebuilt with editor shortcuts
+
+- Rebuilt the self-contained Windows x64 candidate from clean commit `629b74f`. ZIP integrity and independent SHA-256 checks passed; its hash is `584917e877adcc91e19cd0646d92bf84cce753249f0d17d5bc5aaef5e83f1c40`.
+- The package carries the editor keyboard shortcuts and keeps Windows runtime behavior labeled unverified.
+
 ## Migration decisions
 
 - Keep the original WPF projects intact as the baseline and source reference.
