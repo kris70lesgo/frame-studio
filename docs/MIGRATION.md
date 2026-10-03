@@ -98,7 +98,7 @@ This log records the independent Avalonia port of ScreenToGif. The port uses new
 - The macOS suite now passes 16 tests and skips the Windows capture integration test. Debug and Release solution builds both complete with zero warnings and errors.
 - The capture flow now excludes both the main window and recorder controls with `WDA_EXCLUDEFROMCAPTURE` before starting GDI capture, and restores their previous affinity afterward. Destroyed windows are skipped during cleanup so the recorder can close before the lease is released. The screen action is unavailable before Windows 10 version 2004; full-display validation must confirm GDI honors the exclusion and controls remain usable.
 - Added Windows runtime tests for affinity apply/restore and cleanup after a window closes. They skip on this macOS host with the GDI integration test.
-- The suite now passes 16 platform-independent tests and skips all three Windows runtime checks; the Release solution build completes with zero warnings and errors.
+- The suite now passes 17 platform-independent tests and skips all three Windows runtime checks; the Release solution build completes with zero warnings and errors.
 
 ## 2026-10-03 — Windows candidate rebuilt
 
@@ -129,6 +129,11 @@ This log records the independent Avalonia port of ScreenToGif. The port uses new
 
 - Rebuilt the self-contained Windows x64 candidate from clean commit `b07ffa9`. ZIP integrity and an independent SHA-256 check passed; the archive hash is `dec90ed102edee6708005010ee9a094fbc028f3b23b4f20df452e771ec214dfa`.
 - The package requires Windows 10 version 2004 or later and still labels the record → edit → GIF workflow unverified until it has been run on Windows.
+
+## 2026-10-03 — Recording-to-project handoff check
+
+- Added a platform-independent `RecordingViewModel` test with a fake capture session. It exercises pause, resume, and stop, reads the completed `.fsp` archive, and verifies captured RGBA bytes and per-frame durations. This checks the recorder-to-project handoff without claiming native capture validation.
+- The macOS suite passes 17 tests and skips the three Windows runtime checks.
 
 ## Migration decisions
 
