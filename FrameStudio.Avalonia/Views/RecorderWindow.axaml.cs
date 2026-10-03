@@ -7,23 +7,52 @@ namespace FrameStudio.Avalonia.Views;
 
 public partial class RecorderWindow : Window
 {
-    private RecordingViewModel _viewModel = null!;
+    private readonly TaskCompletionSource<nint> _windowHandleReady = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    private RecordingViewModel? _viewModel;
     private bool _closeAfterSave;
 
     public RecorderWindow()
     {
         InitializeComponent();
+        Opened += OnOpened;
+        Closing += OnClosing;
     }
 
-    public RecorderWindow(RecordingViewModel viewModel) : this()
+    public Task<string?> ShowPreparingDialog(Window owner)
+    {
+        Opacity = 0;
+        return ShowDialog<string?>(owner);
+    }
+
+    public Task<nint> WaitForWindowHandleAsync() => _windowHandleReady.Task;
+
+    public bool HasViewModel => _viewModel is not null;
+
+    public void AttachViewModel(RecordingViewModel viewModel)
     {
         _viewModel = viewModel;
         DataContext = viewModel;
         _viewModel.RecordingCompleted += OnRecordingCompleted;
-        Closing += OnClosing;
     }
 
+    public void ShowRecordingControls() => Opacity = 1;
+
     private void InitializeComponent() => AvaloniaXamlLoader.Load(this);
+
+    private void OnOpened(object? sender, EventArgs e)
+    {
+        try
+        {
+            var handle = TryGetPlatformHandle()?.Handle ?? IntPtr.Zero;
+            if (handle == IntPtr.Zero)
+                throw new InvalidOperationException("Avalonia did not provide a native recorder window handle.");
+            _windowHandleReady.TrySetResult(handle);
+        }
+        catch (Exception ex)
+        {
+            _windowHandleReady.TrySetException(ex);
+        }
+    }
 
     private void OnRecordingCompleted(object? sender, string projectPath)
     {
@@ -33,7 +62,7 @@ public partial class RecorderWindow : Window
 
     private async void OnClosing(object? sender, WindowClosingEventArgs e)
     {
-        if (_closeAfterSave || _viewModel.HasFinished)
+        if (_closeAfterSave || _viewModel is null || _viewModel.HasFinished)
             return;
 
         e.Cancel = true;

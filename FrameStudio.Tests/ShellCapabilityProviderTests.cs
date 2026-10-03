@@ -13,8 +13,17 @@ public sealed class ShellCapabilityProviderTests
         Assert.Equal(Enum.GetValues<CaptureSource>(), capabilities.Select(capability => capability.Source));
         if (OperatingSystem.IsWindows())
         {
-            Assert.Equal(FeatureReadiness.Ready, capabilities.Single(item => item.Source == CaptureSource.Screen).Readiness);
-            Assert.Contains("validate capture", capabilities.Single(item => item.Source == CaptureSource.Screen).Detail);
+            var screen = capabilities.Single(item => item.Source == CaptureSource.Screen);
+            if (OperatingSystem.IsWindowsVersionAtLeast(10, 0, 19041))
+            {
+                Assert.Equal(FeatureReadiness.Ready, screen.Readiness);
+                Assert.Contains("validate capture", screen.Detail);
+            }
+            else
+            {
+                Assert.Equal(FeatureReadiness.Unsupported, screen.Readiness);
+                Assert.Contains("Windows 10 version 2004", screen.Detail);
+            }
             Assert.All(capabilities.Where(item => item.Source != CaptureSource.Screen),
                 item => Assert.Equal(FeatureReadiness.Planned, item.Readiness));
         }

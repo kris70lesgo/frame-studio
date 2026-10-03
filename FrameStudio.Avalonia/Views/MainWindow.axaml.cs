@@ -35,6 +35,8 @@ public partial class MainWindow : Window
 
         IRecordingSession? session = null;
         FrameProjectArchiveWriter? writer = null;
+        IDisposable? captureWindowExclusion = null;
+        RecorderWindow? recorderWindow = null;
         try
         {
             var monitors = AddAvaloniaScreenScaling(await service.GetMonitorsAsync());
@@ -57,22 +59,44 @@ public partial class MainWindow : Window
             var projectName = Path.GetFileNameWithoutExtension(projectPath);
             var canvasSize = new PixelSize(setup.Region.Width, setup.Region.Height);
             writer = await FrameProjectArchiveWriter.CreateAsync(projectPath, projectName, canvasSize);
+
+            recorderWindow = new RecorderWindow();
+            var recorderDialog = recorderWindow.ShowPreparingDialog(this);
+            var recorderHandle = await recorderWindow.WaitForWindowHandleAsync();
+            var exclusionService = viewModel.CaptureWindowExclusionService
+                ?? throw new InvalidOperationException("This platform cannot exclude app windows from screen capture.");
+            var mainHandle = TryGetPlatformHandle()?.Handle ?? IntPtr.Zero;
+            if (mainHandle == IntPtr.Zero)
+                throw new InvalidOperationException("Avalonia did not provide the main window handle.");
+            captureWindowExclusion = exclusionService.ExcludeFromCapture([mainHandle, recorderHandle]);
+
             session = await service.StartAsync(new ScreenCaptureRequest(
                 setup.Monitor.Id, setup.Region, setup.FramesPerSecond, setup.CaptureCursor));
 
             var recorderViewModel = new RecordingViewModel(session, writer, projectPath, setup.FramesPerSecond);
             session = null;
             writer = null;
-            var completedPath = await new RecorderWindow(recorderViewModel).ShowDialog<string?>(this);
+            recorderWindow.AttachViewModel(recorderViewModel);
+            recorderWindow.ShowRecordingControls();
+            var completedPath = await recorderDialog;
+            captureWindowExclusion.Dispose();
+            captureWindowExclusion = null;
             if (!string.IsNullOrWhiteSpace(completedPath))
                 await OpenEditorAsync(completedPath);
         }
         catch (Exception ex)
         {
+            if (recorderWindow is { IsVisible: true, HasViewModel: false })
+                recorderWindow.Close(null);
             viewModel.ReportCaptureStatus($"Could not start or save the recording: {ex.Message}");
         }
         finally
         {
+            if (captureWindowExclusion is not null)
+            {
+                try { captureWindowExclusion.Dispose(); }
+                catch (Exception ex) { viewModel.ReportCaptureStatus($"Could not restore the app's capture visibility: {ex.Message}"); }
+            }
             if (session is not null)
                 await session.DisposeAsync();
             if (writer is not null)

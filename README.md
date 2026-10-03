@@ -16,11 +16,11 @@ The Avalonia app now connects Windows screen-region recording to a native `.fsp`
 | Dark and light appearance | Implemented |
 | Neutral frame/project foundation | Frame model and compressed `.fsp` archive read/write implemented |
 | Platform service contracts | Defined |
-| Windows screen-region capture | Setup, display selection, area selection, frame rate, cursor option, pause, and stop are wired; Windows runtime still needs verification |
+| Windows screen-region capture | Setup, display selection, area selection, frame rate, cursor option, pause, stop, and app-window exclusion are wired; Windows runtime still needs verification |
 | End-to-end recording workflow | Records frames into `.fsp` projects and opens the editor when recording stops |
 | Editor | Frame thumbnails, preview/playback, selection, earlier/later ordering, duplicate/delete, duration edits, drag crop, project-wide resize, save/discard, and GIF export implemented |
 | GIF export | Migrated encoder, editor export flow, and completion actions for opening the GIF, showing its folder, or copying its path |
-| Core workflow checks | 16 tests pass on macOS; editor commands, capture-readiness reporting, archive editing, recent-project history, and exported GIF pixels, dimensions, frame timing, and looping are checked |
+| Core workflow checks | 16 tests pass on macOS; editor commands, capture-readiness reporting, archive editing, recent-project history, and exported GIF pixels, dimensions, frame timing, and looping are checked. Three Windows runtime checks are skipped here |
 | Webcam, window capture, sketchboard | Not migrated yet |
 | Text/drawing annotations and video export | Not migrated yet |
 | Windows platform adapter | Win32 monitor/window enumeration and bounded GDI desktop-region recording implemented; runtime needs Windows verification |
@@ -42,7 +42,7 @@ The current editor has also had a macOS UI smoke check with a local sample proje
 
 Requirements: .NET SDK 9.0.318 or a compatible .NET 9 feature-band SDK, with NuGet access for the Avalonia packages.
 
-The Avalonia UI uses the desktop Avalonia stack. This branch has a local macOS arm64 publish and a Windows x64 cross-publish; neither is a released challenge download, and only Windows has a capture backend. Core project editing and GIF export are platform-neutral. The full recording workflow must be exercised on Windows before claiming a verified Windows release; no macOS or Linux capture support is claimed.
+The Avalonia UI uses the desktop Avalonia stack. This branch has a local macOS arm64 publish and a Windows x64 cross-publish; neither is a released challenge download, and only Windows has a capture backend. Screen capture requires Windows 10 version 2004 or later because the app excludes its own windows from captured frames. Core project editing and GIF export are platform-neutral. The full recording workflow must be exercised on Windows before claiming a verified Windows release; no macOS or Linux capture support is claimed.
 
 ```sh
 dotnet build FrameStudio.sln

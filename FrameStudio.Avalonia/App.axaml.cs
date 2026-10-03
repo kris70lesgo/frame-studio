@@ -19,12 +19,12 @@ public partial class App : Application
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
+            var windowsPlatform = OperatingSystem.IsWindows() ? new WindowsPlatformServices() : null;
             var projectPath = desktop.Args?.FirstOrDefault(argument =>
                 string.Equals(Path.GetExtension(argument), ".fsp", StringComparison.OrdinalIgnoreCase) && File.Exists(argument));
             desktop.MainWindow = new MainWindow(projectPath)
             {
-                DataContext = new MainViewModel(new ShellCapabilityProvider(),
-                    OperatingSystem.IsWindows() ? new WindowsPlatformServices() : null),
+                DataContext = new MainViewModel(new ShellCapabilityProvider(), windowsPlatform, windowsPlatform),
             };
         }
 

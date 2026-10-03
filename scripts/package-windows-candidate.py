@@ -65,7 +65,7 @@ Source revision: {revision}{' (modified worktree)' if modified else ''}
 Runtime: self-contained .NET 9
 Build host: {host}, .NET SDK {sdk_version}
 
-Run {EXECUTABLE} on Windows 10 or Windows 11. Screen recording uses Windows GDI and requires an interactive desktop session.
+Run {EXECUTABLE} on Windows 10 version 2004 or later, or Windows 11. Screen recording uses Windows GDI and requires an interactive desktop session.
 
 This package has not been executed on Windows. The capture path, mixed-DPI selection, and end-to-end record → edit → GIF workflow are not runtime verified. This local development candidate is not a challenge release.
 

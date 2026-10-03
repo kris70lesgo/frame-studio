@@ -20,7 +20,9 @@ public partial class MainViewModel : ObservableObject
     public IReadOnlyList<CaptureCapability> CaptureCapabilities { get; }
 
     public IScreenCaptureService? ScreenCaptureService { get; }
-    public bool IsScreenCaptureAvailable => ScreenCaptureService is not null;
+    public ICaptureWindowExclusionService? CaptureWindowExclusionService { get; }
+    public bool IsScreenCaptureAvailable => ScreenCaptureService is not null && CaptureCapabilities.Any(capability =>
+        capability.Source == CaptureSource.Screen && capability.Readiness == FeatureReadiness.Ready);
     public ObservableCollection<RecentProjectViewModel> RecentProjects { get; } = [];
     public bool IsRecentProjectsEmpty => RecentProjects.Count == 0;
     public string RecentProjectsCountLabel => RecentProjects.Count == 1 ? "1 PROJECT" : $"{RecentProjects.Count} PROJECTS";
@@ -30,9 +32,11 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty]
     private string _captureStatus = string.Empty;
 
-    public MainViewModel(IPlatformCapabilityProvider capabilityProvider, IScreenCaptureService? screenCaptureService = null)
+    public MainViewModel(IPlatformCapabilityProvider capabilityProvider, IScreenCaptureService? screenCaptureService = null,
+        ICaptureWindowExclusionService? captureWindowExclusionService = null)
     {
         ScreenCaptureService = screenCaptureService;
+        CaptureWindowExclusionService = captureWindowExclusionService;
         var localData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
         if (string.IsNullOrWhiteSpace(localData))
             localData = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".local", "share");

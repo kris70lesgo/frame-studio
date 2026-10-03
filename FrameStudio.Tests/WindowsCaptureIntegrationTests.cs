@@ -1,6 +1,7 @@
 using FrameStudio.Core.Models;
 using FrameStudio.Platform.Abstractions;
 using FrameStudio.Platform.Windows;
+using System.Runtime.InteropServices;
 
 namespace FrameStudio.Tests;
 
@@ -13,8 +14,51 @@ public sealed class WindowsDesktopFactAttribute : FactAttribute
     }
 }
 
+public sealed class WindowsCaptureExclusionFactAttribute : FactAttribute
+{
+    public WindowsCaptureExclusionFactAttribute()
+    {
+        if (!OperatingSystem.IsWindows())
+            Skip = "Requires Windows 10 version 2004 or later.";
+        else if (!OperatingSystem.IsWindowsVersionAtLeast(10, 0, 19041))
+            Skip = "Capture-window exclusion requires Windows 10 version 2004 or later.";
+    }
+}
+
 public sealed class WindowsCaptureIntegrationTests
 {
+    [WindowsCaptureExclusionFact]
+    public void CaptureWindowExclusion_AppliesAndRestoresDisplayAffinity()
+    {
+        using var window = NativeTestWindow.Create();
+        Assert.True(NativeMethods.GetWindowDisplayAffinity(window.Handle, out var originalAffinity));
+
+        var exclusion = new WindowsPlatformServices().ExcludeFromCapture([window.Handle]);
+        try
+        {
+            Assert.True(NativeMethods.GetWindowDisplayAffinity(window.Handle, out var excludedAffinity));
+            Assert.Equal(0x00000011u, excludedAffinity);
+        }
+        finally
+        {
+            exclusion.Dispose();
+        }
+
+        Assert.True(NativeMethods.GetWindowDisplayAffinity(window.Handle, out var restoredAffinity));
+        Assert.Equal(originalAffinity, restoredAffinity);
+    }
+
+    [WindowsCaptureExclusionFact]
+    public void CaptureWindowExclusion_DisposeAfterWindowClosesIsSafe()
+    {
+        using var window = NativeTestWindow.Create();
+        using var exclusion = new WindowsPlatformServices().ExcludeFromCapture([window.Handle]);
+
+        window.Dispose();
+
+        exclusion.Dispose();
+    }
+
     [WindowsDesktopFact]
     public async Task ScreenCapture_EnumeratesDisplayAndProducesFramesAcrossPauseResumeAndStop()
     {
@@ -78,5 +122,39 @@ public sealed class WindowsCaptureIntegrationTests
         Assert.Equal(new PixelSize(width, height), frame.Size);
         Assert.Equal(width * height * 4, frame.RgbaPixels.Length);
         Assert.True(frame.DurationMilliseconds > 0);
+    }
+
+    private sealed class NativeTestWindow(nint handle) : IDisposable
+    {
+        public nint Handle { get; } = handle;
+
+        public static NativeTestWindow Create()
+        {
+            var handle = NativeMethods.CreateWindowEx(0, "STATIC", "Frame Studio capture affinity test",
+                0x80000000, 0, 0, 32, 32, IntPtr.Zero, IntPtr.Zero, NativeMethods.GetModuleHandle(null), IntPtr.Zero);
+            if (handle == IntPtr.Zero)
+                throw new System.ComponentModel.Win32Exception(Marshal.GetLastWin32Error(), "Could not create a test window.");
+            return new NativeTestWindow(handle);
+        }
+
+        public void Dispose() => _ = NativeMethods.DestroyWindow(Handle);
+    }
+
+    private static class NativeMethods
+    {
+        [DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+        internal static extern nint CreateWindowEx(uint extendedStyle, string className, string windowName, uint style,
+            int x, int y, int width, int height, nint parent, nint menu, nint instance, nint parameter);
+
+        [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+        internal static extern nint GetModuleHandle(string? moduleName);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool GetWindowDisplayAffinity(nint window, out uint affinity);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool DestroyWindow(nint window);
     }
 }

@@ -8,8 +8,43 @@ using FrameStudio.Platform.Abstractions;
 namespace FrameStudio.Platform.Windows;
 
 /// <summary>Windows monitor, window, and desktop-region capture using the original app's GDI path.</summary>
-public sealed class WindowsPlatformServices : IScreenCaptureService, IWindowCaptureService, IMonitorService
+public sealed class WindowsPlatformServices : IScreenCaptureService, IWindowCaptureService, IMonitorService,
+    ICaptureWindowExclusionService
 {
+    public IDisposable ExcludeFromCapture(IReadOnlyList<nint> windowHandles)
+    {
+        ArgumentNullException.ThrowIfNull(windowHandles);
+        EnsureWindows();
+        if (!OperatingSystem.IsWindowsVersionAtLeast(10, 0, 19041))
+            throw new PlatformNotSupportedException("Excluding Frame Studio windows from recordings requires Windows 10 version 2004 or later.");
+        if (windowHandles.Count == 0 || windowHandles.Any(handle => handle == IntPtr.Zero))
+            throw new ArgumentException("Provide one or more valid top-level window handles.", nameof(windowHandles));
+
+        var previousAffinities = new List<(nint Handle, uint Affinity)>();
+        try
+        {
+            foreach (var handle in windowHandles.Distinct())
+            {
+                if (!Win32Native.GetWindowDisplayAffinity(handle, out var previousAffinity))
+                    throw new Win32Exception(Marshal.GetLastWin32Error(), "Could not read a Frame Studio window's capture setting.");
+                if (!Win32Native.SetWindowDisplayAffinity(handle, Win32Native.WindowDisplayAffinityExcludeFromCapture))
+                    throw new Win32Exception(Marshal.GetLastWin32Error(), "Could not exclude a Frame Studio window from screen recordings.");
+
+                previousAffinities.Add((handle, previousAffinity));
+            }
+
+            return new CaptureWindowAffinityLease(previousAffinities);
+        }
+        catch (Exception applyError)
+        {
+            var restoreErrors = RestoreAffinities(previousAffinities);
+            if (restoreErrors.Count > 0)
+                throw new AggregateException("Capture exclusion failed, and one or more window settings could not be restored.",
+                    [applyError, .. restoreErrors]);
+            throw;
+        }
+    }
+
     public ValueTask<IReadOnlyList<MonitorDescriptor>> GetMonitorsAsync(CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -148,5 +183,39 @@ public sealed class WindowsPlatformServices : IScreenCaptureService, IWindowCapt
     {
         if (!OperatingSystem.IsWindows())
             throw new PlatformNotSupportedException("Windows desktop capture is available only on Windows.");
+    }
+
+    private static List<Exception> RestoreAffinities(IReadOnlyList<(nint Handle, uint Affinity)> affinities)
+    {
+        var errors = new List<Exception>();
+        for (var index = affinities.Count - 1; index >= 0; index--)
+        {
+            var (handle, affinity) = affinities[index];
+            if (!Win32Native.IsWindow(handle))
+                continue;
+            if (!Win32Native.SetWindowDisplayAffinity(handle, affinity))
+                errors.Add(new Win32Exception(Marshal.GetLastWin32Error(), "Could not restore a Frame Studio window's capture setting."));
+        }
+
+        return errors;
+    }
+
+    private sealed class CaptureWindowAffinityLease : IDisposable
+    {
+        private readonly IReadOnlyList<(nint Handle, uint Affinity)> _previousAffinities;
+        private int _disposed;
+
+        public CaptureWindowAffinityLease(IReadOnlyList<(nint Handle, uint Affinity)> previousAffinities) =>
+            _previousAffinities = previousAffinities;
+
+        public void Dispose()
+        {
+            if (Interlocked.Exchange(ref _disposed, 1) != 0)
+                return;
+
+            var errors = RestoreAffinities(_previousAffinities);
+            if (errors.Count > 0)
+                throw new AggregateException("Could not restore one or more Frame Studio window capture settings.", errors);
+        }
     }
 }

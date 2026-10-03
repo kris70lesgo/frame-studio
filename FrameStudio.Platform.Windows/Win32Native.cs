@@ -12,6 +12,8 @@ internal static class Win32Native
     internal const uint BiRgb = 0;
     internal const uint DibRgbColors = 0;
     internal const uint DiNormal = 0x0003;
+    internal const uint WindowDisplayAffinityNone = 0x00000000;
+    internal const uint WindowDisplayAffinityExcludeFromCapture = 0x00000011;
 
     [StructLayout(LayoutKind.Sequential)]
     internal struct Rect
@@ -115,6 +117,14 @@ internal static class Win32Native
     [DllImport("user32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
     internal static extern bool IsWindow(IntPtr window);
+
+    [DllImport("user32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    internal static extern bool GetWindowDisplayAffinity(IntPtr window, out uint affinity);
+
+    [DllImport("user32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    internal static extern bool SetWindowDisplayAffinity(IntPtr window, uint affinity);
 
     [DllImport("user32.dll", SetLastError = true)]
     internal static extern IntPtr GetDC(IntPtr window);

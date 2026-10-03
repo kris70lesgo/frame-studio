@@ -93,6 +93,12 @@ public interface IMonitorService
     ValueTask<IReadOnlyList<MonitorDescriptor>> GetMonitorsAsync(CancellationToken cancellationToken = default);
 }
 
+/// <summary>Temporarily excludes this application's top-level windows from desktop capture.</summary>
+public interface ICaptureWindowExclusionService
+{
+    IDisposable ExcludeFromCapture(IReadOnlyList<nint> windowHandles);
+}
+
 public interface IGlobalHotkeyService
 {
     IDisposable Register(string gesture, Action callback);
