@@ -241,10 +241,11 @@ This log records the independent Avalonia port of ScreenToGif. The port uses new
 - The UI converts preview coordinates to neutral pixel coordinates. `FrameStudio.Core` validates the stroke, rasterizes it through Skia into RGBA buffers, and rewrites the project through the same atomic draft path as crop, resize, and text edits. GIF and MP4 exports therefore receive the drawing automatically.
 - Added transform validation, transform pixel-boundary, editor persistence, and all-frame application tests. The control builds on macOS; the already-running app had a user project at an unsaved-changes dialog, so a fresh live UI interaction check remains pending rather than altering that project.
 
-## 2026-10-04 — Candidate rebuilt with freehand annotations and CI
+## 2026-10-04 — Public preview release, freehand annotations, and CI
 
-- Rebuilt the self-contained Windows x64 candidate from clean commit `eee0087`. ZIP integrity passed and the archive SHA-256 is `2511ea5c1a4f9ed1d91257f42f91708d745309c5cf39cf448ea60c079f2d00e9`.
-- The package includes the freehand editor annotation workflow and preserves the unverified Windows-runtime status in its bundled README. A new hosted CI workflow builds/tests Frame Studio on macOS and Windows and checks Windows self-contained publishing; it deliberately excludes desktop-capture tests, which require an interactive Windows session. The package remains a local development candidate until the desktop validation checklist passes.
+- Rebuilt the self-contained Windows x64 candidate from clean commit `efb2666c`. ZIP integrity passed and the archive SHA-256 is `eaa7d1e2a2b54dbc9890a1ea7419971ab0d1ec81c786551447e071e007e720e8`.
+- Published the [Frame Studio repository](https://github.com/kris70lesgo/frame-studio) and [Preview 2](https://github.com/kris70lesgo/frame-studio/releases/tag/v0.1.0-preview.2), including the ZIP and its checksum. The release notes and bundled README preserve the unverified Windows-runtime status.
+- The new hosted CI workflow builds/tests Frame Studio on macOS and Windows and checks Windows self-contained publishing; all three jobs passed for `efb2666c`. It deliberately excludes desktop-capture tests, which require an interactive Windows session. The preview remains unverified for native capture until the desktop validation checklist passes.
 
 ## Ongoing log
 

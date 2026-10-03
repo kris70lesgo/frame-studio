@@ -2,13 +2,14 @@
 
 The Windows capture backend and app package have been cross-compiled on macOS, but have not yet been run on Windows. This checklist records the evidence needed before claiming the record → edit → export workflow is verified. Screen recording requires Windows 10 version 2004 (build 19041) or later because the app excludes its own windows using [`WDA_EXCLUDEFROMCAPTURE`](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setwindowdisplayaffinity). MP4 export also needs an installed FFmpeg build with `libx264` available on `PATH`.
 
-## Current local Windows x64 candidate
+## Current Windows x64 preview candidate
 
-- Package: `dist/FrameStudio-win-x64.zip` (ignored local build output; not publicly downloadable).
+- Public preview: [Frame Studio 0.1.0 Preview 2](https://github.com/kris70lesgo/frame-studio/releases/tag/v0.1.0-preview.2).
+- Local package: `dist/FrameStudio-win-x64.zip` (ignored build output; identical to the uploaded preview asset).
 - Rebuild it with `python3 scripts/package-windows-candidate.py`; this reads the Frame Studio version from MSBuild, includes the README and license, checks archive contents, and writes the matching `.sha256` file.
-- Source revision: `eee0087`; Frame Studio `0.1.0`, self-contained `win-x64` publish using .NET SDK `9.0.318` on macOS arm64.
-- SHA-256: `2511ea5c1a4f9ed1d91257f42f91708d745309c5cf39cf448ea60c079f2d00e9` (also written to `dist/FrameStudio-win-x64.zip.sha256`).
-- The package script and an independent `unzip -t` check both confirmed archive integrity. A separate SHA-256 calculation matched the checksum file; the archive contains the executable, package README, and complete MS-PL license. Its README identifies the commit and macOS build host and explicitly says Windows execution, capture, mixed-DPI selection, and end-to-end workflow are unverified.
+- Source revision: `efb2666c`; Frame Studio `0.1.0`, self-contained `win-x64` publish using .NET SDK `9.0.318` on macOS arm64.
+- SHA-256: `eaa7d1e2a2b54dbc9890a1ea7419971ab0d1ec81c786551447e071e007e720e8` (also written to `dist/FrameStudio-win-x64.zip.sha256` and uploaded with the preview release).
+- The package script and an independent `unzip -t` check both confirmed archive integrity. A separate SHA-256 calculation matched the checksum file; GitHub reports the same ZIP digest after upload. The archive contains the executable, package README, and complete MS-PL license. Its README identifies the commit and macOS build host and explicitly says Windows execution, capture, mixed-DPI selection, and end-to-end workflow are unverified.
 
 ## Automated desktop check
 

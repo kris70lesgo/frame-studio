@@ -55,7 +55,7 @@ The editor screenshot predates the text annotation and MP4 export tools and reco
 
 Requirements: .NET SDK 9.0.318 or a compatible .NET 9 feature-band SDK, with NuGet access for the Avalonia packages.
 
-The Avalonia UI uses the desktop Avalonia stack. This branch has a local macOS arm64 publish and a Windows x64 cross-publish; neither is a released challenge download, and only Windows has a capture backend. Screen capture requires Windows 10 version 2004 or later because the app excludes its own windows from captured frames. Core project editing and GIF export are platform-neutral. MP4 export calls the user's FFmpeg installation and needs `libx264`; Frame Studio does not redistribute FFmpeg. The full recording workflow must be exercised on Windows before claiming a verified Windows release; no macOS or Linux capture support is claimed.
+The Avalonia UI uses the desktop Avalonia stack. A self-contained Windows x64 [preview download](https://github.com/kris70lesgo/frame-studio/releases/tag/v0.1.0-preview.2) is available; only Windows has a capture backend. Screen capture requires Windows 10 version 2004 or later because the app excludes its own windows from captured frames. Core project editing and GIF export are platform-neutral. MP4 export calls the user's FFmpeg installation and needs `libx264`; Frame Studio does not redistribute FFmpeg. The full recording workflow must be exercised on Windows before claiming a verified Windows release; no macOS or Linux capture support is claimed.
 
 ```sh
 dotnet build FrameStudio.sln
