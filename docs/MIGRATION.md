@@ -135,6 +135,17 @@ This log records the independent Avalonia port of ScreenToGif. The port uses new
 - Added a platform-independent `RecordingViewModel` test with a fake capture session. It exercises pause, resume, and stop, reads the completed `.fsp` archive, and verifies captured RGBA bytes and per-frame durations. This checks the recorder-to-project handoff without claiming native capture validation.
 - The macOS suite passes 17 tests and skips the three Windows runtime checks.
 
+## 2026-10-03 — Candidate rebuilt with recorder handoff check
+
+- Rebuilt the self-contained Windows x64 candidate from clean commit `5401729`. ZIP integrity and independent SHA-256 checks passed; the archive hash is `7124e0d17c94c0ca4a71238c1525e0898aab0a7aeb248ce54850c4b870b4c962`.
+- The package carries the updated capture-window exclusion path and the Windows 10 version 2004+ requirement. It still has not been launched on Windows.
+
+## 2026-10-03 — Theme and timeline selection smoke check
+
+- Launched the local Avalonia debug bundle with a 24-frame `.fsp` fixture and inspected the home screen and editor in light mode. The editor displays frame preview, thumbnail timeline, duration inspector, editing controls, and GIF export; the selected frame is outlined in teal without Avalonia's default blue selection fill.
+- Added explicit transparent ListBox item styling to preserve the timeline card appearance while retaining a visible teal selection border.
+- This visual check ran on macOS and only verifies rendering. Windows capture and the paired original/port challenge screenshots remain outstanding.
+
 ## Migration decisions
 
 - Keep the original WPF projects intact as the baseline and source reference.
