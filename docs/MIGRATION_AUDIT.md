@@ -79,7 +79,7 @@ Keep the original ScreenToGif projects and their history as the functional refer
 
 ## Baseline observations and limitations
 
-- The original README documents recording, webcam, sketchboard, frame editing, and GIF/APNG/video/PSD/image export. The README links to upstream recorder, start-screen, editor, and settings screenshots/animations; there are no checked-in raster screenshots in this clone.
+- The original README documents recording, webcam, sketchboard, frame editing, and GIF/APNG/video/PSD/image export. It links to upstream recorder, start-screen, editor, and settings screenshots/animations, but this clone has no local raster baseline captures. A later macOS shell screenshot is explicitly labeled as a UI check, not a Windows before/after image.
 - The original source and XAML were inspected because this host is macOS. The original WPF application was not launched and no local “before” captures could be made.
 - The first full-solution build on macOS compiled the Windows-targeted projects but failed in the project's post-build `editbin` batch command (`if exist`, `call`, and `editbin` are Windows commands). Rebuilding with `-p:PostBuildEvent=` succeeded (7 warnings, 0 errors); this confirms source compilation, not that the WPF app can run on macOS. The upstream build reports a SharpCompress advisory warning and missing `ManagedMinimumRules.ruleset` warnings.
 - MS-PL permits derivatives but does not grant contributor trademark rights. Keep the existing complete `LICENSE.txt` and attribution, use independent app branding, and state clearly that this is an independent port.

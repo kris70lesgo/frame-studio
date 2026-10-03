@@ -1,6 +1,8 @@
 # Before and after captures
 
-The original WPF application requires Windows and could not be launched on the macOS host used for this initial audit. The upstream README references baseline images and animations for the launcher, recorder, editor, and settings; no raster images are checked into this clone.
+The original WPF application requires Windows and could not be launched on the macOS host used for this initial audit. The upstream README references baseline images and animations for the launcher, recorder, editor, and settings, but the corresponding original raster images are not checked into this clone.
+
+`after-home-shell-macos.png` is an early Avalonia shell check. It is included to track UI progress and must not be used as the final Windows before/after comparison.
 
 Capture fresh, consistent Windows screenshots here before challenge submission:
 

@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <AvaloniaResource Include="Assets\**" Condition="Exists('Assets')" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" VersionOverride="12.1.3" />
+    <PackageReference Include="Avalonia.Desktop" VersionOverride="12.1.3" />
+    <PackageReference Include="Avalonia.Themes.Fluent" VersionOverride="12.1.3" />
+    <PackageReference Include="Avalonia.Fonts.Inter" VersionOverride="12.1.3" />
+    <PackageReference Include="AvaloniaUI.DiagnosticsSupport" VersionOverride="2.2.3">
+      <IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>
+      <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="CommunityToolkit.Mvvm" VersionOverride="8.4.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\FrameStudio.Core\FrameStudio.Core.csproj" />
+    <ProjectReference Include="..\FrameStudio.Platform.Abstractions\FrameStudio.Platform.Abstractions.csproj" />
+  </ItemGroup>
+</Project>

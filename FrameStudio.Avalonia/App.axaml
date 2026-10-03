@@ -1,0 +1,127 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="FrameStudio.Avalonia.App"
+             RequestedThemeVariant="Dark">
+
+    <Application.Resources>
+        <ResourceDictionary>
+            <x:Double x:Key="Space1">4</x:Double>
+            <x:Double x:Key="Space2">8</x:Double>
+            <x:Double x:Key="Space3">12</x:Double>
+            <x:Double x:Key="Space4">16</x:Double>
+            <x:Double x:Key="Space6">24</x:Double>
+            <Thickness x:Key="PageInset">34,32,34,32</Thickness>
+            <ResourceDictionary.ThemeDictionaries>
+                <ResourceDictionary x:Key="Dark">
+                    <SolidColorBrush x:Key="BackgroundPrimary" Color="#0E1215" />
+                    <SolidColorBrush x:Key="BackgroundSecondary" Color="#12181C" />
+                    <SolidColorBrush x:Key="Surface" Color="#171F24" />
+                    <SolidColorBrush x:Key="SurfaceRaised" Color="#1C262C" />
+                    <SolidColorBrush x:Key="SurfaceHover" Color="#233137" />
+                    <SolidColorBrush x:Key="Border" Color="#2A383E" />
+                    <SolidColorBrush x:Key="TextPrimary" Color="#EDF4F2" />
+                    <SolidColorBrush x:Key="TextSecondary" Color="#A0B1B2" />
+                    <SolidColorBrush x:Key="TextTertiary" Color="#718587" />
+                    <SolidColorBrush x:Key="Accent" Color="#78D8BC" />
+                    <SolidColorBrush x:Key="AccentStrong" Color="#45B996" />
+                    <SolidColorBrush x:Key="Destructive" Color="#FF777D" />
+                    <SolidColorBrush x:Key="Success" Color="#78D8BC" />
+                    <SolidColorBrush x:Key="Warning" Color="#E8C27C" />
+                    <SolidColorBrush x:Key="FocusRing" Color="#78D8BC" />
+                </ResourceDictionary>
+                <ResourceDictionary x:Key="Light">
+                    <SolidColorBrush x:Key="BackgroundPrimary" Color="#F5F7F6" />
+                    <SolidColorBrush x:Key="BackgroundSecondary" Color="#EDF1F0" />
+                    <SolidColorBrush x:Key="Surface" Color="#FFFFFF" />
+                    <SolidColorBrush x:Key="SurfaceRaised" Color="#FBFCFC" />
+                    <SolidColorBrush x:Key="SurfaceHover" Color="#F0F7F4" />
+                    <SolidColorBrush x:Key="Border" Color="#DCE5E2" />
+                    <SolidColorBrush x:Key="TextPrimary" Color="#172522" />
+                    <SolidColorBrush x:Key="TextSecondary" Color="#586F6B" />
+                    <SolidColorBrush x:Key="TextTertiary" Color="#768985" />
+                    <SolidColorBrush x:Key="Accent" Color="#168568" />
+                    <SolidColorBrush x:Key="AccentStrong" Color="#0D7056" />
+                    <SolidColorBrush x:Key="Destructive" Color="#B72B3A" />
+                    <SolidColorBrush x:Key="Success" Color="#168568" />
+                    <SolidColorBrush x:Key="Warning" Color="#8D671F" />
+                    <SolidColorBrush x:Key="FocusRing" Color="#168568" />
+                </ResourceDictionary>
+            </ResourceDictionary.ThemeDictionaries>
+        </ResourceDictionary>
+    </Application.Resources>
+
+    <Application.Styles>
+        <FluentTheme />
+
+        <Style Selector="TextBlock.Display">
+            <Setter Property="FontSize" Value="32" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
+        </Style>
+        <Style Selector="TextBlock.Title">
+            <Setter Property="FontSize" Value="18" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
+        </Style>
+        <Style Selector="TextBlock.Body">
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="Foreground" Value="{DynamicResource TextSecondary}" />
+        </Style>
+        <Style Selector="TextBlock.Caption">
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Foreground" Value="{DynamicResource TextTertiary}" />
+        </Style>
+
+        <Style Selector="Button.capture-card">
+            <Setter Property="Background" Value="{DynamicResource Surface}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource Border}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="12" />
+            <Setter Property="Padding" Value="15" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="VerticalContentAlignment" Value="Stretch" />
+        </Style>
+        <Style Selector="Button.capture-card:pointerover">
+            <Setter Property="Background" Value="{DynamicResource SurfaceHover}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource Accent}" />
+        </Style>
+        <Style Selector="Button.capture-card:pressed">
+            <Setter Property="Background" Value="{DynamicResource SurfaceRaised}" />
+        </Style>
+        <Style Selector="Button.capture-card:disabled">
+            <Setter Property="Opacity" Value="0.66" />
+        </Style>
+        <Style Selector="Button.nav-button">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Foreground" Value="{DynamicResource TextSecondary}" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Padding" Value="11,9" />
+            <Setter Property="HorizontalContentAlignment" Value="Left" />
+        </Style>
+        <Style Selector="Button.nav-button.selected">
+            <Setter Property="Background" Value="{DynamicResource SurfaceHover}" />
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
+        </Style>
+        <Style Selector="Button.nav-button:pointerover">
+            <Setter Property="Background" Value="{DynamicResource SurfaceHover}" />
+        </Style>
+        <Style Selector="Button.quiet-button">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Foreground" Value="{DynamicResource TextSecondary}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource Border}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Padding" Value="12,8" />
+        </Style>
+        <Style Selector="Button.quiet-button:pointerover">
+            <Setter Property="Background" Value="{DynamicResource SurfaceHover}" />
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
+        </Style>
+        <Style Selector="Button:focus-visible">
+            <Setter Property="BorderBrush" Value="{DynamicResource FocusRing}" />
+            <Setter Property="BorderThickness" Value="2" />
+        </Style>
+    </Application.Styles>
+</Application>
