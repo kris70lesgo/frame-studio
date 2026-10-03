@@ -75,6 +75,11 @@ This log records the independent Avalonia port of ScreenToGif. The port uses new
 - Added tests for persistence across catalog instances, newest-first ordering, duplicate updates, the entry limit, missing files, and extension validation. Full solution build succeeds with zero warnings/errors; macOS test run passes 13 and skips the Windows capture integration test.
 - A fresh visual check could not be made because the desktop session is locked. The existing macOS screenshots predate this home-screen update and remain explicitly non-comparison smoke evidence.
 
+## 2026-10-03 — Windows candidate rebuilt
+
+- Rebuilt the self-contained Windows x64 candidate from clean commit `85b7206` after adding persistent recent projects. The packager verified archive contents and wrote `dist/FrameStudio-win-x64.zip` with SHA-256 `05b35eb68221daba27661ec64cf6b5ab59a1ce9509ba56aa5046088ea2ad76d9`.
+- The embedded README identifies the source revision, host, SDK, and unverified status. This is still a local development package; it has not been launched on Windows.
+
 ## Migration decisions
 
 - Keep the original WPF projects intact as the baseline and source reference.
