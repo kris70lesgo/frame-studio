@@ -105,6 +105,11 @@ This log records the independent Avalonia port of ScreenToGif. The port uses new
 - Rebuilt the self-contained Windows x64 candidate from clean commit `716aad0`. The archive integrity check passed and its SHA-256 is `67c390f48e9b03283420faa9256e1ed989ae6d7cfda7b3cf3937703dc38e9c8b`.
 - The current test project exercises the editor view model's edit, save, and GIF export commands. The candidate still has not been run on Windows; its bundled README says this explicitly.
 
+## 2026-10-03 — Candidate rebuilt with export completion actions
+
+- Rebuilt the self-contained Windows x64 candidate from clean commit `88ed735`. ZIP integrity and SHA-256 checks passed; the current local candidate hash is `d9cd20a388a21aa4128b89b7fff9aa0dbc6c34bdd721bad0071b9aa342931d5e`.
+- The bundled build includes the GIF completion actions and accurately identifies its macOS build host and unverified Windows runtime status.
+
 ## Migration decisions
 
 - Keep the original WPF projects intact as the baseline and source reference.
