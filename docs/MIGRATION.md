@@ -243,9 +243,9 @@ This log records the independent Avalonia port of ScreenToGif. The port uses new
 
 ## 2026-10-04 — Public preview release, freehand annotations, and CI
 
-- Rebuilt the self-contained Windows x64 candidate from clean commit `efb2666c`. ZIP integrity passed and the archive SHA-256 is `eaa7d1e2a2b54dbc9890a1ea7419971ab0d1ec81c786551447e071e007e720e8`.
-- Published the [Frame Studio repository](https://github.com/kris70lesgo/frame-studio) and [Preview 2](https://github.com/kris70lesgo/frame-studio/releases/tag/v0.1.0-preview.2), including the ZIP and its checksum. The release notes and bundled README preserve the unverified Windows-runtime status.
-- The new hosted CI workflow builds/tests Frame Studio on macOS and Windows and checks Windows self-contained publishing; all three jobs passed for `efb2666c`. It deliberately excludes desktop-capture tests, which require an interactive Windows session. The preview remains unverified for native capture until the desktop validation checklist passes.
+- Rebuilt the self-contained Windows x64 candidate from clean commit `5184f661`. ZIP integrity passed and the archive SHA-256 is `de2c97b7ff8a63d1fd0be7ba62c30a502d6b8b3797389cec02e65a910cc9fb65`.
+- Published the [Frame Studio repository](https://github.com/kris70lesgo/frame-studio) and [Preview 3](https://github.com/kris70lesgo/frame-studio/releases/tag/v0.1.0-preview.3), including the ZIP and its checksum. The release notes and bundled README preserve the unverified Windows-runtime status.
+- The new hosted CI workflow builds/tests Frame Studio on macOS and Windows and checks Windows self-contained publishing; all three [jobs passed](https://github.com/kris70lesgo/frame-studio/actions/runs/37146520922) for `5184f661`. It deliberately excludes desktop-capture tests, which require an interactive Windows session. The preview remains unverified for native capture until the desktop validation checklist passes.
 
 ## Ongoing log
 

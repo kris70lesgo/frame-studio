@@ -4,12 +4,12 @@ The Windows capture backend and app package have been cross-compiled on macOS, b
 
 ## Current Windows x64 preview candidate
 
-- Public preview: [Frame Studio 0.1.0 Preview 2](https://github.com/kris70lesgo/frame-studio/releases/tag/v0.1.0-preview.2).
+- Public preview: [Frame Studio 0.1.0 Preview 3](https://github.com/kris70lesgo/frame-studio/releases/tag/v0.1.0-preview.3).
 - Local package: `dist/FrameStudio-win-x64.zip` (ignored build output; identical to the uploaded preview asset).
 - Rebuild it with `python3 scripts/package-windows-candidate.py`; this reads the Frame Studio version from MSBuild, includes the README and license, checks archive contents, and writes the matching `.sha256` file.
-- Source revision: `efb2666c`; Frame Studio `0.1.0`, self-contained `win-x64` publish using .NET SDK `9.0.318` on macOS arm64.
-- SHA-256: `eaa7d1e2a2b54dbc9890a1ea7419971ab0d1ec81c786551447e071e007e720e8` (also written to `dist/FrameStudio-win-x64.zip.sha256` and uploaded with the preview release).
-- The package script and an independent `unzip -t` check both confirmed archive integrity. A separate SHA-256 calculation matched the checksum file; GitHub reports the same ZIP digest after upload. The archive contains the executable, package README, and complete MS-PL license. Its README identifies the commit and macOS build host and explicitly says Windows execution, capture, mixed-DPI selection, and end-to-end workflow are unverified.
+- Source revision: `5184f661`; Frame Studio `0.1.0`, self-contained `win-x64` publish using .NET SDK `9.0.318` on macOS arm64.
+- SHA-256: `de2c97b7ff8a63d1fd0be7ba62c30a502d6b8b3797389cec02e65a910cc9fb65` (also written to `dist/FrameStudio-win-x64.zip.sha256` and uploaded with the preview release).
+- The package script and an independent `unzip -t` check both confirmed archive integrity. A separate SHA-256 calculation matched the checksum file; GitHub reports the same ZIP digest after upload. The archive contains the executable, package README, and complete MS-PL license. Its README identifies the commit and macOS build host and explicitly says Windows execution, capture, mixed-DPI selection, and end-to-end workflow are unverified. The [hosted CI run](https://github.com/kris70lesgo/frame-studio/actions/runs/37146520922) passed its macOS build/test, Windows build/test, and Windows x64 publishing jobs for this revision.
 
 ## Automated desktop check
 

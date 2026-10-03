@@ -109,7 +109,7 @@ Frame Studio is an independent Avalonia port based on ScreenToGif. It is not the
     CHECKSUM_FILE.write_text(f"{digest}  {ARCHIVE.name}\n", encoding="ascii")
     print(f"Package: {ARCHIVE}")
     print(f"SHA-256: {digest}")
-    print("Status: local development candidate; Windows runtime validation is still required.")
+    print("Status: preview package built; Windows runtime validation is still required.")
 
 
 if __name__ == "__main__":
