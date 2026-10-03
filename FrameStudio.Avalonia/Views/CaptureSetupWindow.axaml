@@ -1,0 +1,67 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:platform="using:FrameStudio.Platform.Abstractions"
+        x:Class="FrameStudio.Avalonia.Views.CaptureSetupWindow"
+        Title="Set up screen recording"
+        Width="520" Height="480" MinWidth="480" MinHeight="450"
+        WindowStartupLocation="CenterOwner"
+        CanResize="False"
+        Background="{DynamicResource BackgroundPrimary}"
+        FontFamily="Inter, Segoe UI, sans-serif">
+    <Border Padding="27">
+        <Grid RowDefinitions="Auto,Auto,Auto,Auto,*,Auto" RowSpacing="18">
+            <StackPanel Spacing="5">
+                <TextBlock Text="RECORD A SCREEN" Classes="Caption" />
+                <TextBlock Text="Set up your capture" Classes="Title" FontSize="22" />
+                <TextBlock Text="Choose a display, then drag around the content you want to record."
+                           Classes="Body" FontSize="12" TextWrapping="Wrap" />
+            </StackPanel>
+
+            <StackPanel Grid.Row="1" Spacing="7">
+                <TextBlock Text="Display" Classes="Caption" />
+                <ComboBox x:Name="MonitorPicker" MinHeight="40" SelectionChanged="MonitorPicker_OnSelectionChanged">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate x:DataType="platform:MonitorDescriptor">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <TextBlock Text="{Binding Name}" Foreground="{DynamicResource TextPrimary}" />
+                                <TextBlock Text="Primary" Classes="Caption" IsVisible="{Binding IsPrimary}" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+            </StackPanel>
+
+            <Border Grid.Row="2" Padding="14" CornerRadius="10" Background="{DynamicResource Surface}"
+                    BorderBrush="{DynamicResource Border}" BorderThickness="1">
+                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12" VerticalAlignment="Center">
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Capture area" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" />
+                        <TextBlock x:Name="RegionLabel" Text="Full display" FontSize="11" Foreground="{DynamicResource TextSecondary}" />
+                    </StackPanel>
+                    <Button Grid.Column="1" Classes="quiet-button" Click="ChooseArea_OnClick" Content="Choose area" />
+                </Grid>
+            </Border>
+
+            <Grid Grid.Row="3" ColumnDefinitions="*,Auto" ColumnSpacing="15" VerticalAlignment="Center">
+                <StackPanel Spacing="4">
+                    <TextBlock Text="Frame rate" Classes="Caption" />
+                    <Slider x:Name="FrameRateSlider" Minimum="10" Maximum="60" Value="30" TickFrequency="10"
+                            IsSnapToTickEnabled="True" ValueChanged="FrameRateSlider_OnValueChanged" />
+                </StackPanel>
+                <Border Grid.Column="1" Padding="10,7" CornerRadius="7" Background="{DynamicResource SurfaceRaised}"
+                        BorderBrush="{DynamicResource Border}" BorderThickness="1">
+                    <TextBlock x:Name="FrameRateLabel" Text="30 FPS" FontFamily="Consolas" FontSize="11"
+                               Foreground="{DynamicResource TextPrimary}" />
+                </Border>
+            </Grid>
+
+            <CheckBox Grid.Row="4" x:Name="CaptureCursorCheckBox" Content="Include the pointer" IsChecked="True"
+                      VerticalAlignment="Top" FontSize="12" Foreground="{DynamicResource TextSecondary}" />
+
+            <StackPanel Grid.Row="5" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="9">
+                <Button Classes="quiet-button" Click="Cancel_OnClick" Content="Cancel" />
+                <Button Classes="primary-button" Click="Start_OnClick" Content="Continue to save location" />
+            </StackPanel>
+        </Grid>
+    </Border>
+</Window>

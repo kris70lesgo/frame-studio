@@ -38,9 +38,6 @@ public sealed class FrameProjectArchiveWriter : IAsyncDisposable
         cancellationToken.ThrowIfCancellationRequested();
 
         var fullPath = Path.GetFullPath(destinationPath);
-        if (File.Exists(fullPath))
-            throw new IOException($"A project already exists at '{fullPath}'.");
-
         var directory = Path.GetDirectoryName(fullPath)!;
         Directory.CreateDirectory(directory);
         var temporaryPath = Path.Combine(directory, $".{Path.GetFileName(fullPath)}.{Guid.NewGuid():N}.partial");
@@ -91,7 +88,7 @@ public sealed class FrameProjectArchiveWriter : IAsyncDisposable
         _archive.Dispose();
         await _fileStream.FlushAsync(cancellationToken).ConfigureAwait(false);
         await _fileStream.DisposeAsync().ConfigureAwait(false);
-        File.Move(_temporaryPath, _destinationPath);
+        File.Move(_temporaryPath, _destinationPath, overwrite: true);
         _completed = true;
         return project;
     }
@@ -128,7 +125,7 @@ public static class FrameProjectArchiveReader
     public static async ValueTask<FrameProject> ReadProjectAsync(string projectPath, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(projectPath);
-        await using var stream = new FileStream(projectPath, FileMode.Open, FileAccess.Read, FileShare.Read, 64 * 1024, useAsync: true);
+        await using var stream = new FileStream(projectPath, FileMode.Open, FileAccess.Read, FileShare.Read | FileShare.Delete, 64 * 1024, useAsync: true);
         using var archive = new ZipArchive(stream, ZipArchiveMode.Read, leaveOpen: false);
         var entry = archive.GetEntry(ManifestName) ?? throw new InvalidDataException("Project manifest is missing.");
         if (entry.Length > 32 * 1024 * 1024)
@@ -161,7 +158,7 @@ public static class FrameProjectArchiveReader
 
         var frame = project.Frames[index];
         var expectedLength = checked(project.CanvasSize.Width * project.CanvasSize.Height * 4);
-        await using var stream = new FileStream(projectPath, FileMode.Open, FileAccess.Read, FileShare.Read, 64 * 1024, useAsync: true);
+        await using var stream = new FileStream(projectPath, FileMode.Open, FileAccess.Read, FileShare.Read | FileShare.Delete, 64 * 1024, useAsync: true);
         using var archive = new ZipArchive(stream, ZipArchiveMode.Read, leaveOpen: false);
         var entry = archive.GetEntry(FrameProjectArchiveWriter.GetFrameEntryName(index))
             ?? throw new InvalidDataException($"Frame data for frame {index} is missing.");
@@ -172,5 +169,33 @@ public static class FrameProjectArchiveReader
         await using var input = entry.Open();
         await input.ReadExactlyAsync(pixels, cancellationToken).ConfigureAwait(false);
         return pixels;
+    }
+}
+
+public static class FrameProjectArchiveEditor
+{
+    public static async ValueTask<FrameProject> RewriteAsync(string sourcePath, string destinationPath, FrameProject project,
+        IReadOnlyList<ProjectFrameReference> frames, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(project);
+        ArgumentNullException.ThrowIfNull(frames);
+        if (frames.Count is < 1 or > 100_000)
+            throw new ArgumentOutOfRangeException(nameof(frames), "An edited project must contain between 1 and 100,000 frames.");
+
+        await using var writer = await FrameProjectArchiveWriter.CreateAsync(destinationPath, project.Name, project.CanvasSize, cancellationToken)
+            .ConfigureAwait(false);
+        foreach (var frame in frames)
+        {
+            if ((uint)frame.SourceFrameIndex >= (uint)project.Frames.Count)
+                throw new ArgumentOutOfRangeException(nameof(frames), "An edited frame refers to a missing source frame.");
+            if (frame.DurationMilliseconds <= 0)
+                throw new ArgumentOutOfRangeException(nameof(frames), "Edited frame durations must be positive.");
+
+            var pixels = await FrameProjectArchiveReader.ReadFrameRgbaAsync(sourcePath, project, frame.SourceFrameIndex, cancellationToken)
+                .ConfigureAwait(false);
+            await writer.WriteFrameAsync(project.CanvasSize, pixels, frame.DurationMilliseconds, cancellationToken).ConfigureAwait(false);
+        }
+
+        return await writer.CompleteAsync(cancellationToken).ConfigureAwait(false);
     }
 }

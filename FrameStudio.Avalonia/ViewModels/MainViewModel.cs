@@ -16,14 +16,21 @@ public partial class MainViewModel : ObservableObject
 
     public IReadOnlyList<CaptureCapability> CaptureCapabilities { get; }
 
-    public string CaptureStatus { get; }
+    public IScreenCaptureService? ScreenCaptureService { get; }
+    public bool IsScreenCaptureAvailable => ScreenCaptureService is not null;
 
-    public MainViewModel(IPlatformCapabilityProvider capabilityProvider)
+    [ObservableProperty]
+    private string _captureStatus = string.Empty;
+
+    public MainViewModel(IPlatformCapabilityProvider capabilityProvider, IScreenCaptureService? screenCaptureService = null)
     {
+        ScreenCaptureService = screenCaptureService;
         CaptureCapabilities = capabilityProvider.GetCaptureCapabilities();
-        CaptureStatus = CaptureCapabilities.FirstOrDefault()?.Detail
+        _captureStatus = CaptureCapabilities.FirstOrDefault()?.Detail
             ?? "No capture sources are configured in this build.";
     }
+
+    public void ReportCaptureStatus(string status) => CaptureStatus = status;
 
     [RelayCommand]
     private void ToggleTheme()

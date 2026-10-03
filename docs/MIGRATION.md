@@ -32,6 +32,16 @@ This log records the independent Avalonia port of ScreenToGif. The port uses new
 - Added the `.fsp` project archive with per-frame compressed RGBA entries, timing/dimension manifest, frame reads, and atomic completion. Added a project-to-GIF export service using the migrated encoder; Core round-trip/export tests pass. The editor is not yet wired to these services.
 - Strategy: prioritize the Legacy Revival and Everyday Tool categories through a complete, useful Windows workflow. Cross-platform judging is valuable, but only claim targets that have runnable builds and real platform capture support. The write-up and Windows before/after captures are required submission work, not optional polish.
 
+## 2026-10-03 — Recording, editor, and GIF workflow
+
+- Wired the Windows display and region setup into the home screen. The setup lets the user choose a display or drag a region, choose a frame rate, and include the pointer. The recorder drains a bounded capture queue into a compressed `.fsp` archive and supports pause, resume, and stop.
+- Added an editor window with lazy frame thumbnails, preview, timed playback, frame selection, move earlier/later, duplicate/delete, per-frame duration changes, and save back to the project. The GIF export action exports the edited selection using its edited frame order and durations.
+- Added archive rewriting so project edits are saved atomically, plus bounded validation for canvas dimensions, frame count, and GIF options. The archive and export tests cover a save/reopen/edit/export round trip.
+- The GIF encoder and archive layers remain in `FrameStudio.Core`; Avalonia bitmap conversion lives at the view edge. The Windows platform service is only registered on Windows, so non-Windows builds do not present a nonfunctional capture action.
+- `dotnet build FrameStudio.sln --configuration Debug` succeeded with no warnings or errors. `dotnet test FrameStudio.sln --configuration Debug` passed 10 tests. Self-contained Release publishes succeeded for macOS arm64 and Windows x64; the Windows package is cross-compiled and has not been run on Windows.
+- Windows GDI capture has only been cross-compiled here; it still requires Windows runtime validation. An attempt to launch the new Avalonia UI in the background on this macOS host terminated in Avalonia.Native's render timer before exposing a window, so this milestone has not had a fresh visual UI smoke check. The earlier shell screenshot remains an early-shell capture only.
+- The current port does not yet implement window recording, webcam, sketchboard, crop, resize, annotations, or video export. Frame reordering uses explicit earlier/later controls; drag-to-reorder is not implemented. These limits should be explicit in any challenge write-up.
+
 ## Migration decisions
 
 - Keep the original WPF projects intact as the baseline and source reference.

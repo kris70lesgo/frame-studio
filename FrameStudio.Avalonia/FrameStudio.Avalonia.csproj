@@ -26,5 +26,6 @@
   <ItemGroup>
     <ProjectReference Include="..\FrameStudio.Core\FrameStudio.Core.csproj" />
     <ProjectReference Include="..\FrameStudio.Platform.Abstractions\FrameStudio.Platform.Abstractions.csproj" />
+    <ProjectReference Include="..\FrameStudio.Platform.Windows\FrameStudio.Platform.Windows.csproj" />
   </ItemGroup>
 </Project>

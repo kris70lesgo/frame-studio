@@ -9,6 +9,21 @@ public sealed class GifExportService
     public async ValueTask ExportAsync(string projectPath, string destinationPath, GifExportOptions? options = null,
         CancellationToken cancellationToken = default)
     {
+        await ExportCoreAsync(projectPath, destinationPath, null, options, cancellationToken).ConfigureAwait(false);
+    }
+
+    public async ValueTask ExportSelectionAsync(string projectPath, string destinationPath,
+        IReadOnlyList<ProjectFrameReference> frames, GifExportOptions? options = null,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(frames);
+        await ExportCoreAsync(projectPath, destinationPath, frames, options, cancellationToken).ConfigureAwait(false);
+    }
+
+    private static async ValueTask ExportCoreAsync(string projectPath, string destinationPath,
+        IReadOnlyList<ProjectFrameReference>? frameSelection, GifExportOptions? options,
+        CancellationToken cancellationToken)
+    {
         ArgumentException.ThrowIfNullOrWhiteSpace(projectPath);
         ArgumentException.ThrowIfNullOrWhiteSpace(destinationPath);
         options ??= new GifExportOptions();
@@ -18,6 +33,16 @@ public sealed class GifExportService
             throw new ArgumentOutOfRangeException(nameof(options), "Repeat count must be -1 (no loop), 0 (forever), or at most 65,535.");
 
         var project = await FrameProjectArchiveReader.ReadProjectAsync(projectPath, cancellationToken).ConfigureAwait(false);
+        var frames = frameSelection ?? project.Frames
+            .Select(frame => new ProjectFrameReference(frame.Index, frame.DurationMilliseconds)).ToArray();
+        if (frames.Count is < 1 or > 100_000)
+            throw new ArgumentOutOfRangeException(nameof(frameSelection), "GIF export requires between 1 and 100,000 frames.");
+        foreach (var frame in frames)
+        {
+            if ((uint)frame.SourceFrameIndex >= (uint)project.Frames.Count || frame.DurationMilliseconds <= 0)
+                throw new ArgumentException("The GIF frame selection contains an invalid source index or duration.", nameof(frameSelection));
+        }
+
         var fullDestination = Path.GetFullPath(destinationPath);
         var directory = Path.GetDirectoryName(fullDestination)!;
         Directory.CreateDirectory(directory);
@@ -36,14 +61,14 @@ public sealed class GifExportService
 
                 try
                 {
-                    for (var index = 0; index < project.Frames.Count; index++)
+                    for (var index = 0; index < frames.Count; index++)
                     {
                         cancellationToken.ThrowIfCancellationRequested();
-                        var descriptor = project.Frames[index];
-                        var pixels = await FrameProjectArchiveReader.ReadFrameRgbaAsync(projectPath, project, index, cancellationToken).ConfigureAwait(false);
-                        var boundedDelay = Math.Clamp(descriptor.DurationMilliseconds, 10, 655_350);
+                        var frame = frames[index];
+                        var pixels = await FrameProjectArchiveReader.ReadFrameRgbaAsync(projectPath, project, frame.SourceFrameIndex, cancellationToken).ConfigureAwait(false);
+                        var boundedDelay = Math.Clamp(frame.DurationMilliseconds, 10, 655_350);
                         encoder.AddFrame(pixels, new PixelRect(0, 0, project.CanvasSize.Width, project.CanvasSize.Height),
-                            boundedDelay, index == project.Frames.Count - 1);
+                            boundedDelay, index == frames.Count - 1);
                     }
                 }
                 finally

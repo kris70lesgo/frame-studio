@@ -8,27 +8,27 @@ This is an independent project. It is not the official ScreenToGif application a
 
 ## Current status
 
-The Avalonia shell is implemented and launches on macOS. A Windows GDI backend now enumerates monitors/windows and provides a pauseable, bounded screen-region recording session behind the platform contracts. Capture actions remain disabled while the backend is connected to the recording, project, editor, and export workflow.
+The Avalonia app now connects Windows screen-region recording to a native `.fsp` project, a frame editor, and GIF export. The Win32/GDI capture backend is implemented and wired into the UI, but its runtime behavior still needs validation on Windows. macOS builds and core tests work; screen capture is Windows-only.
 
 | Area | Status |
 | --- | --- |
-| Avalonia home shell | Implemented; builds and launches |
+| Avalonia home shell | Implemented; builds; early macOS shell capture included below |
 | Dark and light appearance | Implemented |
 | Neutral frame/project foundation | Frame model and compressed `.fsp` archive read/write implemented |
 | Platform service contracts | Defined |
-| Windows screen and window capture backend | Implemented; Windows runtime still needs verification |
-| End-to-end recording workflow | In progress; not wired into the UI yet |
-| Webcam and sketchboard | Not migrated yet |
-| Editor playback and timeline | Not migrated yet |
-| GIF export engine | Reused in Core; project-to-GIF service implemented, UI pending |
-| Video export | Not migrated yet |
-| Windows platform adapter | Initial monitor/window enumeration and desktop-region capture implemented |
+| Windows screen-region capture | Setup, display selection, area selection, frame rate, cursor option, pause, and stop are wired; Windows runtime still needs verification |
+| End-to-end recording workflow | Records frames into `.fsp` projects and opens the editor when recording stops |
+| Editor | Frame thumbnails, preview/playback, selection, earlier/later ordering, duplicate/delete, duration edits, and project save implemented |
+| GIF export | Migrated encoder and editor export flow implemented |
+| Webcam, window capture, sketchboard | Not migrated yet |
+| Crop, resize, annotations, video export | Not migrated yet |
+| Windows platform adapter | Win32 monitor/window enumeration and bounded GDI desktop-region recording implemented; runtime needs Windows verification |
 
 The original WPF application remains in this repository as the baseline in `GifRecorder.sln`. The new application is in `FrameStudio.sln` and does not reference the WPF UI projects.
 
 ## Shell preview
 
-This macOS capture documents the current Avalonia shell only. It is not a Windows before/after comparison, and its capture actions remain disabled until the recording adapter is implemented.
+This macOS capture documents an early Avalonia shell only. It is not a Windows before/after comparison, and it predates the recording and editor workflow shown in the status table.
 
 ![Frame Studio early home shell on macOS](docs/before-after/after-home-shell-macos.png)
 
@@ -36,7 +36,7 @@ This macOS capture documents the current Avalonia shell only. It is not a Window
 
 Requirements: .NET SDK 9.0.318 or a compatible .NET 9 feature-band SDK, with NuGet access for the Avalonia packages.
 
-The Avalonia UI targets Windows, macOS, and Linux; this shell has been built and launched on macOS arm64. The capture backend uses Windows GDI and is not available on macOS or Linux. Editing and export are not yet implemented. Windows is the first target for the full recording workflow.
+The Avalonia UI uses the desktop Avalonia stack. This branch has a local macOS arm64 publish and a Windows x64 cross-publish; neither is a released challenge download, and only Windows has a capture backend. Core project editing and GIF export are platform-neutral. The full recording workflow must be exercised on Windows before claiming a verified Windows release; no macOS or Linux capture support is claimed.
 
 ```sh
 dotnet build FrameStudio.sln

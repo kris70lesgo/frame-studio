@@ -1,0 +1,44 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="FrameStudio.Avalonia.Views.RegionSelectorWindow"
+        Width="800" Height="600"
+        WindowStartupLocation="Manual"
+        WindowState="FullScreen"
+        WindowDecorations="None"
+        ShowInTaskbar="False"
+        Topmost="True"
+        Background="Transparent"
+        TransparencyLevelHint="Transparent"
+        KeyDown="RegionSelector_OnKeyDown">
+    <Grid>
+        <Canvas x:Name="SelectionCanvas" Background="#65070B11"
+                PointerPressed="SelectionCanvas_OnPointerPressed"
+                PointerMoved="SelectionCanvas_OnPointerMoved"
+                PointerReleased="SelectionCanvas_OnPointerReleased">
+            <Border x:Name="SelectionVisual" IsVisible="False" BorderBrush="{DynamicResource Accent}"
+                    BorderThickness="2" Background="#2478D8BC" />
+        </Canvas>
+
+        <Border HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,28,0,0" Padding="16,11"
+                CornerRadius="9" Background="{DynamicResource BackgroundSecondary}"
+                BorderBrush="{DynamicResource Border}" BorderThickness="1" IsHitTestVisible="False">
+            <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                <Ellipse Width="7" Height="7" Fill="{DynamicResource Accent}" />
+                <TextBlock Text="DRAG TO SELECT AN AREA" Classes="Caption" Foreground="{DynamicResource TextPrimary}" />
+                <Border Width="1" Height="16" Background="{DynamicResource Border}" Margin="2,0" />
+                <TextBlock Text="Esc to cancel" FontSize="10" Foreground="{DynamicResource TextSecondary}" />
+            </StackPanel>
+        </Border>
+
+        <Border HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,27" Padding="12,10"
+                CornerRadius="10" Background="{DynamicResource BackgroundSecondary}"
+                BorderBrush="{DynamicResource Border}" BorderThickness="1">
+            <StackPanel Orientation="Horizontal" Spacing="13" VerticalAlignment="Center">
+                <TextBlock x:Name="SizeLabel" Text="Drag to select an area" FontFamily="Consolas" FontSize="11"
+                           VerticalAlignment="Center" Foreground="{DynamicResource TextSecondary}" />
+                <Button Classes="quiet-button" Click="Cancel_OnClick" Content="Cancel" />
+                <Button Classes="primary-button" Click="Confirm_OnClick" Content="Use area" />
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>

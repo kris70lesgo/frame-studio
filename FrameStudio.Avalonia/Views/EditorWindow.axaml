@@ -1,0 +1,173 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:FrameStudio.Avalonia.ViewModels"
+        x:Class="FrameStudio.Avalonia.Views.EditorWindow"
+        x:DataType="vm:EditorViewModel"
+        Title="Frame Studio editor"
+        Width="1440" Height="940" MinWidth="1100" MinHeight="720"
+        WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource BackgroundPrimary}"
+        FontFamily="Inter, Segoe UI, sans-serif"
+        Loaded="Editor_OnLoaded">
+    <Grid RowDefinitions="58,*,214">
+        <Border Grid.Row="0" Background="{DynamicResource BackgroundPrimary}"
+                BorderBrush="{DynamicResource Border}" BorderThickness="0,0,0,1">
+            <Grid ColumnDefinitions="Auto,*,Auto,Auto" Margin="22,0" ColumnSpacing="16" VerticalAlignment="Center">
+                <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                    <Grid Width="27" Height="27">
+                        <Border Width="16" Height="16" CornerRadius="5" BorderThickness="1.6" BorderBrush="{DynamicResource Accent}"
+                                HorizontalAlignment="Left" VerticalAlignment="Top" />
+                        <Border Width="16" Height="16" CornerRadius="5" BorderThickness="1.6" BorderBrush="{DynamicResource AccentStrong}"
+                                HorizontalAlignment="Right" VerticalAlignment="Bottom" />
+                    </Grid>
+                    <TextBlock Text="FRAME STUDIO" Classes="Caption" Foreground="{DynamicResource TextPrimary}" />
+                </StackPanel>
+                <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding ProjectName}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" />
+                    <TextBlock Text="{Binding CanvasLabel}" FontSize="10" Foreground="{DynamicResource TextTertiary}" />
+                </StackPanel>
+                <Button Grid.Column="2" Classes="quiet-button" Command="{Binding SaveProjectCommand}"
+                        IsEnabled="{Binding CanSave}" AutomationProperties.Name="Save edited project">
+                    <StackPanel Orientation="Horizontal" Spacing="7">
+                        <TextBlock Text="↧" FontSize="15" />
+                        <TextBlock Text="Save" FontSize="12" />
+                    </StackPanel>
+                </Button>
+                <Button Grid.Column="3" Classes="primary-button" Click="ExportGif_OnClick"
+                        IsEnabled="{Binding CanEdit}" AutomationProperties.Name="Export animation as GIF">
+                    <StackPanel Orientation="Horizontal" Spacing="7">
+                        <TextBlock Text="↗" FontSize="14" />
+                        <TextBlock Text="Export GIF" FontSize="12" />
+                    </StackPanel>
+                </Button>
+            </Grid>
+        </Border>
+
+        <Grid Grid.Row="1" ColumnDefinitions="70,*,264">
+            <Border Grid.Column="0" Background="{DynamicResource BackgroundSecondary}"
+                    BorderBrush="{DynamicResource Border}" BorderThickness="0,0,1,0">
+                <StackPanel Margin="9,17" Spacing="7">
+                    <Button Classes="tool-button selected" ToolTip.Tip="Frame selection">
+                        <TextBlock Text="↖" FontSize="17" />
+                    </Button>
+                    <Button Classes="tool-button" IsEnabled="False" ToolTip.Tip="Crop will be ported in the next editor milestone">
+                        <TextBlock Text="⌗" FontSize="16" />
+                    </Button>
+                    <Button Classes="tool-button" IsEnabled="False" ToolTip.Tip="Resize will be ported in the next editor milestone">
+                        <TextBlock Text="□" FontSize="16" />
+                    </Button>
+                    <Border Height="1" Margin="6,5" Background="{DynamicResource Border}" />
+                    <Button Classes="tool-button" IsEnabled="False" ToolTip.Tip="Text and drawing tools are planned">
+                        <TextBlock Text="T" FontSize="14" FontWeight="SemiBold" />
+                    </Button>
+                </StackPanel>
+            </Border>
+
+            <Grid Grid.Column="1" RowDefinitions="*,Auto" Background="{DynamicResource BackgroundPrimary}">
+                <Border Margin="24" CornerRadius="10" Background="#080B0D" BorderBrush="{DynamicResource Border}" BorderThickness="1">
+                    <Grid>
+                        <Image x:Name="PreviewImage" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        <Border HorizontalAlignment="Left" VerticalAlignment="Top" Margin="12" Padding="9,6" CornerRadius="5"
+                                Background="{DynamicResource SurfaceRaised}" BorderBrush="{DynamicResource Border}" BorderThickness="1">
+                            <TextBlock Text="PREVIEW" Classes="Caption" FontSize="9" Foreground="{DynamicResource TextSecondary}" />
+                        </Border>
+                        <TextBlock x:Name="PreviewEmptyText" Text="Select a frame to preview" HorizontalAlignment="Center"
+                                   VerticalAlignment="Center" IsVisible="True" Foreground="{DynamicResource TextTertiary}" FontSize="13" />
+                    </Grid>
+                </Border>
+                <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,13">
+                    <Button x:Name="PlayButton" Classes="quiet-button" Click="Play_OnClick" Content="▶ Play" />
+                </StackPanel>
+            </Grid>
+
+            <Border Grid.Column="2" Padding="19" Background="{DynamicResource BackgroundSecondary}"
+                    BorderBrush="{DynamicResource Border}" BorderThickness="1,0,0,0">
+                <Grid RowDefinitions="Auto,Auto,Auto,*,Auto" RowSpacing="18">
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="INSPECTOR" Classes="Caption" />
+                        <TextBlock Text="Frame properties" Classes="Title" FontSize="16" />
+                    </StackPanel>
+                    <Border Grid.Row="1" Padding="12" CornerRadius="8" Background="{DynamicResource Surface}"
+                            BorderBrush="{DynamicResource Border}" BorderThickness="1">
+                        <StackPanel Spacing="5">
+                            <TextBlock Text="{Binding SelectedFrameNumberLabel}" FontSize="12" FontWeight="SemiBold"
+                                       Foreground="{DynamicResource TextPrimary}" />
+                            <TextBlock Text="{Binding CanvasLabel}" FontSize="11" Foreground="{DynamicResource TextSecondary}" />
+                        </StackPanel>
+                    </Border>
+                    <StackPanel Grid.Row="2" Spacing="7">
+                        <TextBlock Text="Duration" Classes="Caption" />
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                            <TextBox Text="{Binding DurationText, Mode=TwoWay}" PlaceholderText="Milliseconds" />
+                            <Button Grid.Column="1" Classes="quiet-button" Command="{Binding ApplyDurationCommand}"
+                                    IsEnabled="{Binding CanEdit}" Content="Apply" />
+                        </Grid>
+                    </StackPanel>
+                    <StackPanel Grid.Row="4" Spacing="8">
+                        <Grid ColumnDefinitions="*,*" ColumnSpacing="7">
+                            <Button Classes="quiet-button" Command="{Binding MoveSelectedFrameEarlierCommand}"
+                                    IsEnabled="{Binding CanMoveSelectedEarlier}" Content="Move earlier" />
+                            <Button Grid.Column="1" Classes="quiet-button" Command="{Binding MoveSelectedFrameLaterCommand}"
+                                    IsEnabled="{Binding CanMoveSelectedLater}" Content="Move later" />
+                        </Grid>
+                        <Button Classes="quiet-button" Command="{Binding DuplicateSelectedFrameCommand}"
+                                IsEnabled="{Binding CanEdit}" Content="Duplicate frame" />
+                        <Button Classes="quiet-button destructive-button" Command="{Binding DeleteSelectedFrameCommand}"
+                                IsEnabled="{Binding CanEdit}" Content="Delete frame" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <Border Grid.Row="2" Background="{DynamicResource BackgroundSecondary}"
+                BorderBrush="{DynamicResource Border}" BorderThickness="0,1,0,0">
+            <Grid RowDefinitions="Auto,*" Margin="17,12,17,12" RowSpacing="8">
+                <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="12" VerticalAlignment="Center">
+                    <TextBlock Text="TIMELINE" Classes="Caption" Foreground="{DynamicResource TextPrimary}" />
+                    <TextBlock Grid.Column="1" Text="{Binding Status}" FontSize="10" Foreground="{DynamicResource TextTertiary}"
+                               VerticalAlignment="Center" />
+                    <TextBlock Grid.Column="2" Text="{Binding Frames.Count, StringFormat='{}{0} FRAMES'}" Classes="Caption" FontSize="9" />
+                    <TextBlock Grid.Column="3" Text="Clip" FontSize="10" Foreground="{DynamicResource TextSecondary}" />
+                </Grid>
+                <ListBox Grid.Row="1" x:Name="TimelineList" ItemsSource="{Binding Frames}"
+                         SelectedItem="{Binding SelectedFrame, Mode=TwoWay}" SelectionChanged="Timeline_OnSelectionChanged"
+                         ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                         SelectionMode="Single" Background="Transparent" BorderThickness="0">
+                    <ListBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                            <VirtualizingStackPanel Orientation="Horizontal" />
+                    </ItemsPanelTemplate>
+                    </ListBox.ItemsPanel>
+                    <ListBox.ItemTemplate>
+                        <DataTemplate x:DataType="vm:TimelineFrameViewModel">
+                            <Grid Width="112" Height="104" Margin="0,0,8,0">
+                                <Border Padding="9" CornerRadius="8" Background="{DynamicResource Surface}"
+                                        BorderBrush="{DynamicResource Border}" BorderThickness="1">
+                                    <Grid RowDefinitions="*,Auto" RowSpacing="8">
+                                    <Border Background="#080B0D" CornerRadius="5">
+                                        <Grid>
+                                            <Image Width="92" Height="58" Stretch="Uniform" Loaded="TimelineThumbnail_OnLoaded"
+                                                   Unloaded="TimelineThumbnail_OnUnloaded" />
+                                            <Border HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5" Padding="4,2"
+                                                    CornerRadius="3" Background="#CC080B0D">
+                                                <TextBlock Text="{Binding FrameLabel}" FontFamily="Consolas" FontSize="9" FontWeight="SemiBold"
+                                                           Foreground="{DynamicResource TextPrimary}" />
+                                            </Border>
+                                        </Grid>
+                                    </Border>
+                                    <Grid Grid.Row="1" ColumnDefinitions="*,Auto">
+                                        <TextBlock Text="{Binding DurationLabel}" FontSize="9" Foreground="{DynamicResource TextSecondary}" />
+                                        <Ellipse Grid.Column="1" Width="5" Height="5" Fill="{DynamicResource Accent}" VerticalAlignment="Center" />
+                                    </Grid>
+                                    </Grid>
+                                </Border>
+                                <Border CornerRadius="8" BorderBrush="{DynamicResource Accent}" BorderThickness="2"
+                                        IsVisible="{Binding IsSelected}" IsHitTestVisible="False" />
+                            </Grid>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

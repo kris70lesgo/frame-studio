@@ -109,6 +109,16 @@ public sealed class FrameProjectTests
             var loadedPixels = await FrameProjectArchiveReader.ReadFrameRgbaAsync(projectPath, loadedProject, 1);
             Assert.Equal(blueFrame, loadedPixels);
 
+            var editedProject = await FrameProjectArchiveEditor.RewriteAsync(projectPath, projectPath, loadedProject,
+            [
+                new ProjectFrameReference(1, 90),
+                new ProjectFrameReference(0, 110),
+                new ProjectFrameReference(1, 130)
+            ]);
+            Assert.Equal(3, editedProject.Frames.Count);
+            Assert.Equal(TimeSpan.FromMilliseconds(330), editedProject.Duration);
+            Assert.Equal(blueFrame, await FrameProjectArchiveReader.ReadFrameRgbaAsync(projectPath, editedProject, 2));
+
             await new GifExportService().ExportAsync(projectPath, gifPath, new GifExportOptions(RepeatCount: 0));
             var gif = await File.ReadAllBytesAsync(gifPath);
             Assert.Equal("GIF89a", System.Text.Encoding.ASCII.GetString(gif, 0, 6));

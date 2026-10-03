@@ -4,6 +4,7 @@ using Avalonia.Markup.Xaml;
 using FrameStudio.Avalonia.Services;
 using FrameStudio.Avalonia.ViewModels;
 using FrameStudio.Avalonia.Views;
+using FrameStudio.Platform.Windows;
 
 namespace FrameStudio.Avalonia;
 
@@ -18,9 +19,12 @@ public partial class App : Application
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            desktop.MainWindow = new MainWindow
+            var projectPath = desktop.Args?.FirstOrDefault(argument =>
+                string.Equals(Path.GetExtension(argument), ".fsp", StringComparison.OrdinalIgnoreCase) && File.Exists(argument));
+            desktop.MainWindow = new MainWindow(projectPath)
             {
-                DataContext = new MainViewModel(new ShellCapabilityProvider()),
+                DataContext = new MainViewModel(new ShellCapabilityProvider(),
+                    OperatingSystem.IsWindows() ? new WindowsPlatformServices() : null),
             };
         }
 

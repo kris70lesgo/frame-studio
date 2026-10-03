@@ -7,3 +7,6 @@ public sealed record FrameDescriptor(
     PixelRect Bounds,
     string? SourcePath = null,
     long DataLength = 0);
+
+/// <summary>One editable timeline item linked to the source frame pixels in an archive.</summary>
+public sealed record ProjectFrameReference(int SourceFrameIndex, int DurationMilliseconds);

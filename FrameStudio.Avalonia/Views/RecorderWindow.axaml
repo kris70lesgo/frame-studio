@@ -1,0 +1,64 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:FrameStudio.Avalonia.ViewModels"
+        x:Class="FrameStudio.Avalonia.Views.RecorderWindow"
+        x:DataType="vm:RecordingViewModel"
+        Title="Frame Studio recorder"
+        Width="440" Height="218" MinWidth="440" MinHeight="218"
+        CanResize="False"
+        WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource BackgroundPrimary}"
+        FontFamily="Inter, Segoe UI, sans-serif">
+    <Border Padding="22" Background="{DynamicResource BackgroundPrimary}"
+            BorderBrush="{DynamicResource Border}" BorderThickness="1">
+        <Grid RowDefinitions="Auto,Auto,*,Auto" RowSpacing="13">
+            <StackPanel Orientation="Horizontal" Spacing="9" VerticalAlignment="Center">
+                <Border Width="28" Height="28" CornerRadius="8" Background="{DynamicResource SurfaceRaised}">
+                    <Ellipse Width="9" Height="9" Fill="{DynamicResource Destructive}"
+                             HorizontalAlignment="Center" VerticalAlignment="Center" />
+                </Border>
+                <StackPanel Spacing="2">
+                    <TextBlock Text="FRAME STUDIO" Classes="Caption" Foreground="{DynamicResource TextPrimary}" />
+                    <TextBlock Text="Screen recording" FontSize="11" Foreground="{DynamicResource TextSecondary}" />
+                </StackPanel>
+                <TextBlock Grid.Column="1" Text="{Binding FrameRateLabel}" FontFamily="Consolas" FontSize="10"
+                           Foreground="{DynamicResource TextTertiary}" VerticalAlignment="Center" />
+            </StackPanel>
+
+            <Grid Grid.Row="1" ColumnDefinitions="*,Auto,Auto" VerticalAlignment="Center">
+                <StackPanel Spacing="2">
+                    <TextBlock Text="{Binding ElapsedLabel}" FontSize="27" FontWeight="SemiBold"
+                               FontFamily="Consolas" Foreground="{DynamicResource TextPrimary}" />
+                    <TextBlock Text="{Binding Status}" FontSize="11" Foreground="{DynamicResource TextSecondary}" />
+                </StackPanel>
+                <Border Grid.Column="1" Padding="11,8" CornerRadius="8" Background="{DynamicResource Surface}"
+                        BorderBrush="{DynamicResource Border}" BorderThickness="1" VerticalAlignment="Center">
+                    <StackPanel Spacing="2" HorizontalAlignment="Center">
+                        <TextBlock Text="{Binding FrameCount}" FontFamily="Consolas" FontSize="14" FontWeight="SemiBold"
+                                   HorizontalAlignment="Center" Foreground="{DynamicResource TextPrimary}" />
+                        <TextBlock Text="FRAMES" Classes="Caption" FontSize="8" />
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <Border Grid.Row="2" Height="1" Background="{DynamicResource Border}" VerticalAlignment="Bottom" />
+
+            <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="9">
+                <Button Classes="quiet-button" Command="{Binding TogglePauseCommand}" IsEnabled="{Binding CanControlRecording}"
+                        AutomationProperties.Name="Pause or resume recording">
+                    <StackPanel Orientation="Horizontal" Spacing="7">
+                        <TextBlock Text="Ⅱ" FontSize="12" />
+                        <TextBlock Text="{Binding PauseResumeLabel}" FontSize="12" />
+                    </StackPanel>
+                </Button>
+                <Button Classes="primary-button" Command="{Binding StopRecordingCommand}" IsEnabled="{Binding CanControlRecording}"
+                        AutomationProperties.Name="Stop recording and open the editor">
+                    <StackPanel Orientation="Horizontal" Spacing="7">
+                        <Border Width="9" Height="9" CornerRadius="2" Background="#071510" />
+                        <TextBlock Text="Stop &amp; open editor" FontSize="12" />
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+        </Grid>
+    </Border>
+</Window>
