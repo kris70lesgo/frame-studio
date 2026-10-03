@@ -15,4 +15,21 @@
     <Description>Screen, webcam and sketchboard recorder, with integrated editor!</Description>
     <CETCompat>false</CETCompat>
   </PropertyGroup>
+
+  <PropertyGroup Condition="'$(MSBuildProjectName)' == 'FrameStudio.Avalonia' Or '$(MSBuildProjectName)' == 'FrameStudio.Core' Or '$(MSBuildProjectName)' == 'FrameStudio.Platform.Abstractions' Or '$(MSBuildProjectName)' == 'FrameStudio.Platform.Windows' Or '$(MSBuildProjectName)' == 'FrameStudio.Tests'">
+    <Version>0.1.0</Version>
+    <FileVersion>0.1.0</FileVersion>
+    <AssemblyVersion>0.1.0.0</AssemblyVersion>
+    <InformationalVersion>0.1.0</InformationalVersion>
+    <Company></Company>
+    <Authors></Authors>
+    <Copyright></Copyright>
+    <Product>Frame Studio</Product>
+    <Title>Frame Studio</Title>
+    <PackageProjectUrl></PackageProjectUrl>
+    <PackageReadmeFile></PackageReadmeFile>
+    <RepositoryUrl></RepositoryUrl>
+    <RepositoryType></RepositoryType>
+    <Description>Independent Avalonia port based on ScreenToGif.</Description>
+  </PropertyGroup>
 </Project>

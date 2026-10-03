@@ -62,6 +62,11 @@ This log records the independent Avalonia port of ScreenToGif. The port uses new
 - This follows Avalonia's screen API, whose bounds are device pixels and whose scaling is the OS-provided display scale. It reduces the risk of selecting the wrong pixel region on mixed-DPI displays, but still needs verification on Windows.
 - References: [Microsoft GetDpiForMonitor documentation](https://learn.microsoft.com/en-us/windows/win32/api/shellscalingapi/nf-shellscalingapi-getdpiformonitor), [Avalonia Screen API](https://docs.avaloniaui.net/api/avalonia/platform/screen).
 
+## 2026-10-03 — Independent binary identity and packaging
+
+- The original root MSBuild properties label the WPF product as ScreenToGif 2.43.2 by Nicke Manarin. Added conditional metadata for `FrameStudio.*` projects so their binaries identify as Frame Studio 0.1.0 and no longer inherit the upstream author or repository fields; the original WPF projects retain their existing metadata.
+- Added `scripts/package-windows-candidate.py` to publish a self-contained Windows x64 build, include the development README and complete license, validate the archive, and write a SHA-256 checksum. The package README marks it as unverified until Windows runtime checks pass.
+
 ## Migration decisions
 
 - Keep the original WPF projects intact as the baseline and source reference.

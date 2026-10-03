@@ -49,6 +49,8 @@ dotnet test FrameStudio.sln
 dotnet run --project FrameStudio.Avalonia/FrameStudio.Avalonia.csproj
 ```
 
+To create a self-contained local Windows x64 candidate, run `python3 scripts/package-windows-candidate.py`. It writes the package, README, full license, and SHA-256 checksum under ignored `dist/`. The package remains a development candidate until its Windows runtime checks pass.
+
 `global.json` selects .NET 9 for this migration. The original WPF application targets Windows; this macOS development host can compile it with Windows targeting enabled, but cannot run it.
 
 ## Project structure
