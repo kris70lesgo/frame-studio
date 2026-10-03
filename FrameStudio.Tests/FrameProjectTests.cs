@@ -101,7 +101,7 @@ public sealed class FrameProjectTests
     }
 
     [Fact]
-    public async Task ProjectArchive_RoundTripsFramesAndExportsGif()
+    public async Task ProjectArchive_RoundTripsEditedSelectionAndExportsGif()
     {
         var directory = Path.Combine(Path.GetTempPath(), $"frame-studio-tests-{Guid.NewGuid():N}");
         Directory.CreateDirectory(directory);
@@ -161,14 +161,21 @@ public sealed class FrameProjectTests
             Assert.Equal<byte>([255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255], resizedRed);
             Assert.Equal(resizedBlue, resizedBlueAgain);
 
-            await new GifExportService().ExportAsync(projectPath, gifPath, new GifExportOptions(RepeatCount: 0));
+            var editorSelection = new[]
+            {
+                new ProjectFrameReference(1, 120), // Red frame moved first with a new duration.
+                new ProjectFrameReference(0, 70),  // Blue frame moved second.
+                new ProjectFrameReference(1, 90)   // Duplicate the red frame at the end.
+            };
+            await new GifExportService().ExportSelectionAsync(projectPath, gifPath, editorSelection,
+                new GifExportOptions(RepeatCount: 0));
             var gif = await File.ReadAllBytesAsync(gifPath);
             Assert.Equal("GIF89a", System.Text.Encoding.ASCII.GetString(gif, 0, 6));
             Assert.Equal(0x3b, gif[^1]);
 
             var gifMetadata = ReadGifMetadata(gif);
             Assert.Equal(new PixelSize(2, 2), gifMetadata.CanvasSize);
-            Assert.Equal(new[] { 90, 110, 130 }, gifMetadata.FrameDurationsMilliseconds);
+            Assert.Equal(new[] { 120, 70, 90 }, gifMetadata.FrameDurationsMilliseconds);
             Assert.Equal(0, gifMetadata.RepeatCount);
         }
         finally

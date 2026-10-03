@@ -53,7 +53,7 @@ This log records the independent Avalonia port of ScreenToGif. The port uses new
 ## 2026-10-03 — Core workflow verification
 
 - Expanded the archive round-trip test to assert the intended blue → red → blue frame order and RGBA pixels after project rewrite, crop, and resize.
-- The test now parses the exported GIF structure and checks the 2 × 2 canvas, three frames, 90/110/130 ms delays, and infinite-loop metadata. `dotnet test FrameStudio.sln --configuration Debug --no-restore` passes 11 tests on macOS and skips the Windows capture integration test.
+- The test now uses the editor's selected-frame export API with a red → blue → red selection, a duplicate frame, and changed durations. It parses GIF structure and checks the 2 × 2 canvas, three frames, 120/70/90 ms delays, and infinite-loop metadata. `dotnet test FrameStudio.sln --configuration Debug --no-restore` passes 11 tests on macOS and skips the Windows capture integration test.
 - This test validates archive editing and GIF metadata; it does not decode exported GIF pixels in a viewer or verify the Windows GDI capture path.
 
 ## 2026-10-03 — Per-monitor scaling source
