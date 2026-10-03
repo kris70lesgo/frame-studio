@@ -3,247 +3,219 @@
 namespace FrameStudio.Core.Codification.Gif.Encoder.Quantization;
 
 /// <summary>
-/// Based on:
-/// https://github.com/ehotsk8/Picturea_ImageProcessing/blob/master/Picturea/PLL/Filters/MedianCutQuantizer.cs
+/// Quantizes RGB pixels by recursively splitting color buckets at their weighted medians.
 /// </summary>
-public class MedianCutQuantizer : Quantizer
+/// <remarks>
+/// This is an independent, clean-room implementation written for Frame Studio from the
+/// general median-cut algorithm. It does not reuse code from the previously linked,
+/// unlicensed repository.
+/// </remarks>
+public sealed class MedianCutQuantizer : Quantizer
 {
-    ///<summary>
-    ///List of all colors in the palette
-    ///</summary>
-    protected List<Color> Colors = new();
-
-    private List<MedianCutCube> _cubes = new();
+    private readonly Dictionary<int, int> _colorCounts = new();
 
     public MedianCutQuantizer() : base(false)
-    { }
+    {
+    }
 
-    /// <summary>
-    /// Process the pixel in the first pass of the algorithm.
-    /// </summary>
-    /// <param name="pixel">The pixel to quantize</param>
     protected override void InitialQuantizePixel(Color pixel)
     {
         if (pixel.A == 0)
             return;
 
-        Colors.Add(pixel);
+        var key = ToKey(pixel.R, pixel.G, pixel.B);
+        _colorCounts[key] = _colorCounts.GetValueOrDefault(key) + 1;
     }
 
-    /// <summary>
-    /// Retrieve the palette for the quantized image
-    /// </summary>
-    /// <returns>The new color palette</returns>
     internal override List<Color> BuildPalette()
     {
         MaxColorsWithTransparency = TransparentColor.HasValue ? MaxColors - 1 : MaxColors;
 
-        //Quantization.
-        _cubes = new List<MedianCutCube> { new(Colors) };
+        var buckets = new List<ColorBucket>();
+        if (_colorCounts.Count > 0)
+            buckets.Add(new ColorBucket(_colorCounts.Select(pair => ColorSample.FromKey(pair.Key, pair.Value))));
 
-        //Split the cube until we get required amount of colors.
-        SplitCubes(_cubes, MaxColorsWithTransparency);
-
-        //Get the final palette.
-        var palette = new List<Color>(MaxColors);
-
-        for (var i = 0; i < MaxColorsWithTransparency; i++)
+        while (buckets.Count < MaxColorsWithTransparency)
         {
-            palette.Add(_cubes[i].Color);
-            _cubes[i].SetPaletteIndex(i);
+            var bucketIndex = FindBucketToSplit(buckets);
+            if (bucketIndex < 0)
+                break;
+
+            var (lower, upper) = buckets[bucketIndex].SplitAtWeightedMedian();
+            buckets[bucketIndex] = lower;
+            buckets.Insert(bucketIndex + 1, upper);
         }
 
-        //Add the transparent color to the last position.
+        var palette = buckets.Select(bucket => bucket.AverageColor()).ToList();
+
+        // A valid GIF palette needs a usable entry even for a fully transparent frame.
+        if (palette.Count == 0)
+            palette.Add(Color.FromRgb(0, 0, 0));
+
         if (TransparentColor.HasValue)
             palette.Add(Color.FromArgb(0, TransparentColor.Value.R, TransparentColor.Value.G, TransparentColor.Value.B));
 
-        return palette.ToList();
+        return palette;
     }
 
-    /// <summary>
-    /// Override this to process the pixel in the second pass of the algorithm
-    /// </summary>
-    /// <param name="pixel">The pixel to quantize</param>
-    /// <returns>The quantized value</returns>
     protected override byte QuantizePixel(Color pixel)
     {
-        foreach (var cube in _cubes.Where(cube => cube.IsColorIn(pixel)))
-            return (byte) cube.PaletteIndex;
+        var opaquePaletteCount = Math.Min(MaxColorsWithTransparency, ColorTable.Count);
+        if (opaquePaletteCount == 0)
+            return 0;
 
-        return 0;
+        var bestIndex = 0;
+        var bestDistance = long.MaxValue;
+
+        for (var index = 0; index < opaquePaletteCount; index++)
+        {
+            var candidate = ColorTable[index];
+            var redDifference = candidate.R - pixel.R;
+            var greenDifference = candidate.G - pixel.G;
+            var blueDifference = candidate.B - pixel.B;
+            var distance = (long)redDifference * redDifference +
+                           (long)greenDifference * greenDifference +
+                           (long)blueDifference * blueDifference;
+
+            if (distance >= bestDistance)
+                continue;
+
+            bestIndex = index;
+            bestDistance = distance;
+        }
+
+        return (byte)bestIndex;
     }
 
-    /// <summary>
-    /// Splits the list of cubes into smaller cubes until the list one gets the specified size.
-    /// </summary>
-    private void SplitCubes(List<MedianCutCube> cubes, int count)
+    private static int FindBucketToSplit(IReadOnlyList<ColorBucket> buckets)
     {
-        var cubeIndexToSplit = cubes.Count - 1;
+        var selectedIndex = -1;
 
-        while (cubes.Count < count)
+        for (var index = 0; index < buckets.Count; index++)
         {
-            var cubeToSplit = cubes[cubeIndexToSplit];
-            MedianCutCube cube1, cube2;
+            if (!buckets[index].CanSplit)
+                continue;
 
-            //Find the longest color size to use for splitting.
-            if (cubeToSplit.RedSize >= cubeToSplit.GreenSize && cubeToSplit.RedSize >= cubeToSplit.BlueSize)
-                cubeToSplit.SplitAtMedian(0, out cube1, out cube2);
-            else if (cubeToSplit.GreenSize >= cubeToSplit.BlueSize)
-                cubeToSplit.SplitAtMedian(1, out cube1, out cube2);
-            else
-                cubeToSplit.SplitAtMedian(2, out cube1, out cube2);
-
-            //Remove the old "big" cube.
-            cubes.RemoveAt(cubeIndexToSplit);
-
-            //Add two smaller cubes instead
-            cubes.Insert(cubeIndexToSplit, cube1);
-            cubes.Insert(cubeIndexToSplit, cube2);
-
-            if (--cubeIndexToSplit < 0)
-                cubeIndexToSplit = cubes.Count - 1;
+            if (selectedIndex < 0 || buckets[index].ComparePriorityTo(buckets[selectedIndex]) > 0)
+                selectedIndex = index;
         }
+
+        return selectedIndex;
     }
 
-    private class MedianCutCube
+    private static int ToKey(byte red, byte green, byte blue) => (red << 16) | (green << 8) | blue;
+
+    private readonly record struct ColorSample(byte Red, byte Green, byte Blue, int Count)
     {
-        private byte _redLowBound;
-        private byte _redHighBound;
+        public static ColorSample FromKey(int key, int count) => new(
+            (byte)(key >> 16),
+            (byte)(key >> 8),
+            (byte)key,
+            count);
 
-        private byte _greenLowBound;
-        private byte _greenHighBound;
-
-        private byte _blueLowBound;
-        private byte _blueHighBound;
-
-        private Color? _cubeColor = null;
-
-        private readonly List<Color> _colorList;
-
-        /// <summary>
-        /// Length of the red side of the cube.
-        /// </summary>
-        public int RedSize => _redHighBound - _redLowBound;
-
-        /// <summary>
-        /// Length of the green size of the cube.
-        /// </summary>
-        public int GreenSize => _greenHighBound - _greenLowBound;
-
-        /// <summary>
-        /// Length of the blue size of the cube.
-        /// </summary>
-        public int BlueSize => _blueHighBound - _blueLowBound;
-
-        public int PaletteIndex { get; private set; }
-
-        /// <summary>
-        /// The mean color of the cube.
-        /// </summary>
-        public Color Color
+        public int Component(int axis) => axis switch
         {
-            get
+            0 => Red,
+            1 => Green,
+            _ => Blue
+        };
+    }
+
+    private sealed class ColorBucket
+    {
+        private readonly List<ColorSample> _samples;
+
+        public ColorBucket(IEnumerable<ColorSample> samples)
+        {
+            _samples = samples.ToList();
+            TotalCount = _samples.Sum(sample => (long)sample.Count);
+            RedRange = RangeOf(sample => sample.Red);
+            GreenRange = RangeOf(sample => sample.Green);
+            BlueRange = RangeOf(sample => sample.Blue);
+        }
+
+        public long TotalCount { get; }
+        public int RedRange { get; }
+        public int GreenRange { get; }
+        public int BlueRange { get; }
+        public int LargestRange => Math.Max(RedRange, Math.Max(GreenRange, BlueRange));
+        public bool CanSplit => _samples.Count > 1;
+
+        public int ComparePriorityTo(ColorBucket other)
+        {
+            var rangeComparison = LargestRange.CompareTo(other.LargestRange);
+            return rangeComparison != 0 ? rangeComparison : TotalCount.CompareTo(other.TotalCount);
+        }
+
+        public (ColorBucket Lower, ColorBucket Upper) SplitAtWeightedMedian()
+        {
+            var axis = SelectLargestAxis();
+            var ordered = _samples
+                .OrderBy(sample => sample.Component(axis))
+                .ThenBy(sample => sample.Red)
+                .ThenBy(sample => sample.Green)
+                .ThenBy(sample => sample.Blue)
+                .ToList();
+
+            var targetCount = TotalCount / 2;
+            long accumulated = 0;
+            var splitIndex = 1;
+
+            for (var index = 0; index < ordered.Count - 1; index++)
             {
-                if (_cubeColor != null)
-                    return _cubeColor.Value;
-
-                int red = 0, green = 0, blue = 0;
-
-                foreach (var color in _colorList)
+                accumulated += ordered[index].Count;
+                if (accumulated >= targetCount)
                 {
-                    red += color.R;
-                    green += color.G;
-                    blue += color.B;
+                    splitIndex = index + 1;
+                    break;
                 }
-
-                var colorsCount = _colorList.Count;
-
-                if (colorsCount != 0)
-                {
-                    red /= colorsCount;
-                    green /= colorsCount;
-                    blue /= colorsCount;
-                }
-
-                _cubeColor = Color.FromRgb((byte)red, (byte)green, (byte)blue);
-
-                return _cubeColor.Value;
             }
+
+            return (
+                new ColorBucket(ordered.Take(splitIndex)),
+                new ColorBucket(ordered.Skip(splitIndex)));
         }
 
-
-        public MedianCutCube(List<Color> colors)
+        public Color AverageColor()
         {
-            _colorList = colors;
+            long red = 0;
+            long green = 0;
+            long blue = 0;
 
-            Shrink();
-        }
-            
-
-        private void Shrink()
-        {
-            //Get the minimum/maximum values for each RGB component of specified colors.
-            _redLowBound = _greenLowBound = _blueLowBound = 255;
-            _redHighBound = _greenHighBound = _blueHighBound = 0;
-
-            foreach (var colort in _colorList)
+            foreach (var sample in _samples)
             {
-                if (colort.R < _redLowBound) 
-                    _redLowBound = colort.R;
-                if (colort.R > _redHighBound) 
-                    _redHighBound = colort.R;
-
-                if (colort.G < _greenLowBound) 
-                    _greenLowBound = colort.G;
-                if (colort.G > _greenHighBound) 
-                    _greenHighBound = colort.G;
-
-                if (colort.B < _blueLowBound) 
-                    _blueLowBound = colort.B;
-                if (colort.B > _blueHighBound)
-                    _blueHighBound = colort.B;
+                red += (long)sample.Red * sample.Count;
+                green += (long)sample.Green * sample.Count;
+                blue += (long)sample.Blue * sample.Count;
             }
+
+            return Color.FromRgb(
+                (byte)(red / TotalCount),
+                (byte)(green / TotalCount),
+                (byte)(blue / TotalCount));
         }
 
-        /// <summary>
-        /// Splits the cube into 2 smaller cubes using the specified color side for splitting.
-        /// </summary>
-        /// <param name="componentIndex"></param>
-        /// <param name="medianCube1"></param>
-        /// <param name="medianCube2"></param>
-        public void SplitAtMedian(byte componentIndex, out MedianCutCube medianCube1, out MedianCutCube medianCube2)
+        private int SelectLargestAxis()
         {
-            switch (componentIndex)
+            if (RedRange >= GreenRange && RedRange >= BlueRange)
+                return 0;
+
+            return GreenRange >= BlueRange ? 1 : 2;
+        }
+
+        private int RangeOf(Func<ColorSample, byte> component)
+        {
+            var minimum = byte.MaxValue;
+            var maximum = byte.MinValue;
+
+            foreach (var sample in _samples)
             {
-                case 0:
-                    _colorList.Sort((p, n) => p.R.CompareTo(n.R));
-                    break;
-
-                case 1:
-                    _colorList.Sort((p, n) => p.R.CompareTo(n.R));
-                    break;
-
-                case 2:
-                    _colorList.Sort((p, n) => p.R.CompareTo(n.R));
-                    break;
+                var value = component(sample);
+                minimum = Math.Min(minimum, value);
+                maximum = Math.Max(maximum, value);
             }
 
-            var medianIndex = _colorList.Count >> 1;
-
-            medianCube1 = new MedianCutCube(_colorList.GetRange(0, medianIndex));
-            medianCube2 = new MedianCutCube(_colorList.GetRange(medianIndex, _colorList.Count - medianIndex));
-        }
-
-        public void SetPaletteIndex(int newPaletteIndex)
-        {
-            PaletteIndex = newPaletteIndex;
-        }
-
-        public bool IsColorIn(Color color)
-        {
-            return (color.R >= _redLowBound && color.R <= _redHighBound) &&
-                   (color.G >= _greenLowBound && color.G <= _greenHighBound) &&
-                   (color.B >= _blueLowBound && color.B <= _blueHighBound);
+            return maximum - minimum;
         }
     }
 }

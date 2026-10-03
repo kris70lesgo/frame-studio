@@ -229,6 +229,12 @@ This log records the independent Avalonia port of ScreenToGif. The port uses new
 - The test then continues through pause, resume, and stop with the marker visible. It compiled and remained skipped on macOS; it still needs to pass on an interactive Windows desktop.
 - Marker behavior follows Microsoft's [static-control documentation](https://learn.microsoft.com/en-us/windows/win32/controls/about-static-controls), which defines `SS_WHITERECT` as a filled rectangle using the current window background color.
 
+## 2026-10-03 — Clean-room median-cut quantizer
+
+- During the license audit, the migrated median-cut quantizer was found to cite an external source repository without a discoverable license. It was removed rather than redistributed under an assumed license.
+- Replaced it with an independently written implementation based only on the general median-cut concept: collect an RGB frequency histogram, select a splittable bucket by color range, split that bucket at its weighted median, average each bucket into a palette entry, then select the nearest opaque palette color for each pixel.
+- Added tests for a green-channel split, frequency-weighted palette averages, transparent-palette reservation, and fully transparent input. The source comment and migration audit record the clean-room provenance.
+
 ## Ongoing log
 
 Add dated entries here as migrations reveal framework differences, platform constraints, or performance fixes.
