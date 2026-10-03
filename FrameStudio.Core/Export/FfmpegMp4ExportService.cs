@@ -25,8 +25,10 @@ public sealed class FfmpegMp4ExportService
         return ExportCoreAsync(projectPath, destinationPath, frames, cancellationToken);
     }
 
-    public static bool IsFfmpegAvailable => FindExecutable("ffmpeg") is not null;
-    public static bool IsFfprobeAvailable => FindExecutable("ffprobe") is not null;
+    public static string? FfmpegExecutablePath => FindExecutable("ffmpeg");
+    public static string? FfprobeExecutablePath => FindExecutable("ffprobe");
+    public static bool IsFfmpegAvailable => FfmpegExecutablePath is not null;
+    public static bool IsFfprobeAvailable => FfprobeExecutablePath is not null;
 
     private async ValueTask ExportCoreAsync(string projectPath, string destinationPath,
         IReadOnlyList<ProjectFrameReference>? frameSelection, CancellationToken cancellationToken)
@@ -195,21 +197,36 @@ public sealed class FfmpegMp4ExportService
             throw new FileNotFoundException("The configured FFmpeg executable was not found.", explicitPath);
         }
 
-        return FindExecutable("ffmpeg") ?? throw new FileNotFoundException(
+        return FfmpegExecutablePath ?? throw new FileNotFoundException(
             "FFmpeg was not found on PATH. Install FFmpeg with H.264 (libx264) support to export MP4.");
     }
 
     private static string? FindExecutable(string executableName)
     {
         var pathValue = Environment.GetEnvironmentVariable("PATH");
-        if (string.IsNullOrWhiteSpace(pathValue))
+        var directories = new HashSet<string>(OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal);
+        if (!string.IsNullOrWhiteSpace(pathValue))
+        {
+            foreach (var directory in pathValue.Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries))
+                directories.Add(directory);
+        }
+
+        // GUI apps on macOS may not inherit a shell PATH; include both standard Homebrew prefixes.
+        if (OperatingSystem.IsMacOS())
+        {
+            directories.Add("/opt/homebrew/bin");
+            directories.Add("/usr/local/bin");
+        }
+
+        if (directories.Count == 0)
             return null;
 
+        var pathExtensions = Environment.GetEnvironmentVariable("PATHEXT");
         var extensions = OperatingSystem.IsWindows()
-            ? (Environment.GetEnvironmentVariable("PATHEXT") ?? ".EXE;.CMD;.BAT;.COM")
-                .Split(Path.PathSeparator == ';' ? ';' : Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries)
+            ? (string.IsNullOrWhiteSpace(pathExtensions) ? ".EXE;.CMD;.BAT;.COM" : pathExtensions)
+                .Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries)
             : [string.Empty];
-        foreach (var directory in pathValue.Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries))
+        foreach (var directory in directories)
         foreach (var extension in extensions)
         {
             var candidate = Path.Combine(directory, Path.HasExtension(executableName) ? executableName : executableName + extension);

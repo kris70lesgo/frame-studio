@@ -310,7 +310,7 @@ public sealed class FrameProjectTests
             Assert.True(mp4Header.Length > 12);
             Assert.Equal("ftyp", System.Text.Encoding.ASCII.GetString(mp4Header, 4, 4));
 
-            var startInfo = new ProcessStartInfo("ffprobe")
+            var startInfo = new ProcessStartInfo(FfmpegMp4ExportService.FfprobeExecutablePath ?? "ffprobe")
             {
                 UseShellExecute = false,
                 RedirectStandardOutput = true,
