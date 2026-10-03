@@ -1,0 +1,59 @@
+name: Frame Studio CI
+
+on:
+  push:
+    paths:
+      - "FrameStudio.*/**"
+      - "scripts/package-windows-candidate.py"
+      - "FrameStudio.sln"
+      - "global.json"
+      - ".github/workflows/framestudio-ci.yml"
+  pull_request:
+    paths:
+      - "FrameStudio.*/**"
+      - "scripts/package-windows-candidate.py"
+      - "FrameStudio.sln"
+      - "global.json"
+      - ".github/workflows/framestudio-ci.yml"
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    name: ${{ matrix.os }} build and test
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest]
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - run: dotnet restore FrameStudio.sln
+      - run: dotnet build FrameStudio.sln --configuration Release --no-restore
+      - name: Run deterministic Frame Studio tests
+        shell: pwsh
+        run: >-
+          dotnet test FrameStudio.sln --configuration Release --no-build
+          --filter "FullyQualifiedName!~WindowsCaptureIntegrationTests"
+
+  windows-package:
+    name: Windows x64 publish check
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - run: >-
+          dotnet publish FrameStudio.Avalonia/FrameStudio.Avalonia.csproj
+          --configuration Release --runtime win-x64 --self-contained true
+          --output artifacts/FrameStudio-win-x64
+      - uses: actions/upload-artifact@v4
+        with:
+          name: FrameStudio-win-x64
+          path: artifacts/FrameStudio-win-x64
+          if-no-files-found: error
