@@ -19,6 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\FrameStudio.Avalonia\FrameStudio.Avalonia.csproj" />
     <ProjectReference Include="..\FrameStudio.Core\FrameStudio.Core.csproj" />
     <ProjectReference Include="..\FrameStudio.Platform.Abstractions\FrameStudio.Platform.Abstractions.csproj" />
     <ProjectReference Include="..\FrameStudio.Platform.Windows\FrameStudio.Platform.Windows.csproj" />

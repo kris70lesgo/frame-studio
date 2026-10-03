@@ -184,7 +184,7 @@ public sealed class FrameProjectTests
         }
     }
 
-    private static GifMetadata ReadGifMetadata(byte[] bytes)
+    internal static GifMetadata ReadGifMetadata(byte[] bytes)
     {
         using var stream = new MemoryStream(bytes);
         using var reader = new BinaryReader(stream);
@@ -306,5 +306,5 @@ public sealed class FrameProjectTests
         stream.Position += count;
     }
 
-    private sealed record GifMetadata(PixelSize CanvasSize, IReadOnlyList<int> FrameDurationsMilliseconds, int RepeatCount);
+    internal sealed record GifMetadata(PixelSize CanvasSize, IReadOnlyList<int> FrameDurationsMilliseconds, int RepeatCount);
 }
