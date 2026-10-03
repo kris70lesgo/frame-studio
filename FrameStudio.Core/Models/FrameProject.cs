@@ -8,5 +8,5 @@ public sealed record FrameProject(
     DateTimeOffset ModifiedAt)
 {
     public TimeSpan Duration => TimeSpan.FromMilliseconds(
-        Frames.Sum(frame => Math.Max(0, frame.DurationMilliseconds)));
+        Frames.Sum(frame => (long)Math.Max(0, frame.DurationMilliseconds)));
 }

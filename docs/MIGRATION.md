@@ -22,6 +22,16 @@ This log records the independent Avalonia port of ScreenToGif. The port uses new
 - Published and launched a macOS arm64 development bundle. Inspected its accessibility tree and captured [an early shell screenshot](before-after/after-home-shell-macos.png). The app was opened in the background without changing the active app.
 - This image is a shell check only; it is not a challenge before/after image. The real comparison needs the original and port running on Windows against the same content.
 
+## 2026-10-03 — Windows capture backend foundation
+
+- Reviewed the [Avalonia Port Challenge rules](https://avaloniaui.net/blog/avalonia-port-challenge). The entry closes at 23:59 UTC on 23 October 2026. Judging covers migration difficulty/completeness, app quality, cross-platform delivery, engineering quality, and the migration write-up. Entry requirements include runnable builds for every target platform, paired before/after screenshots, and a short account of migration cost.
+- Added `FrameStudio.Platform.Windows`, with monitor/window enumeration and a GDI desktop-region capture session. It uses the same BitBlt/GDI capture family as the upstream implementation while returning neutral RGBA buffers through `IRecordingSession`.
+- Capture reads on a background task, uses a bounded three-frame channel to limit memory, supports pause/resume/stop, includes optional cursor compositing, and releases native GDI handles on completion. The capture rectangle is monitor-local device-pixel geometry.
+- The backend cross-compiles on macOS, but runtime behavior still needs a Windows machine. The Avalonia UI does not yet start or consume a recording session; capture actions stay disabled until that end-to-end workflow is connected.
+- Migrated the upstream raw-buffer GIF encoder and its octree, median-cut, grayscale, and most-used quantizers into `FrameStudio.Core`, replacing WPF color/rectangle types with RGBA and neutral pixel geometry. The neural quantizer was omitted because its file has a separate GPLv3 notice; the Frame Studio GIF output uses new branding.
+- Added the `.fsp` project archive with per-frame compressed RGBA entries, timing/dimension manifest, frame reads, and atomic completion. Added a project-to-GIF export service using the migrated encoder; Core round-trip/export tests pass. The editor is not yet wired to these services.
+- Strategy: prioritize the Legacy Revival and Everyday Tool categories through a complete, useful Windows workflow. Cross-platform judging is valuable, but only claim targets that have runnable builds and real platform capture support. The write-up and Windows before/after captures are required submission work, not optional polish.
+
 ## Migration decisions
 
 - Keep the original WPF projects intact as the baseline and source reference.

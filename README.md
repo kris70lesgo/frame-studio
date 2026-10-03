@@ -8,19 +8,21 @@ This is an independent project. It is not the official ScreenToGif application a
 
 ## Current status
 
-The first Avalonia shell is implemented and launches on macOS. It includes a custom home screen, semantic dark and light themes, neutral frame/project models, and platform service contracts. Capture actions are intentionally disabled until a real capture adapter is connected.
+The Avalonia shell is implemented and launches on macOS. A Windows GDI backend now enumerates monitors/windows and provides a pauseable, bounded screen-region recording session behind the platform contracts. Capture actions remain disabled while the backend is connected to the recording, project, editor, and export workflow.
 
 | Area | Status |
 | --- | --- |
 | Avalonia home shell | Implemented; builds and launches |
 | Dark and light appearance | Implemented |
-| Neutral frame/project foundation | Started |
+| Neutral frame/project foundation | Frame model and compressed `.fsp` archive read/write implemented |
 | Platform service contracts | Defined |
-| Screen and window recording | Not migrated yet |
+| Windows screen and window capture backend | Implemented; Windows runtime still needs verification |
+| End-to-end recording workflow | In progress; not wired into the UI yet |
 | Webcam and sketchboard | Not migrated yet |
-| Editor and timeline | Not migrated yet |
-| GIF/video export | Not migrated yet |
-| Windows platform adapter | Not implemented yet |
+| Editor playback and timeline | Not migrated yet |
+| GIF export engine | Reused in Core; project-to-GIF service implemented, UI pending |
+| Video export | Not migrated yet |
+| Windows platform adapter | Initial monitor/window enumeration and desktop-region capture implemented |
 
 The original WPF application remains in this repository as the baseline in `GifRecorder.sln`. The new application is in `FrameStudio.sln` and does not reference the WPF UI projects.
 
@@ -34,7 +36,7 @@ This macOS capture documents the current Avalonia shell only. It is not a Window
 
 Requirements: .NET SDK 9.0.318 or a compatible .NET 9 feature-band SDK, with NuGet access for the Avalonia packages.
 
-The Avalonia UI targets Windows, macOS, and Linux; this shell has been built and launched on macOS arm64. Screen capture, editing, and export are not yet implemented on any platform. Windows is the first target for those services.
+The Avalonia UI targets Windows, macOS, and Linux; this shell has been built and launched on macOS arm64. The capture backend uses Windows GDI and is not available on macOS or Linux. Editing and export are not yet implemented. Windows is the first target for the full recording workflow.
 
 ```sh
 dotnet build FrameStudio.sln
@@ -49,10 +51,13 @@ dotnet run --project FrameStudio.Avalonia/FrameStudio.Avalonia.csproj
 - `FrameStudio.Avalonia` — Avalonia desktop UI and MVVM.
 - `FrameStudio.Core` — framework-neutral pixel geometry and frame/project models.
 - `FrameStudio.Platform.Abstractions` — capture, monitor, camera, hotkey, clipboard, notification, permission, and file-dialog contracts.
+- `FrameStudio.Platform.Windows` — Win32 monitor/window discovery and bounded GDI screen-region recording sessions.
 - `FrameStudio.Tests` — cross-platform core tests.
 - `ScreenToGif`, `ScreenToGif.Model`, `ScreenToGif.Native`, `ScreenToGif.Util`, and `ScreenToGif.ViewModel` — original WPF implementation retained as the behavior and migration reference.
 
 See [the source audit](docs/MIGRATION_AUDIT.md) for reusable modules, framework coupling, and the proposed architecture. The [migration journal](docs/MIGRATION.md) records decisions and lessons as the port progresses.
+
+See [the challenge analysis](docs/CHALLENGE_ANALYSIS.md) for the judging criteria, entry requirements, and the schedule used to prioritize migration work.
 
 ## Attribution and license
 

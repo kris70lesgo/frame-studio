@@ -5,7 +5,7 @@ namespace FrameStudio.Avalonia.Services;
 /// <summary>Reports the current shell milestone honestly until platform adapters are registered.</summary>
 public sealed class ShellCapabilityProvider : IPlatformCapabilityProvider
 {
-    private const string WindowsDetail = "Windows capture adapter is planned; this shell does not record yet.";
+    private const string WindowsDetail = "Windows GDI capture backend is implemented; the recording workflow is being connected.";
     private const string OtherPlatformDetail = "The initial migration targets Windows. This capture source is not available in this build.";
 
     public IReadOnlyList<CaptureCapability> GetCaptureCapabilities()

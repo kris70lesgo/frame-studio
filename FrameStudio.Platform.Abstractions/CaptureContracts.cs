@@ -43,6 +43,7 @@ public sealed record CapturedFrame(
     int DurationMilliseconds,
     DateTimeOffset CapturedAt);
 
+/// <summary>Bounds are relative to the monitor's top-left corner and measured in device pixels.</summary>
 public sealed record ScreenCaptureRequest(
     string MonitorId,
     PixelRect Region,
