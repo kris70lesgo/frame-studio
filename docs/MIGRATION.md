@@ -72,8 +72,13 @@ This log records the independent Avalonia port of ScreenToGif. The port uses new
 
 - Replaced the fixed home-screen project count and empty state with a recent-project list. Opening a valid `.fsp` project records its full path and last-opened time in the user's local application data folder; the home screen shows its dimensions, frame count, and open time.
 - The catalog keeps up to eight unique existing `.fsp` paths, writes updates atomically, and ignores damaged preference JSON or missing files. The editor still opens if saving recent history fails.
-- Added tests for persistence across catalog instances, newest-first ordering, duplicate updates, the entry limit, missing files, and extension validation. Full solution build succeeds with zero warnings/errors; macOS test run passes 13 and skips the Windows capture integration test.
+- Added tests for persistence across catalog instances, newest-first ordering, duplicate updates, the entry limit, missing files, and extension validation. Full solution build succeeds with zero warnings/errors; macOS test run passes 14 and skips the Windows capture integration test.
 - A fresh visual check could not be made because the desktop session is locked. The existing macOS screenshots predate this home-screen update and remain explicitly non-comparison smoke evidence.
+
+## 2026-10-03 — GIF pixel-stream verification
+
+- Added a test-only GIF image-data reader that expands the encoder's LZW stream and compares decoded palette indexes against the octree quantizer output for a deterministic 64 × 64 pseudorandom image. The input exercises the transition from 9-bit to wider LZW codes.
+- The editor export test still verifies selected frame order, canvas size, frame count, frame timing, and looping. The local suite now passes 14 tests and skips the Windows desktop capture integration test; the full solution builds with 0 warnings and 0 errors.
 
 ## 2026-10-03 — Windows candidate rebuilt
 
