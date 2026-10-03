@@ -44,7 +44,7 @@
             <Border Grid.Row="2" Height="1" Background="{DynamicResource Border}" VerticalAlignment="Bottom" />
 
             <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="9">
-                <Button Classes="quiet-button" Command="{Binding TogglePauseCommand}" IsEnabled="{Binding CanControlRecording}"
+                <Button Classes="quiet-button" Command="{Binding TogglePauseCommand}" IsEnabled="{Binding CanPauseRecording}"
                         AutomationProperties.Name="Pause or resume recording">
                     <StackPanel Orientation="Horizontal" Spacing="7">
                         <TextBlock Text="Ⅱ" FontSize="12" />

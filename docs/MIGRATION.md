@@ -212,6 +212,12 @@ This log records the independent Avalonia port of ScreenToGif. The port uses new
 - `dotnet test FrameStudio.sln --configuration Release --no-restore` passes 25 tests and skips the three Windows desktop checks on macOS. `dotnet build FrameStudio.sln --configuration Release --no-restore` succeeds with zero warnings and errors. Native behavior remains unverified until these desktop checks run on Windows.
 - Reference: [Microsoft GetDC documentation](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getdc).
 
+## 2026-10-03 — Preserve recordings after capture errors
+
+- The recording consumer now distinguishes errors from the capture stream from project-write errors. When capture stops unexpectedly, the recorder reports the condition, disables pause/resume, and keeps Stop available.
+- If at least one frame reached the project writer, Stop completes the partial `.fsp` and opens it in the editor. If capture failed before the first frame, the recorder reports the cause and discards the empty draft. Project write failures still follow the existing save-error path.
+- Added a deterministic test that injects a capture-stream error after one frame, then verifies the completed project retains its RGBA pixels and duration. The Release suite passes 26 tests and skips the three Windows desktop checks on macOS. This exercises recovery above the native capture boundary; it does not replace Windows runtime validation.
+
 ## Ongoing log
 
 Add dated entries here as migrations reveal framework differences, platform constraints, or performance fixes.

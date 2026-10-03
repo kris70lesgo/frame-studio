@@ -18,6 +18,7 @@ public partial class RecordingViewModel : ObservableObject
     private readonly DispatcherTimer _elapsedTimer;
     private int _capturedFrameCount;
     private bool _hasFinished;
+    private Exception? _captureFailure;
 
     [ObservableProperty]
     private bool _isPaused;
@@ -27,6 +28,9 @@ public partial class RecordingViewModel : ObservableObject
 
     [ObservableProperty]
     private bool _canControlRecording = true;
+
+    [ObservableProperty]
+    private bool _canPauseRecording = true;
 
     [ObservableProperty]
     private int _frameCount;
@@ -60,7 +64,7 @@ public partial class RecordingViewModel : ObservableObject
     [RelayCommand]
     private async Task TogglePauseAsync()
     {
-        if (IsStopping || _hasFinished)
+        if (IsStopping || _hasFinished || !CanPauseRecording)
             return;
 
         if (IsPaused)
@@ -89,12 +93,34 @@ public partial class RecordingViewModel : ObservableObject
 
         IsStopping = true;
         CanControlRecording = false;
+        CanPauseRecording = false;
         Status = "Finishing captured frames…";
         _elapsedTimer.Stop();
+        _elapsed.Stop();
         try
         {
             await _session.StopAsync();
             await _consumerTask;
+
+            if (_captureFailure is { } captureFailure)
+            {
+                if (Volatile.Read(ref _capturedFrameCount) == 0)
+                {
+                    _hasFinished = true;
+                    Status = $"Capture failed before a frame was saved: {captureFailure.Message}";
+                    IsStopping = false;
+                    return;
+                }
+
+                await _writer.CompleteAsync();
+                _hasFinished = true;
+                var savedFrameCount = Volatile.Read(ref _capturedFrameCount);
+                var frameNoun = savedFrameCount == 1 ? "frame" : "frames";
+                Status = $"Capture stopped: {captureFailure.Message}. Saved {savedFrameCount} {frameNoun}.";
+                RecordingCompleted?.Invoke(this, _destinationPath);
+                return;
+            }
+
             await _writer.CompleteAsync();
             _hasFinished = true;
             Status = "Recording saved";
@@ -117,11 +143,44 @@ public partial class RecordingViewModel : ObservableObject
 
     private async Task ConsumeFramesAsync()
     {
-        await foreach (var frame in _session.ReadFramesAsync().ConfigureAwait(false))
+        var frames = _session.ReadFramesAsync().GetAsyncEnumerator();
+        try
         {
-            await _writer.WriteFrameAsync(frame.Size, frame.RgbaPixels, frame.DurationMilliseconds).ConfigureAwait(false);
-            var frameCount = Interlocked.Increment(ref _capturedFrameCount);
-            Dispatcher.UIThread.Post(() => FrameCount = frameCount);
+            while (true)
+            {
+                bool hasFrame;
+                try
+                {
+                    hasFrame = await frames.MoveNextAsync().ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    _captureFailure = ex;
+                    Dispatcher.UIThread.Post(() =>
+                    {
+                        if (_hasFinished || IsStopping)
+                            return;
+
+                        _elapsed.Stop();
+                        _elapsedTimer.Stop();
+                        CanPauseRecording = false;
+                        Status = "Capture stopped unexpectedly. Stop to save the frames captured so far.";
+                    });
+                    return;
+                }
+
+                if (!hasFrame)
+                    return;
+
+                var frame = frames.Current;
+                await _writer.WriteFrameAsync(frame.Size, frame.RgbaPixels, frame.DurationMilliseconds).ConfigureAwait(false);
+                var frameCount = Interlocked.Increment(ref _capturedFrameCount);
+                Dispatcher.UIThread.Post(() => FrameCount = frameCount);
+            }
+        }
+        finally
+        {
+            await frames.DisposeAsync().ConfigureAwait(false);
         }
     }
 }

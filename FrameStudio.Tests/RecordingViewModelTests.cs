@@ -139,6 +139,42 @@ public sealed class RecordingViewModelTests
         }
     }
 
+    [Fact]
+    public async Task RecordingViewModel_CaptureFailureSavesFramesAlreadyReceived()
+    {
+        var directory = Path.Combine(Path.GetTempPath(), $"frame-studio-recording-failure-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(directory);
+        var projectPath = Path.Combine(directory, "partial-recording.fsp");
+        byte[] pixels = [32, 128, 224, 255];
+        var size = new PixelSize(1, 1);
+        var session = new FailingCaptureSession(new CapturedFrame(size, pixels, 80, DateTimeOffset.UtcNow));
+
+        try
+        {
+            var writer = await FrameProjectArchiveWriter.CreateAsync(projectPath, "Partial recording", size);
+            var recording = new RecordingViewModel(session, writer, projectPath, framesPerSecond: 12);
+            string? completedPath = null;
+            recording.RecordingCompleted += (_, path) => completedPath = path;
+
+            await recording.StopRecordingCommand.ExecuteAsync(null);
+
+            Assert.True(recording.HasFinished);
+            Assert.Equal("Capture stopped: simulated capture failure. Saved 1 frame.", recording.Status);
+            Assert.Equal(projectPath, completedPath);
+            Assert.True(session.IsDisposed);
+
+            var project = await FrameProjectArchiveReader.ReadProjectAsync(projectPath);
+            Assert.Equal("Partial recording", project.Name);
+            Assert.Single(project.Frames);
+            Assert.Equal(80, project.Frames[0].DurationMilliseconds);
+            Assert.Equal(pixels, await FrameProjectArchiveReader.ReadFrameRgbaAsync(projectPath, project, 0));
+        }
+        finally
+        {
+            Directory.Delete(directory, recursive: true);
+        }
+    }
+
     private sealed class FakeRecordingSession(params CapturedFrame[] frames) : IRecordingSession
     {
         public int PauseCount { get; private set; }
@@ -177,6 +213,32 @@ public sealed class RecordingViewModelTests
             StopCount++;
             return ValueTask.CompletedTask;
         }
+
+        public ValueTask DisposeAsync()
+        {
+            IsDisposed = true;
+            return ValueTask.CompletedTask;
+        }
+    }
+
+    private sealed class FailingCaptureSession(CapturedFrame frame) : IRecordingSession
+    {
+        public bool IsDisposed { get; private set; }
+
+        public async IAsyncEnumerable<CapturedFrame> ReadFramesAsync(
+            [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            await Task.Yield();
+            yield return frame;
+            throw new IOException("simulated capture failure");
+        }
+
+        public ValueTask PauseAsync(CancellationToken cancellationToken = default) => ValueTask.CompletedTask;
+
+        public ValueTask ResumeAsync(CancellationToken cancellationToken = default) => ValueTask.CompletedTask;
+
+        public ValueTask StopAsync(CancellationToken cancellationToken = default) => ValueTask.CompletedTask;
 
         public ValueTask DisposeAsync()
         {
