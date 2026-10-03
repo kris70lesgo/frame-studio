@@ -1,11 +1,14 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using Avalonia.Input;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using FrameStudio.Avalonia.ViewModels;
+using CorePixelRect = FrameStudio.Core.Models.PixelRect;
+using CorePixelSize = FrameStudio.Core.Models.PixelSize;
 using System.Runtime.InteropServices;
 
 namespace FrameStudio.Avalonia.Views;
@@ -17,12 +20,23 @@ public partial class EditorWindow : Window
     private readonly TextBlock _previewEmptyText;
     private readonly ListBox _timelineList;
     private readonly Button _playButton;
+    private readonly Button _cropToolButton;
+    private readonly Button _applyCropButton;
+    private readonly StackPanel _cropControls;
+    private readonly Canvas _cropCanvas;
+    private readonly Border _cropSelectionVisual;
     private readonly DispatcherTimer _playTimer = new() { Interval = TimeSpan.FromMilliseconds(100) };
     private readonly SemaphoreSlim _frameReadGate = new(2, 2);
     private CancellationTokenSource? _previewCancellation;
     private WriteableBitmap? _previewBitmap;
     private bool _isLoadingPreview;
     private bool _isPlaying;
+    private bool _isDraggingCrop;
+    private bool _allowClose;
+    private bool _isConfirmingClose;
+    private Point _cropStart;
+    private Rect? _cropSelection;
+    private CorePixelRect? _pendingCrop;
 
     public EditorWindow()
     {
@@ -31,12 +45,19 @@ public partial class EditorWindow : Window
         _previewEmptyText = this.FindControl<TextBlock>("PreviewEmptyText")!;
         _timelineList = this.FindControl<ListBox>("TimelineList")!;
         _playButton = this.FindControl<Button>("PlayButton")!;
+        _cropToolButton = this.FindControl<Button>("CropToolButton")!;
+        _applyCropButton = this.FindControl<Button>("ApplyCropButton")!;
+        _cropControls = this.FindControl<StackPanel>("CropControls")!;
+        _cropCanvas = this.FindControl<Canvas>("CropCanvas")!;
+        _cropSelectionVisual = this.FindControl<Border>("CropSelectionVisual")!;
         _playTimer.Tick += PlayTimer_OnTick;
+        Closing += EditorWindow_OnClosing;
         Closed += (_, _) =>
         {
             _playTimer.Stop();
             _previewCancellation?.Cancel();
             _previewBitmap?.Dispose();
+            _viewModel?.DiscardEdits();
         };
     }
 
@@ -50,6 +71,42 @@ public partial class EditorWindow : Window
     {
         var project = await FrameStudio.Core.Projects.FrameProjectArchiveReader.ReadProjectAsync(projectPath);
         return new EditorWindow(new EditorViewModel(projectPath, project));
+    }
+
+    private async void EditorWindow_OnClosing(object? sender, WindowClosingEventArgs e)
+    {
+        if (_allowClose || _viewModel is null || !_viewModel.IsDirty)
+            return;
+
+        e.Cancel = true;
+        if (_isConfirmingClose)
+            return;
+
+        _isConfirmingClose = true;
+        try
+        {
+            var choice = await new UnsavedChangesWindow().ShowDialog<UnsavedChangesChoice?>(this);
+            if (choice is null or UnsavedChangesChoice.Cancel)
+                return;
+
+            if (choice == UnsavedChangesChoice.Save)
+            {
+                await _viewModel.SaveProjectCommand.ExecuteAsync(null);
+                if (_viewModel.IsDirty)
+                    return;
+            }
+            else
+            {
+                _viewModel.DiscardEdits();
+            }
+
+            _allowClose = true;
+            Close();
+        }
+        finally
+        {
+            _isConfirmingClose = false;
+        }
     }
 
     private async void Editor_OnLoaded(object? sender, RoutedEventArgs e)
@@ -69,6 +126,133 @@ public partial class EditorWindow : Window
             await LoadPreviewAsync();
             UpdatePlaybackInterval();
         }
+    }
+
+    private void CropTool_OnClick(object? sender, RoutedEventArgs e)
+    {
+        if (_cropCanvas.IsVisible)
+        {
+            EndCropMode();
+            return;
+        }
+
+        _playTimer.Stop();
+        _isPlaying = false;
+        _playButton.Content = "▶ Play";
+        _pendingCrop = null;
+        _cropSelection = null;
+        _cropSelectionVisual.IsVisible = false;
+        _applyCropButton.IsEnabled = false;
+        _cropCanvas.IsVisible = true;
+        _cropControls.IsVisible = true;
+        if (!_cropToolButton.Classes.Contains("selected"))
+            _cropToolButton.Classes.Add("selected");
+    }
+
+    private void CropCanvas_OnPointerPressed(object? sender, PointerPressedEventArgs e)
+    {
+        if (!e.GetCurrentPoint(_cropCanvas).Properties.IsLeftButtonPressed || !TryGetImageBounds(out var imageBounds))
+            return;
+
+        var point = e.GetPosition(_cropCanvas);
+        if (!imageBounds.Contains(point))
+            return;
+
+        _cropStart = point;
+        _cropSelection = new Rect(point, point);
+        _isDraggingCrop = true;
+        _cropSelectionVisual.IsVisible = true;
+        e.Pointer.Capture(_cropCanvas);
+        UpdateCropSelectionVisual();
+        e.Handled = true;
+    }
+
+    private void CropCanvas_OnPointerMoved(object? sender, PointerEventArgs e)
+    {
+        if (!_isDraggingCrop || !TryGetImageBounds(out var imageBounds))
+            return;
+
+        var point = ClampToBounds(e.GetPosition(_cropCanvas), imageBounds);
+        _cropSelection = new Rect(
+            Math.Min(_cropStart.X, point.X), Math.Min(_cropStart.Y, point.Y),
+            Math.Abs(point.X - _cropStart.X), Math.Abs(point.Y - _cropStart.Y));
+        UpdateCropSelectionVisual();
+        e.Handled = true;
+    }
+
+    private void CropCanvas_OnPointerReleased(object? sender, PointerReleasedEventArgs e)
+    {
+        if (!_isDraggingCrop || !TryGetImageBounds(out var imageBounds))
+            return;
+
+        _isDraggingCrop = false;
+        e.Pointer.Capture(null);
+        var selection = _cropSelection ?? default;
+        var canvasSize = _viewModel.CanvasSize;
+        var left = Math.Clamp((int)Math.Floor((selection.X - imageBounds.X) * canvasSize.Width / imageBounds.Width), 0, canvasSize.Width);
+        var top = Math.Clamp((int)Math.Floor((selection.Y - imageBounds.Y) * canvasSize.Height / imageBounds.Height), 0, canvasSize.Height);
+        var right = Math.Clamp((int)Math.Ceiling((selection.Right - imageBounds.X) * canvasSize.Width / imageBounds.Width), 0, canvasSize.Width);
+        var bottom = Math.Clamp((int)Math.Ceiling((selection.Bottom - imageBounds.Y) * canvasSize.Height / imageBounds.Height), 0, canvasSize.Height);
+        if (right > left && bottom > top)
+        {
+            _pendingCrop = new CorePixelRect(left, top, right - left, bottom - top);
+            _applyCropButton.IsEnabled = true;
+        }
+
+        e.Handled = true;
+    }
+
+    private async void ApplyCrop_OnClick(object? sender, RoutedEventArgs e)
+    {
+        if (_pendingCrop is not { } crop)
+            return;
+
+        _applyCropButton.IsEnabled = false;
+        if (await _viewModel.CropAsync(crop))
+            EndCropMode();
+        else
+            _applyCropButton.IsEnabled = true;
+    }
+
+    private void CancelCrop_OnClick(object? sender, RoutedEventArgs e) => EndCropMode();
+
+    private void EndCropMode()
+    {
+        _cropCanvas.IsVisible = false;
+        _cropControls.IsVisible = false;
+        _cropSelectionVisual.IsVisible = false;
+        _cropSelection = null;
+        _pendingCrop = null;
+        _isDraggingCrop = false;
+        _applyCropButton.IsEnabled = false;
+        _cropToolButton.Classes.Remove("selected");
+    }
+
+    private void UpdateCropSelectionVisual()
+    {
+        if (_cropSelection is not { } selection)
+            return;
+
+        Canvas.SetLeft(_cropSelectionVisual, selection.X);
+        Canvas.SetTop(_cropSelectionVisual, selection.Y);
+        _cropSelectionVisual.Width = selection.Width;
+        _cropSelectionVisual.Height = selection.Height;
+    }
+
+    private bool TryGetImageBounds(out Rect bounds)
+    {
+        bounds = _previewImage.Bounds;
+        return bounds.Width > 0 && bounds.Height > 0;
+    }
+
+    private static Point ClampToBounds(Point point, Rect bounds) => new(
+        Math.Clamp(point.X, bounds.X, bounds.Right), Math.Clamp(point.Y, bounds.Y, bounds.Bottom));
+
+    private async void ResizeTool_OnClick(object? sender, RoutedEventArgs e)
+    {
+        var targetSize = await new ResizeWindow(_viewModel.CanvasSize).ShowDialog<CorePixelSize?>(this);
+        if (targetSize is { } size && size != _viewModel.CanvasSize)
+            await _viewModel.ResizeAsync(size);
     }
 
     private async Task LoadPreviewAsync()

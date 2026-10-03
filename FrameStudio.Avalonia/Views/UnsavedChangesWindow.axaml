@@ -1,0 +1,26 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="FrameStudio.Avalonia.Views.UnsavedChangesWindow"
+        Title="Unsaved project changes"
+        Width="430" Height="206" MinWidth="430" MinHeight="206"
+        CanResize="False"
+        WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource BackgroundPrimary}"
+        FontFamily="Inter, Segoe UI, sans-serif">
+    <Border Padding="24" BorderBrush="{DynamicResource Border}" BorderThickness="1">
+        <Grid RowDefinitions="Auto,*,Auto" RowSpacing="13">
+            <TextBlock Text="KEEP YOUR EDITS?" Classes="Caption" />
+            <StackPanel Grid.Row="1" Spacing="5" VerticalAlignment="Center">
+                <TextBlock Text="This project has unsaved changes." FontSize="16" FontWeight="SemiBold"
+                           Foreground="{DynamicResource TextPrimary}" />
+                <TextBlock Text="Save them before closing the editor?" FontSize="12"
+                           Foreground="{DynamicResource TextSecondary}" />
+            </StackPanel>
+            <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+                <Button Classes="quiet-button" Click="Cancel_OnClick" Content="Cancel" />
+                <Button Classes="quiet-button destructive-button" Click="Discard_OnClick" Content="Discard" />
+                <Button Classes="primary-button" Click="Save_OnClick" Content="Save changes" />
+            </StackPanel>
+        </Grid>
+    </Border>
+</Window>

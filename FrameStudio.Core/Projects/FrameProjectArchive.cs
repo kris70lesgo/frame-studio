@@ -198,4 +198,53 @@ public static class FrameProjectArchiveEditor
 
         return await writer.CompleteAsync(cancellationToken).ConfigureAwait(false);
     }
+
+    public static ValueTask<FrameProject> CropAsync(string sourcePath, string destinationPath, FrameProject project,
+        IReadOnlyList<ProjectFrameReference> frames, PixelRect crop, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(project);
+        if (crop.Width <= 0 || crop.Height <= 0 || crop.X < 0 || crop.Y < 0 ||
+            (long)crop.X + crop.Width > project.CanvasSize.Width || (long)crop.Y + crop.Height > project.CanvasSize.Height)
+            throw new ArgumentOutOfRangeException(nameof(crop), "Crop bounds must fit inside the project canvas.");
+
+        var outputSize = new PixelSize(crop.Width, crop.Height);
+        return TransformAsync(sourcePath, destinationPath, project, frames, outputSize,
+            pixels => RgbaFrameTransform.Crop(pixels, project.CanvasSize, crop), cancellationToken);
+    }
+
+    public static ValueTask<FrameProject> ResizeAsync(string sourcePath, string destinationPath, FrameProject project,
+        IReadOnlyList<ProjectFrameReference> frames, PixelSize targetSize, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(project);
+        FrameProjectArchiveWriter.ValidateCanvasSize(targetSize);
+        return TransformAsync(sourcePath, destinationPath, project, frames, targetSize,
+            pixels => RgbaFrameTransform.ResizeNearestNeighbor(pixels, project.CanvasSize, targetSize), cancellationToken);
+    }
+
+    private static async ValueTask<FrameProject> TransformAsync(string sourcePath, string destinationPath, FrameProject project,
+        IReadOnlyList<ProjectFrameReference> frames, PixelSize outputSize, Func<byte[], byte[]> transform,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(frames);
+        if (frames.Count is < 1 or > 100_000)
+            throw new ArgumentOutOfRangeException(nameof(frames), "An edited project must contain between 1 and 100,000 frames.");
+
+        await using var writer = await FrameProjectArchiveWriter.CreateAsync(destinationPath, project.Name, outputSize, cancellationToken)
+            .ConfigureAwait(false);
+        foreach (var frame in frames)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            if ((uint)frame.SourceFrameIndex >= (uint)project.Frames.Count)
+                throw new ArgumentOutOfRangeException(nameof(frames), "An edited frame refers to a missing source frame.");
+            if (frame.DurationMilliseconds <= 0)
+                throw new ArgumentOutOfRangeException(nameof(frames), "Edited frame durations must be positive.");
+
+            var pixels = await FrameProjectArchiveReader.ReadFrameRgbaAsync(sourcePath, project, frame.SourceFrameIndex, cancellationToken)
+                .ConfigureAwait(false);
+            var transformed = transform(pixels);
+            await writer.WriteFrameAsync(outputSize, transformed, frame.DurationMilliseconds, cancellationToken).ConfigureAwait(false);
+        }
+
+        return await writer.CompleteAsync(cancellationToken).ConfigureAwait(false);
+    }
 }

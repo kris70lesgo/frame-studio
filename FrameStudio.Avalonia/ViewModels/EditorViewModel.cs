@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.Input;
 using FrameStudio.Core.Export;
 using FrameStudio.Core.Models;
 using FrameStudio.Core.Projects;
+using System.IO;
 
 namespace FrameStudio.Avalonia.ViewModels;
 
@@ -30,6 +31,7 @@ public partial class EditorViewModel : ObservableObject
 {
     private FrameProject _sourceProject;
     private readonly string _projectPath;
+    private string _workingProjectPath;
 
     public ObservableCollection<TimelineFrameViewModel> Frames { get; } = [];
     public string ProjectName => _sourceProject.Name;
@@ -62,6 +64,7 @@ public partial class EditorViewModel : ObservableObject
     public EditorViewModel(string projectPath, FrameProject project)
     {
         _projectPath = projectPath;
+        _workingProjectPath = projectPath;
         _sourceProject = project;
         foreach (var frame in project.Frames)
             Frames.Add(new TimelineFrameViewModel { FrameNumber = frame.Index, SourceFrameIndex = frame.Index, DurationMilliseconds = frame.DurationMilliseconds });
@@ -73,7 +76,7 @@ public partial class EditorViewModel : ObservableObject
         if (SelectedFrame is null)
             throw new InvalidOperationException("No frame is selected.");
 
-        return await FrameProjectArchiveReader.ReadFrameRgbaAsync(_projectPath, _sourceProject,
+        return await FrameProjectArchiveReader.ReadFrameRgbaAsync(_workingProjectPath, _sourceProject,
             SelectedFrame.SourceFrameIndex, cancellationToken).ConfigureAwait(false);
     }
 
@@ -82,9 +85,15 @@ public partial class EditorViewModel : ObservableObject
         if ((uint)sourceFrameIndex >= (uint)_sourceProject.Frames.Count)
             throw new ArgumentOutOfRangeException(nameof(sourceFrameIndex));
 
-        return await FrameProjectArchiveReader.ReadFrameRgbaAsync(_projectPath, _sourceProject,
+        return await FrameProjectArchiveReader.ReadFrameRgbaAsync(_workingProjectPath, _sourceProject,
             sourceFrameIndex, cancellationToken).ConfigureAwait(false);
     }
+
+    public Task<bool> CropAsync(PixelRect crop) => ApplyRasterEditAsync("Crop", (source, destination, project, frames) =>
+        FrameProjectArchiveEditor.CropAsync(source, destination, project, frames, crop));
+
+    public Task<bool> ResizeAsync(PixelSize targetSize) => ApplyRasterEditAsync("Resize", (source, destination, project, frames) =>
+        FrameProjectArchiveEditor.ResizeAsync(source, destination, project, frames, targetSize));
 
     public void ReportStatus(string status) => Status = status;
 
@@ -182,8 +191,12 @@ public partial class EditorViewModel : ObservableObject
         Status = "Saving project…";
         try
         {
-            var references = Frames.Select(frame => new ProjectFrameReference(frame.SourceFrameIndex, frame.DurationMilliseconds)).ToArray();
-            _sourceProject = await FrameProjectArchiveEditor.RewriteAsync(_projectPath, _projectPath, _sourceProject, references);
+            var sourcePath = _workingProjectPath;
+            var references = GetFrameReferences();
+            _sourceProject = await FrameProjectArchiveEditor.RewriteAsync(sourcePath, _projectPath, _sourceProject, references);
+            _workingProjectPath = _projectPath;
+            if (!PathsEqual(sourcePath, _projectPath))
+                TryDelete(sourcePath);
             foreach (var frame in Frames)
                 frame.SourceFrameIndex = frame.FrameNumber;
             IsDirty = false;
@@ -208,8 +221,8 @@ public partial class EditorViewModel : ObservableObject
         Status = "Exporting GIF…";
         try
         {
-            var references = Frames.Select(frame => new ProjectFrameReference(frame.SourceFrameIndex, frame.DurationMilliseconds)).ToArray();
-            await new GifExportService().ExportSelectionAsync(_projectPath, destinationPath, references,
+            var references = GetFrameReferences();
+            await new GifExportService().ExportSelectionAsync(_workingProjectPath, destinationPath, references,
                 new GifExportOptions(RepeatCount: 0), cancellationToken);
             Status = "GIF exported";
         }
@@ -241,6 +254,72 @@ public partial class EditorViewModel : ObservableObject
     partial void OnIsBusyChanged(bool value) => RaiseFrameSelectionState();
 
     public string SelectedFrameNumberLabel => SelectedFrame is null ? "No frame selected" : $"Frame {SelectedFrame.FrameNumber + 1} of {Frames.Count}";
+
+    public void DiscardEdits()
+    {
+        if (!PathsEqual(_workingProjectPath, _projectPath))
+            TryDelete(_workingProjectPath);
+        _workingProjectPath = _projectPath;
+        IsDirty = false;
+    }
+
+    private async Task<bool> ApplyRasterEditAsync(string operation,
+        Func<string, string, FrameProject, IReadOnlyList<ProjectFrameReference>, ValueTask<FrameProject>> edit)
+    {
+        if (IsBusy)
+            return false;
+
+        var selectedIndex = SelectedFrame is null ? 0 : Math.Max(0, Frames.IndexOf(SelectedFrame));
+        var directory = Path.GetDirectoryName(_projectPath)!;
+        var draftPath = Path.Combine(directory, $".{Path.GetFileNameWithoutExtension(_projectPath)}.{Guid.NewGuid():N}.draft.fsp");
+        IsBusy = true;
+        Status = $"Applying {operation.ToLowerInvariant()} to frames…";
+        try
+        {
+            var sourcePath = _workingProjectPath;
+            var project = await edit(sourcePath, draftPath, _sourceProject, GetFrameReferences());
+            _sourceProject = project;
+            _workingProjectPath = draftPath;
+            RefreshFrames(selectedIndex);
+            IsDirty = true;
+            Status = $"{operation} applied. Save to keep the change.";
+            if (!PathsEqual(sourcePath, _projectPath))
+                TryDelete(sourcePath);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            TryDelete(draftPath);
+            Status = $"{operation} failed: {ex.Message}";
+            return false;
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    private ProjectFrameReference[] GetFrameReferences() => Frames
+        .Select(frame => new ProjectFrameReference(frame.SourceFrameIndex, frame.DurationMilliseconds)).ToArray();
+
+    private void RefreshFrames(int selectedIndex)
+    {
+        SelectedFrame = null;
+        Frames.Clear();
+        foreach (var frame in _sourceProject.Frames)
+            Frames.Add(new TimelineFrameViewModel { FrameNumber = frame.Index, SourceFrameIndex = frame.Index, DurationMilliseconds = frame.DurationMilliseconds });
+        SelectedFrame = Frames[Math.Clamp(selectedIndex, 0, Frames.Count - 1)];
+    }
+
+    private static bool PathsEqual(string first, string second) =>
+        string.Equals(Path.GetFullPath(first), Path.GetFullPath(second), OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal);
+
+    private static void TryDelete(string path)
+    {
+        try { File.Delete(path); }
+        catch (IOException) { }
+        catch (UnauthorizedAccessException) { }
+    }
 
     private void RenumberFrames()
     {

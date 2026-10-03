@@ -50,10 +50,12 @@
                     <Button Classes="tool-button selected" ToolTip.Tip="Frame selection">
                         <TextBlock Text="↖" FontSize="17" />
                     </Button>
-                    <Button Classes="tool-button" IsEnabled="False" ToolTip.Tip="Crop will be ported in the next editor milestone">
+                    <Button x:Name="CropToolButton" Classes="tool-button" Click="CropTool_OnClick"
+                            IsEnabled="{Binding CanEdit}" ToolTip.Tip="Drag on the preview to crop every frame">
                         <TextBlock Text="⌗" FontSize="16" />
                     </Button>
-                    <Button Classes="tool-button" IsEnabled="False" ToolTip.Tip="Resize will be ported in the next editor milestone">
+                    <Button Classes="tool-button" Click="ResizeTool_OnClick" IsEnabled="{Binding CanEdit}"
+                            ToolTip.Tip="Resize every frame in this project">
                         <TextBlock Text="□" FontSize="16" />
                     </Button>
                     <Border Height="1" Margin="6,5" Background="{DynamicResource Border}" />
@@ -73,10 +75,23 @@
                         </Border>
                         <TextBlock x:Name="PreviewEmptyText" Text="Select a frame to preview" HorizontalAlignment="Center"
                                    VerticalAlignment="Center" IsVisible="True" Foreground="{DynamicResource TextTertiary}" FontSize="13" />
+                        <Canvas x:Name="CropCanvas" IsVisible="False" Background="Transparent"
+                                PointerPressed="CropCanvas_OnPointerPressed" PointerMoved="CropCanvas_OnPointerMoved"
+                                PointerReleased="CropCanvas_OnPointerReleased">
+                            <Border x:Name="CropSelectionVisual" IsVisible="False" BorderBrush="{DynamicResource Accent}"
+                                    BorderThickness="2" Background="#2478D8BC" IsHitTestVisible="False" />
+                        </Canvas>
                     </Grid>
                 </Border>
-                <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,13">
+                <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,13" Spacing="8">
                     <Button x:Name="PlayButton" Classes="quiet-button" Click="Play_OnClick" Content="▶ Play" />
+                    <StackPanel x:Name="CropControls" Orientation="Horizontal" IsVisible="False" Spacing="8">
+                        <TextBlock Text="Drag a crop area over the preview" FontSize="11" Foreground="{DynamicResource TextSecondary}"
+                                   VerticalAlignment="Center" />
+                        <Button x:Name="ApplyCropButton" Classes="primary-button" Click="ApplyCrop_OnClick"
+                                IsEnabled="False" Content="Apply crop" />
+                        <Button Classes="quiet-button" Click="CancelCrop_OnClick" Content="Cancel" />
+                    </StackPanel>
                 </StackPanel>
             </Grid>
 

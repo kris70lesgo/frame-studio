@@ -18,10 +18,10 @@ The Avalonia app now connects Windows screen-region recording to a native `.fsp`
 | Platform service contracts | Defined |
 | Windows screen-region capture | Setup, display selection, area selection, frame rate, cursor option, pause, and stop are wired; Windows runtime still needs verification |
 | End-to-end recording workflow | Records frames into `.fsp` projects and opens the editor when recording stops |
-| Editor | Frame thumbnails, preview/playback, selection, earlier/later ordering, duplicate/delete, duration edits, and project save implemented |
+| Editor | Frame thumbnails, preview/playback, selection, earlier/later ordering, duplicate/delete, duration edits, drag crop, project-wide resize, save/discard, and GIF export implemented |
 | GIF export | Migrated encoder and editor export flow implemented |
 | Webcam, window capture, sketchboard | Not migrated yet |
-| Crop, resize, annotations, video export | Not migrated yet |
+| Text/drawing annotations and video export | Not migrated yet |
 | Windows platform adapter | Win32 monitor/window enumeration and bounded GDI desktop-region recording implemented; runtime needs Windows verification |
 
 The original WPF application remains in this repository as the baseline in `GifRecorder.sln`. The new application is in `FrameStudio.sln` and does not reference the WPF UI projects.

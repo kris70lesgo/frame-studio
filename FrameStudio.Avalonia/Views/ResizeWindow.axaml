@@ -1,0 +1,38 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="FrameStudio.Avalonia.Views.ResizeWindow"
+        Title="Resize project"
+        Width="440" Height="370" MinWidth="440" MinHeight="370"
+        CanResize="False"
+        WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource BackgroundPrimary}"
+        FontFamily="Inter, Segoe UI, sans-serif">
+    <Border Padding="24" BorderBrush="{DynamicResource Border}" BorderThickness="1">
+        <Grid RowDefinitions="Auto,Auto,Auto,*,Auto" RowSpacing="16">
+            <StackPanel Spacing="4">
+                <TextBlock Text="RESIZE ALL FRAMES" Classes="Caption" />
+                <TextBlock Text="Set the project dimensions" Classes="Title" FontSize="20" />
+                <TextBlock Text="Frame pixels are resized with a fast nearest-neighbor filter."
+                           FontSize="11" Foreground="{DynamicResource TextSecondary}" TextWrapping="Wrap" />
+            </StackPanel>
+            <Grid Grid.Row="1" ColumnDefinitions="*,*" ColumnSpacing="12">
+                <StackPanel Spacing="6">
+                    <TextBlock Text="Width · pixels" Classes="Caption" />
+                    <TextBox x:Name="WidthInput" TextChanged="Width_OnTextChanged" />
+                </StackPanel>
+                <StackPanel Grid.Column="1" Spacing="6">
+                    <TextBlock Text="Height · pixels" Classes="Caption" />
+                    <TextBox x:Name="HeightInput" TextChanged="Height_OnTextChanged" />
+                </StackPanel>
+            </Grid>
+            <CheckBox Grid.Row="2" x:Name="KeepAspectRatioCheckBox" Content="Keep aspect ratio"
+                      IsChecked="True" FontSize="11" Foreground="{DynamicResource TextSecondary}" />
+            <TextBlock Grid.Row="3" x:Name="ErrorLabel" Text="Each side is limited to 16,384 px; canvas size is limited to 16 megapixels."
+                       FontSize="10" Foreground="{DynamicResource TextTertiary}" TextWrapping="Wrap" VerticalAlignment="Center" />
+            <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+                <Button Classes="quiet-button" Click="Cancel_OnClick" Content="Cancel" />
+                <Button Classes="primary-button" Click="Apply_OnClick" Content="Apply resize" />
+            </StackPanel>
+        </Grid>
+    </Border>
+</Window>

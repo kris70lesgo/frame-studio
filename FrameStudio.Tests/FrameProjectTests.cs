@@ -54,6 +54,22 @@ public sealed class FrameProjectTests
     }
 
     [Fact]
+    public void RgbaFrameTransform_CropsAndResizesPixelsWithoutChangingChannels()
+    {
+        byte[] pixels =
+        [
+            255, 0, 0, 255, 0, 255, 0, 255,
+            0, 0, 255, 255, 255, 255, 255, 255
+        ];
+
+        var cropped = RgbaFrameTransform.Crop(pixels, new PixelSize(2, 2), new PixelRect(1, 0, 1, 2));
+        Assert.Equal<byte>([0, 255, 0, 255, 255, 255, 255, 255], cropped);
+
+        var resized = RgbaFrameTransform.ResizeNearestNeighbor(cropped, new PixelSize(1, 2), new PixelSize(2, 2));
+        Assert.Equal<byte>([0, 255, 0, 255, 0, 255, 0, 255, 255, 255, 255, 255, 255, 255, 255, 255], resized);
+    }
+
+    [Fact]
     public void GifFile_EncodesRgbaFramesIntoAnAnimatedGif()
     {
         using var output = new MemoryStream();
@@ -118,6 +134,24 @@ public sealed class FrameProjectTests
             Assert.Equal(3, editedProject.Frames.Count);
             Assert.Equal(TimeSpan.FromMilliseconds(330), editedProject.Duration);
             Assert.Equal(blueFrame, await FrameProjectArchiveReader.ReadFrameRgbaAsync(projectPath, editedProject, 2));
+
+            var crop = await FrameProjectArchiveEditor.CropAsync(projectPath, projectPath, editedProject,
+            [
+                new ProjectFrameReference(0, 90),
+                new ProjectFrameReference(1, 110),
+                new ProjectFrameReference(2, 130)
+            ], new PixelRect(1, 0, 1, 1));
+            Assert.Equal(new PixelSize(1, 1), crop.CanvasSize);
+            Assert.Equal(new byte[] { 0, 0, 255, 255 }, await FrameProjectArchiveReader.ReadFrameRgbaAsync(projectPath, crop, 0));
+
+            var resizedProject = await FrameProjectArchiveEditor.ResizeAsync(projectPath, projectPath, crop,
+            [
+                new ProjectFrameReference(0, 90),
+                new ProjectFrameReference(1, 110),
+                new ProjectFrameReference(2, 130)
+            ], new PixelSize(2, 2));
+            Assert.Equal(new PixelSize(2, 2), resizedProject.CanvasSize);
+            Assert.Equal(TimeSpan.FromMilliseconds(330), resizedProject.Duration);
 
             await new GifExportService().ExportAsync(projectPath, gifPath, new GifExportOptions(RepeatCount: 0));
             var gif = await File.ReadAllBytesAsync(gifPath);
