@@ -69,4 +69,45 @@ public sealed class EditorViewModelTests
             Directory.Delete(directory, recursive: true);
         }
     }
+
+    [Fact]
+    public async Task EditorViewModel_AppliesFreehandStrokeToEveryFrameAndPersistsIt()
+    {
+        var directory = Path.Combine(Path.GetTempPath(), $"frame-studio-stroke-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(directory);
+        var projectPath = Path.Combine(directory, "stroke.fsp");
+        var size = new PixelSize(20, 12);
+        var originalPixels = Enumerable.Repeat(new byte[] { 8, 16, 24, 255 }, size.Width * size.Height)
+            .SelectMany(pixel => pixel).ToArray();
+
+        try
+        {
+            await using (var writer = await FrameProjectArchiveWriter.CreateAsync(projectPath, "Stroke", size))
+            {
+                await writer.WriteFrameAsync(size, originalPixels, 40);
+                await writer.WriteFrameAsync(size, originalPixels, 60);
+                await writer.CompleteAsync();
+            }
+
+            var project = await FrameProjectArchiveReader.ReadProjectAsync(projectPath);
+            var editor = new EditorViewModel(projectPath, project);
+            var applied = await editor.AddStrokeOverlayAsync(new StrokeOverlayOptions(
+                [new PixelCoordinate(2, 6), new PixelCoordinate(16, 6)], 4, Rgba32.FromRgb(255, 0, 0)));
+
+            Assert.True(applied);
+            Assert.True(editor.IsDirty);
+            await editor.SaveProjectCommand.ExecuteAsync(null);
+
+            var savedProject = await FrameProjectArchiveReader.ReadProjectAsync(projectPath);
+            var firstFrame = await FrameProjectArchiveReader.ReadFrameRgbaAsync(projectPath, savedProject, 0);
+            var secondFrame = await FrameProjectArchiveReader.ReadFrameRgbaAsync(projectPath, savedProject, 1);
+            var strokeOffset = (6 * size.Width + 10) * 4;
+            Assert.True(firstFrame[strokeOffset] > originalPixels[strokeOffset]);
+            Assert.Equal(firstFrame, secondFrame);
+        }
+        finally
+        {
+            Directory.Delete(directory, recursive: true);
+        }
+    }
 }

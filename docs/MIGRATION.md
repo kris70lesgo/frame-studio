@@ -235,6 +235,12 @@ This log records the independent Avalonia port of ScreenToGif. The port uses new
 - Replaced it with an independently written implementation based only on the general median-cut concept: collect an RGB frequency histogram, select a splittable bucket by color range, split that bucket at its weighted median, average each bucket into a palette entry, then select the nearest opaque palette color for each pixel.
 - Added tests for a green-channel split, frequency-weighted palette averages, transparent-palette reservation, and fully transparent input. The source comment and migration audit record the clean-room provenance.
 
+## 2026-10-03 — Freehand editor annotations
+
+- Added a Pencil tool to the Avalonia editor. The user can drag over the preview, clear or cancel the pending stroke, and apply the teal rounded stroke to every frame in the project.
+- The UI converts preview coordinates to neutral pixel coordinates. `FrameStudio.Core` validates the stroke, rasterizes it through Skia into RGBA buffers, and rewrites the project through the same atomic draft path as crop, resize, and text edits. GIF and MP4 exports therefore receive the drawing automatically.
+- Added transform validation, transform pixel-boundary, editor persistence, and all-frame application tests. The control builds on macOS; the already-running app had a user project at an unsaved-changes dialog, so a fresh live UI interaction check remains pending rather than altering that project.
+
 ## Ongoing log
 
 Add dated entries here as migrations reveal framework differences, platform constraints, or performance fixes.

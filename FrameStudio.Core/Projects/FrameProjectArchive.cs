@@ -231,6 +231,16 @@ public static class FrameProjectArchiveEditor
             pixels => RgbaFrameTransform.DrawText(pixels, project.CanvasSize, options), cancellationToken);
     }
 
+    public static ValueTask<FrameProject> AddStrokeOverlayAsync(string sourcePath, string destinationPath, FrameProject project,
+        IReadOnlyList<ProjectFrameReference> frames, StrokeOverlayOptions options, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(project);
+        ArgumentNullException.ThrowIfNull(options);
+        RgbaFrameTransform.ValidateStrokeOverlay(project.CanvasSize, options);
+        return TransformAsync(sourcePath, destinationPath, project, frames, project.CanvasSize,
+            pixels => RgbaFrameTransform.DrawStroke(pixels, project.CanvasSize, options), cancellationToken);
+    }
+
     private static async ValueTask<FrameProject> TransformAsync(string sourcePath, string destinationPath, FrameProject project,
         IReadOnlyList<ProjectFrameReference> frames, PixelSize outputSize, Func<byte[], byte[]> transform,
         CancellationToken cancellationToken)

@@ -89,6 +89,54 @@ public static class RgbaFrameTransform
         return output;
     }
 
+    public static byte[] DrawStroke(ReadOnlySpan<byte> rgbaPixels, PixelSize sourceSize, StrokeOverlayOptions options)
+    {
+        ArgumentNullException.ThrowIfNull(options);
+        ValidatePixels(rgbaPixels, sourceSize);
+        ValidateStrokeOverlay(sourceSize, options);
+
+        var output = rgbaPixels.ToArray();
+        var imageInfo = new SKImageInfo(sourceSize.Width, sourceSize.Height, SKColorType.Rgba8888, SKAlphaType.Unpremul);
+        using var bitmap = new SKBitmap(imageInfo);
+        var bitmapPixels = bitmap.GetPixels();
+        if (bitmapPixels == IntPtr.Zero)
+            throw new InvalidOperationException("Could not allocate a stroke overlay bitmap.");
+
+        var rowLength = checked(sourceSize.Width * 4);
+        for (var row = 0; row < sourceSize.Height; row++)
+            Marshal.Copy(output, row * rowLength, IntPtr.Add(bitmapPixels, row * bitmap.RowBytes), rowLength);
+
+        using var canvas = new SKCanvas(bitmap);
+        using var paint = new SKPaint
+        {
+            IsAntialias = true,
+            Style = SKPaintStyle.Stroke,
+            StrokeWidth = options.Thickness,
+            StrokeCap = SKStrokeCap.Round,
+            StrokeJoin = SKStrokeJoin.Round,
+            Color = new SKColor(options.Color.R, options.Color.G, options.Color.B, options.Color.A)
+        };
+
+        if (options.Points.Count == 1)
+        {
+            var point = options.Points[0];
+            canvas.DrawPoint(point.X, point.Y, paint);
+        }
+        else
+        {
+            using var path = new SKPath();
+            path.MoveTo(options.Points[0].X, options.Points[0].Y);
+            foreach (var point in options.Points.Skip(1))
+                path.LineTo(point.X, point.Y);
+            canvas.DrawPath(path, paint);
+        }
+
+        for (var row = 0; row < sourceSize.Height; row++)
+            Marshal.Copy(IntPtr.Add(bitmapPixels, row * bitmap.RowBytes), output, row * rowLength, rowLength);
+
+        return output;
+    }
+
     public static void ValidateTextOverlay(PixelSize canvasSize, TextOverlayOptions options)
     {
         ArgumentNullException.ThrowIfNull(options);
@@ -118,6 +166,19 @@ public static class RgbaFrameTransform
             if (font.MeasureText(line, paint) > canvasSize.Width - options.X)
                 throw new ArgumentOutOfRangeException(nameof(options), "Text does not fit horizontally inside the project canvas.");
         }
+    }
+
+    public static void ValidateStrokeOverlay(PixelSize canvasSize, StrokeOverlayOptions options)
+    {
+        ArgumentNullException.ThrowIfNull(options);
+        ArgumentNullException.ThrowIfNull(options.Points);
+        FrameProjectArchiveWriter.ValidateCanvasSize(canvasSize);
+        if (options.Points.Count is < 1 or > 4_096)
+            throw new ArgumentException("A stroke must contain between 1 and 4,096 points.", nameof(options));
+        if (options.Thickness is < 1 or > 128)
+            throw new ArgumentOutOfRangeException(nameof(options), "Stroke thickness must be between 1 and 128 pixels.");
+        if (options.Points.Any(point => point.X < 0 || point.Y < 0 || point.X >= canvasSize.Width || point.Y >= canvasSize.Height))
+            throw new ArgumentOutOfRangeException(nameof(options), "Every stroke point must be inside the project canvas.");
     }
 
     private static string[] NormalizeLines(string text) => text.Replace("\r\n", "\n", StringComparison.Ordinal)

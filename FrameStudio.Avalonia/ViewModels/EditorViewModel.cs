@@ -99,6 +99,10 @@ public partial class EditorViewModel : ObservableObject
         ApplyRasterEditAsync("Text overlay", (source, destination, project, frames) =>
             FrameProjectArchiveEditor.AddTextOverlayAsync(source, destination, project, frames, options));
 
+    public Task<bool> AddStrokeOverlayAsync(StrokeOverlayOptions options) =>
+        ApplyRasterEditAsync("Drawing", (source, destination, project, frames) =>
+            FrameProjectArchiveEditor.AddStrokeOverlayAsync(source, destination, project, frames, options));
+
     public void ReportStatus(string status) => Status = status;
 
     [RelayCommand]

@@ -72,6 +72,11 @@
                             AutomationProperties.Name="Add text annotation to all frames">
                         <TextBlock Text="T" FontSize="14" FontWeight="SemiBold" />
                     </Button>
+                    <Button x:Name="DrawToolButton" Classes="tool-button" Click="DrawTool_OnClick" IsEnabled="{Binding CanEdit}"
+                            ToolTip.Tip="Draw a freehand annotation onto every frame"
+                            AutomationProperties.Name="Add freehand drawing to all frames">
+                        <TextBlock Text="✎" FontSize="17" />
+                    </Button>
                 </StackPanel>
             </Border>
 
@@ -91,6 +96,9 @@
                             <Border x:Name="CropSelectionVisual" IsVisible="False" BorderBrush="{DynamicResource Accent}"
                                     BorderThickness="2" Background="#2478D8BC" IsHitTestVisible="False" />
                         </Canvas>
+                        <Canvas x:Name="DrawingCanvas" IsVisible="False" Background="Transparent"
+                                PointerPressed="DrawingCanvas_OnPointerPressed" PointerMoved="DrawingCanvas_OnPointerMoved"
+                                PointerReleased="DrawingCanvas_OnPointerReleased" />
                     </Grid>
                 </Border>
                 <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,13" Spacing="8">
@@ -102,6 +110,14 @@
                         <Button x:Name="ApplyCropButton" Classes="primary-button" Click="ApplyCrop_OnClick"
                                 IsEnabled="False" Content="Apply crop" />
                         <Button Classes="quiet-button" Click="CancelCrop_OnClick" Content="Cancel" />
+                    </StackPanel>
+                    <StackPanel x:Name="DrawingControls" Orientation="Horizontal" IsVisible="False" Spacing="8">
+                        <TextBlock Text="Draw in the preview. The teal stroke is applied to every frame." FontSize="11"
+                                   Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" />
+                        <Button x:Name="ApplyDrawingButton" Classes="primary-button" Click="ApplyDrawing_OnClick"
+                                IsEnabled="False" Content="Apply drawing" />
+                        <Button Classes="quiet-button" Click="ClearDrawing_OnClick" Content="Clear" />
+                        <Button Classes="quiet-button" Click="CancelDrawing_OnClick" Content="Cancel" />
                     </StackPanel>
                 </StackPanel>
             </Grid>

@@ -9,6 +9,8 @@ using Avalonia.Threading;
 using FrameStudio.Avalonia.ViewModels;
 using CorePixelRect = FrameStudio.Core.Models.PixelRect;
 using CorePixelSize = FrameStudio.Core.Models.PixelSize;
+using CorePixelPoint = FrameStudio.Core.Models.PixelCoordinate;
+using CoreStrokeOverlayOptions = FrameStudio.Core.Models.StrokeOverlayOptions;
 using CoreTextOverlayOptions = FrameStudio.Core.Models.TextOverlayOptions;
 using System.Runtime.InteropServices;
 
@@ -26,6 +28,10 @@ public partial class EditorWindow : Window
     private readonly StackPanel _cropControls;
     private readonly Canvas _cropCanvas;
     private readonly Border _cropSelectionVisual;
+    private readonly Button _drawToolButton;
+    private readonly Button _applyDrawingButton;
+    private readonly StackPanel _drawingControls;
+    private readonly Canvas _drawingCanvas;
     private readonly DispatcherTimer _playTimer = new() { Interval = TimeSpan.FromMilliseconds(100) };
     private readonly SemaphoreSlim _frameReadGate = new(2, 2);
     private CancellationTokenSource? _previewCancellation;
@@ -38,6 +44,9 @@ public partial class EditorWindow : Window
     private Point _cropStart;
     private Rect? _cropSelection;
     private CorePixelRect? _pendingCrop;
+    private readonly List<CorePixelPoint> _pendingStroke = [];
+    private bool _isDrawing;
+    private Point _drawingLastPoint;
 
     public EditorWindow()
     {
@@ -52,6 +61,10 @@ public partial class EditorWindow : Window
         _cropControls = this.FindControl<StackPanel>("CropControls")!;
         _cropCanvas = this.FindControl<Canvas>("CropCanvas")!;
         _cropSelectionVisual = this.FindControl<Border>("CropSelectionVisual")!;
+        _drawToolButton = this.FindControl<Button>("DrawToolButton")!;
+        _applyDrawingButton = this.FindControl<Button>("ApplyDrawingButton")!;
+        _drawingControls = this.FindControl<StackPanel>("DrawingControls")!;
+        _drawingCanvas = this.FindControl<Canvas>("DrawingCanvas")!;
         _playTimer.Tick += PlayTimer_OnTick;
         Closing += EditorWindow_OnClosing;
         Closed += (_, _) =>
@@ -148,6 +161,7 @@ public partial class EditorWindow : Window
             return;
         }
 
+        EndDrawingMode();
         _playTimer.Stop();
         _isPlaying = false;
         _playButton.Content = "▶ Play";
@@ -240,6 +254,145 @@ public partial class EditorWindow : Window
         _cropToolButton.Classes.Remove("selected");
     }
 
+    private void DrawTool_OnClick(object? sender, RoutedEventArgs e)
+    {
+        if (_drawingCanvas.IsVisible)
+        {
+            EndDrawingMode();
+            return;
+        }
+
+        EndCropMode();
+        _playTimer.Stop();
+        _isPlaying = false;
+        _playButton.Content = "▶ Play";
+        _pendingStroke.Clear();
+        _drawingCanvas.Children.Clear();
+        _applyDrawingButton.IsEnabled = false;
+        _drawingCanvas.IsVisible = true;
+        _drawingControls.IsVisible = true;
+        if (!_drawToolButton.Classes.Contains("selected"))
+            _drawToolButton.Classes.Add("selected");
+    }
+
+    private void DrawingCanvas_OnPointerPressed(object? sender, PointerPressedEventArgs e)
+    {
+        if (!e.GetCurrentPoint(_drawingCanvas).Properties.IsLeftButtonPressed ||
+            !TryMapDrawingPoint(e.GetPosition(_drawingCanvas), out var pixelPoint, out var previewPoint))
+            return;
+
+        _pendingStroke.Clear();
+        _drawingCanvas.Children.Clear();
+        _pendingStroke.Add(pixelPoint);
+        _drawingLastPoint = previewPoint;
+        _isDrawing = true;
+        _applyDrawingButton.IsEnabled = true;
+        e.Pointer.Capture(_drawingCanvas);
+        AddDrawingDot(previewPoint);
+        e.Handled = true;
+    }
+
+    private void DrawingCanvas_OnPointerMoved(object? sender, PointerEventArgs e)
+    {
+        if (!_isDrawing || _pendingStroke.Count >= 4_096 ||
+            !TryMapDrawingPoint(e.GetPosition(_drawingCanvas), out var pixelPoint, out var previewPoint))
+            return;
+
+        if (_pendingStroke[^1] == pixelPoint)
+            return;
+
+        AddDrawingSegment(_drawingLastPoint, previewPoint);
+        _drawingLastPoint = previewPoint;
+        _pendingStroke.Add(pixelPoint);
+        e.Handled = true;
+    }
+
+    private void DrawingCanvas_OnPointerReleased(object? sender, PointerReleasedEventArgs e)
+    {
+        if (!_isDrawing)
+            return;
+
+        _isDrawing = false;
+        e.Pointer.Capture(null);
+        e.Handled = true;
+    }
+
+    private async void ApplyDrawing_OnClick(object? sender, RoutedEventArgs e)
+    {
+        if (_pendingStroke.Count == 0)
+            return;
+
+        _applyDrawingButton.IsEnabled = false;
+        var options = new CoreStrokeOverlayOptions(_pendingStroke.ToArray(), Thickness: 4,
+            FrameStudio.Core.Models.Rgba32.FromRgb(45, 212, 191));
+        if (await _viewModel.AddStrokeOverlayAsync(options))
+            EndDrawingMode();
+        else
+            _applyDrawingButton.IsEnabled = true;
+    }
+
+    private void ClearDrawing_OnClick(object? sender, RoutedEventArgs e)
+    {
+        _pendingStroke.Clear();
+        _drawingCanvas.Children.Clear();
+        _applyDrawingButton.IsEnabled = false;
+    }
+
+    private void CancelDrawing_OnClick(object? sender, RoutedEventArgs e) => EndDrawingMode();
+
+    private void EndDrawingMode()
+    {
+        _drawingCanvas.IsVisible = false;
+        _drawingControls.IsVisible = false;
+        _drawingCanvas.Children.Clear();
+        _pendingStroke.Clear();
+        _isDrawing = false;
+        _applyDrawingButton.IsEnabled = false;
+        _drawToolButton.Classes.Remove("selected");
+    }
+
+    private bool TryMapDrawingPoint(Point point, out CorePixelPoint pixelPoint, out Point previewPoint)
+    {
+        pixelPoint = default;
+        previewPoint = default;
+        if (!TryGetImageBounds(out var imageBounds) || !imageBounds.Contains(point))
+            return false;
+
+        previewPoint = ClampToBounds(point, imageBounds);
+        var canvasSize = _viewModel.CanvasSize;
+        pixelPoint = new CorePixelPoint(
+            Math.Clamp((int)Math.Round((previewPoint.X - imageBounds.X) * canvasSize.Width / imageBounds.Width), 0, canvasSize.Width - 1),
+            Math.Clamp((int)Math.Round((previewPoint.Y - imageBounds.Y) * canvasSize.Height / imageBounds.Height), 0, canvasSize.Height - 1));
+        return true;
+    }
+
+    private void AddDrawingDot(Point point)
+    {
+        var dot = new global::Avalonia.Controls.Shapes.Ellipse
+        {
+            Width = 4,
+            Height = 4,
+            Fill = global::Avalonia.Media.Brushes.MediumTurquoise,
+            IsHitTestVisible = false
+        };
+        Canvas.SetLeft(dot, point.X - 2);
+        Canvas.SetTop(dot, point.Y - 2);
+        _drawingCanvas.Children.Add(dot);
+    }
+
+    private void AddDrawingSegment(Point start, Point end)
+    {
+        _drawingCanvas.Children.Add(new global::Avalonia.Controls.Shapes.Line
+        {
+            StartPoint = start,
+            EndPoint = end,
+            Stroke = global::Avalonia.Media.Brushes.MediumTurquoise,
+            StrokeThickness = 4,
+            StrokeLineCap = global::Avalonia.Media.PenLineCap.Round,
+            IsHitTestVisible = false
+        });
+    }
+
     private void UpdateCropSelectionVisual()
     {
         if (_cropSelection is not { } selection)
@@ -262,6 +415,7 @@ public partial class EditorWindow : Window
 
     private async void ResizeTool_OnClick(object? sender, RoutedEventArgs e)
     {
+        EndDrawingMode();
         var targetSize = await new ResizeWindow(_viewModel.CanvasSize).ShowDialog<CorePixelSize?>(this);
         if (targetSize is { } size && size != _viewModel.CanvasSize)
             await _viewModel.ResizeAsync(size);
@@ -269,6 +423,7 @@ public partial class EditorWindow : Window
 
     private async void TextTool_OnClick(object? sender, RoutedEventArgs e)
     {
+        EndDrawingMode();
         _playTimer.Stop();
         _isPlaying = false;
         _playButton.Content = "▶ Play";
@@ -468,6 +623,11 @@ public partial class EditorWindow : Window
         else if (e.Key == Key.Escape && _cropCanvas.IsVisible)
         {
             EndCropMode();
+            e.Handled = true;
+        }
+        else if (e.Key == Key.Escape && _drawingCanvas.IsVisible)
+        {
+            EndDrawingMode();
             e.Handled = true;
         }
     }

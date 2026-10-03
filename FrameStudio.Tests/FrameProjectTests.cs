@@ -101,6 +101,34 @@ public sealed class FrameProjectTests
     }
 
     [Fact]
+    public void RgbaFrameTransform_DrawsFreehandStrokeAndLeavesDistantPixelsUntouched()
+    {
+        var size = new PixelSize(40, 20);
+        var pixels = Enumerable.Repeat(new byte[] { 8, 16, 24, 255 }, size.Width * size.Height)
+            .SelectMany(pixel => pixel).ToArray();
+        var options = new StrokeOverlayOptions(
+            [new PixelCoordinate(3, 10), new PixelCoordinate(18, 10)],
+            Thickness: 4,
+            Color: Rgba32.FromRgb(255, 32, 32));
+
+        var result = RgbaFrameTransform.DrawStroke(pixels, size, options);
+
+        var strokeOffset = (10 * size.Width + 10) * 4;
+        var untouchedOffset = (2 * size.Width + 32) * 4;
+        Assert.True(result[strokeOffset] > pixels[strokeOffset]);
+        Assert.Equal(pixels.AsSpan(untouchedOffset, 4).ToArray(), result.AsSpan(untouchedOffset, 4).ToArray());
+    }
+
+    [Fact]
+    public void RgbaFrameTransform_RejectsStrokePointsOutsideTheCanvas()
+    {
+        var options = new StrokeOverlayOptions([new PixelCoordinate(3, 10), new PixelCoordinate(40, 10)], 4, Rgba32.FromRgb(255, 255, 255));
+
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            RgbaFrameTransform.ValidateStrokeOverlay(new PixelSize(40, 20), options));
+    }
+
+    [Fact]
     public void GifFile_EncodesRgbaFramesIntoAnAnimatedGif()
     {
         using var output = new MemoryStream();
