@@ -95,6 +95,11 @@ This log records the independent Avalonia port of ScreenToGif. The port uses new
 - Rebuilt the self-contained Windows x64 candidate from clean commit `d605513`. The package integrity check passed and the current local archive has SHA-256 `b7367c25f15ac36d07a497469d3c0a06d39c02afbe89f7463c3e18f0114fb650`.
 - The package includes the persistent recent-project home screen. Its source README still labels it as an unverified local candidate; the Windows desktop runtime gate has not been run.
 
+## 2026-10-03 — Candidate rebuilt with editor workflow checks
+
+- Rebuilt the self-contained Windows x64 candidate from clean commit `716aad0`. The archive integrity check passed and its SHA-256 is `67c390f48e9b03283420faa9256e1ed989ae6d7cfda7b3cf3937703dc38e9c8b`.
+- The current test project exercises the editor view model's edit, save, and GIF export commands. The candidate still has not been run on Windows; its bundled README says this explicitly.
+
 ## Migration decisions
 
 - Keep the original WPF projects intact as the baseline and source reference.
