@@ -65,6 +65,75 @@ public sealed class RecordingViewModelTests
         }
     }
 
+    [Fact]
+    public async Task RecordingViewModel_RecordingCanBeEditedSavedAndExportedAsGif()
+    {
+        var directory = Path.Combine(Path.GetTempPath(), $"frame-studio-record-edit-export-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(directory);
+        var projectPath = Path.Combine(directory, "recording.fsp");
+        var gifPath = Path.Combine(directory, "recording.gif");
+        var size = new PixelSize(1, 1);
+        byte[] red = [255, 0, 0, 255];
+        byte[] green = [0, 255, 0, 255];
+        byte[] blue = [0, 0, 255, 255];
+        var session = new FakeRecordingSession(
+            new CapturedFrame(size, red, 40, DateTimeOffset.UtcNow),
+            new CapturedFrame(size, green, 50, DateTimeOffset.UtcNow.AddMilliseconds(40)),
+            new CapturedFrame(size, blue, 60, DateTimeOffset.UtcNow.AddMilliseconds(90)));
+
+        try
+        {
+            var writer = await FrameProjectArchiveWriter.CreateAsync(projectPath, "Record edit export", size);
+            var recording = new RecordingViewModel(session, writer, projectPath, framesPerSecond: 20);
+            try
+            {
+                string? completedPath = null;
+                recording.RecordingCompleted += (_, path) => completedPath = path;
+                await recording.StopRecordingCommand.ExecuteAsync(null);
+
+                Assert.True(recording.HasFinished);
+                Assert.Equal("Recording saved", recording.Status);
+                Assert.Equal(projectPath, completedPath);
+                Assert.Equal(3, (await FrameProjectArchiveReader.ReadProjectAsync(projectPath)).Frames.Count);
+
+                var recordedProject = await FrameProjectArchiveReader.ReadProjectAsync(projectPath);
+                var editor = new EditorViewModel(projectPath, recordedProject);
+                editor.MoveSelectedFrameLaterCommand.Execute(null);
+                editor.SelectedFrame = editor.Frames[0];
+                editor.DurationText = "70";
+                editor.ApplyDurationCommand.Execute(null);
+                Assert.Equal(new[] { 1, 0, 2 }, editor.Frames.Select(frame => frame.SourceFrameIndex));
+                Assert.Equal(new[] { 70, 40, 60 }, editor.Frames.Select(frame => frame.DurationMilliseconds));
+
+                await editor.SaveProjectCommand.ExecuteAsync(null);
+                Assert.Equal("Project saved", editor.Status);
+                var editedProject = await FrameProjectArchiveReader.ReadProjectAsync(projectPath);
+                Assert.Equal(new[] { 70, 40, 60 }, editedProject.Frames.Select(frame => frame.DurationMilliseconds));
+                Assert.Equal(green, await FrameProjectArchiveReader.ReadFrameRgbaAsync(projectPath, editedProject, 0));
+                Assert.Equal(red, await FrameProjectArchiveReader.ReadFrameRgbaAsync(projectPath, editedProject, 1));
+                Assert.Equal(blue, await FrameProjectArchiveReader.ReadFrameRgbaAsync(projectPath, editedProject, 2));
+
+                await editor.ExportGifAsync(gifPath);
+                Assert.Equal("GIF exported", editor.Status);
+                var gif = await File.ReadAllBytesAsync(gifPath);
+                Assert.Equal("GIF89a", System.Text.Encoding.ASCII.GetString(gif, 0, 6));
+                var metadata = FrameProjectTests.ReadGifMetadata(gif);
+                Assert.Equal(size, metadata.CanvasSize);
+                Assert.Equal(new[] { 70, 40, 60 }, metadata.FrameDurationsMilliseconds);
+                Assert.Equal(0, metadata.RepeatCount);
+            }
+            finally
+            {
+                if (!recording.HasFinished)
+                    await recording.StopRecordingCommand.ExecuteAsync(null);
+            }
+        }
+        finally
+        {
+            Directory.Delete(directory, recursive: true);
+        }
+    }
+
     private sealed class FakeRecordingSession(params CapturedFrame[] frames) : IRecordingSession
     {
         public int PauseCount { get; private set; }

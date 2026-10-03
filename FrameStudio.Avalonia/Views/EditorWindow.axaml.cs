@@ -529,12 +529,38 @@ public partial class EditorWindow : Window
             {
                 await _viewModel.ExportGifAsync(path);
                 if (string.Equals(_viewModel.Status, "GIF exported", StringComparison.Ordinal))
-                    await new ExportCompleteWindow(path).ShowDialog(this);
+                    await new ExportCompleteWindow(path, "GIF").ShowDialog(this);
             }
         }
         catch (Exception ex)
         {
             _viewModel.ReportStatus($"Could not complete GIF export: {ex.Message}");
+        }
+    }
+
+    private async void ExportMp4_OnClick(object? sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var file = await StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
+            {
+                Title = "Export animation as MP4",
+                SuggestedFileName = $"{_viewModel.ProjectName}.mp4",
+                DefaultExtension = "mp4",
+                ShowOverwritePrompt = true,
+                FileTypeChoices = [new FilePickerFileType("MP4 video") { Patterns = ["*.mp4"] }]
+            });
+            var path = file?.TryGetLocalPath();
+            if (!string.IsNullOrWhiteSpace(path))
+            {
+                await _viewModel.ExportMp4Async(path);
+                if (string.Equals(_viewModel.Status, "MP4 exported", StringComparison.Ordinal))
+                    await new ExportCompleteWindow(path, "MP4").ShowDialog(this);
+            }
+        }
+        catch (Exception ex)
+        {
+            _viewModel.ReportStatus($"Could not complete MP4 export: {ex.Message}");
         }
     }
 }

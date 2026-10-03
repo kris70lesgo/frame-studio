@@ -8,8 +8,11 @@ namespace FrameStudio.Avalonia.Views;
 
 public partial class ExportCompleteWindow : Window
 {
-    private string _gifPath = string.Empty;
+    private string _exportPath = string.Empty;
+    private string _format = "file";
+    private readonly TextBlock _exportHeading;
     private readonly TextBlock _fileDetails;
+    private readonly TextBlock _openFileLabel;
     private readonly TextBlock _pathLabel;
     private readonly TextBlock _statusLabel;
 
@@ -17,26 +20,33 @@ public partial class ExportCompleteWindow : Window
     {
         InitializeComponent();
 
+        _exportHeading = this.FindControl<TextBlock>("ExportHeading")!;
         _fileDetails = this.FindControl<TextBlock>("FileDetails")!;
+        _openFileLabel = this.FindControl<TextBlock>("OpenFileLabel")!;
         _pathLabel = this.FindControl<TextBlock>("PathLabel")!;
         _statusLabel = this.FindControl<TextBlock>("StatusLabel")!;
     }
 
-    public ExportCompleteWindow(string gifPath) : this()
+    public ExportCompleteWindow(string exportPath, string format) : this()
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(gifPath);
-        _gifPath = Path.GetFullPath(gifPath);
-        _pathLabel.Text = _gifPath;
-        _fileDetails.Text = $"{Path.GetFileName(_gifPath)} · {FormatFileSize(new FileInfo(_gifPath).Length)}";
+        ArgumentException.ThrowIfNullOrWhiteSpace(exportPath);
+        ArgumentException.ThrowIfNullOrWhiteSpace(format);
+        _exportPath = Path.GetFullPath(exportPath);
+        _format = format;
+        Title = $"{format} export complete";
+        _exportHeading.Text = $"{format} exported";
+        _openFileLabel.Text = $"Open {format}";
+        _pathLabel.Text = _exportPath;
+        _fileDetails.Text = $"{Path.GetFileName(_exportPath)} · {FormatFileSize(new FileInfo(_exportPath).Length)}";
     }
 
     private void InitializeComponent() => AvaloniaXamlLoader.Load(this);
 
     private async void OpenFile_OnClick(object? sender, RoutedEventArgs e) =>
-        await RunActionAsync(() => OpenPathAsync(_gifPath), "GIF opened", "Could not open GIF");
+        await RunActionAsync(() => OpenPathAsync(_exportPath), $"{_format} opened", $"Could not open {_format}");
 
     private async void OpenFolder_OnClick(object? sender, RoutedEventArgs e) =>
-        await RunActionAsync(() => OpenPathAsync(Path.GetDirectoryName(_gifPath)!), "Folder opened", "Could not open folder");
+        await RunActionAsync(() => OpenPathAsync(Path.GetDirectoryName(_exportPath)!), "Folder opened", "Could not open folder");
 
     private async void CopyPath_OnClick(object? sender, RoutedEventArgs e) =>
         await RunActionAsync(CopyPathAsync, "Path copied to clipboard", "Could not copy path");
@@ -49,7 +59,7 @@ public partial class ExportCompleteWindow : Window
         if (clipboard is null)
             throw new InvalidOperationException("Clipboard access is unavailable in this session.");
 
-        await clipboard.SetTextAsync(_gifPath);
+        await clipboard.SetTextAsync(_exportPath);
     }
 
     private static Task OpenPathAsync(string path)

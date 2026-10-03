@@ -67,7 +67,9 @@ Build host: {host}, .NET SDK {sdk_version}
 
 Run {EXECUTABLE} on Windows 10 version 2004 or later, or Windows 11. Screen recording uses Windows GDI and requires an interactive desktop session.
 
-This package has not been executed on Windows. The capture path, mixed-DPI selection, and end-to-end record → edit → GIF workflow are not runtime verified. This local development candidate is not a challenge release.
+This package has not been executed on Windows. The capture path, mixed-DPI selection, and end-to-end record → edit → GIF/MP4 workflow are not runtime verified. This local development candidate is not a challenge release.
+
+MP4 export requires a separately installed FFmpeg build with the libx264 encoder available on PATH. FFmpeg is not included in this package.
 
 Frame Studio is an independent Avalonia port based on ScreenToGif. It is not the official ScreenToGif application and is not affiliated with Nicke Manarin or N-Tech. The complete upstream license and attribution are included in LICENSE.txt.
 """,

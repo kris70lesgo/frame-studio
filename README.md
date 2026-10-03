@@ -8,7 +8,7 @@ This is an independent project. It is not the official ScreenToGif application a
 
 ## Current status
 
-The Avalonia app now connects Windows screen-region recording to a native `.fsp` project, a frame editor, and GIF export. The Win32/GDI capture backend is implemented and wired into the UI, but its runtime behavior still needs validation on Windows. macOS builds and core tests work; screen capture is Windows-only.
+The Avalonia app now connects Windows screen-region recording to a native `.fsp` project, a frame editor, and GIF/MP4 export. The Win32/GDI capture backend is implemented and wired into the UI, but its runtime behavior still needs validation on Windows. macOS builds and core tests work; screen capture is Windows-only.
 
 | Area | Status |
 | --- | --- |
@@ -20,9 +20,10 @@ The Avalonia app now connects Windows screen-region recording to a native `.fsp`
 | End-to-end recording workflow | Records frames into `.fsp` projects and opens the editor when recording stops |
 | Editor | Frame thumbnails, preview/playback, selection, earlier/later ordering, duplicate/delete, duration edits, drag crop, project-wide resize, all-frame text overlays, save/discard, and GIF export implemented; keyboard shortcuts cover save, duplicate, reorder, delete, playback, and crop cancel |
 | GIF export | Migrated encoder, editor export flow, and completion actions for opening the GIF, showing its folder, or copying its path |
-| Core workflow checks | 23 tests pass on macOS; recording-to-project handoff, editor commands, text overlays, capture-request validation, capture-readiness reporting, archive editing, recent-project history, and exported GIF pixels, dimensions, frame timing, and looping are checked. Three Windows runtime checks are skipped here |
+| MP4 export | H.264 MP4 through FFmpeg's `libx264`, with variable frame durations preserved; requires FFmpeg on `PATH` with `libx264` enabled |
+| Core workflow checks | 25 tests pass on macOS; a recording → edit → save/reopen → GIF export handoff, editor commands, text overlays, capture-request validation, capture-readiness reporting, archive editing, recent-project history, GIF pixels and timing, and MP4 timing are checked. Three Windows runtime checks are skipped here |
 | Webcam, isolated window capture, sketchboard | Not migrated yet; the current Win32 window service captures a desktop rectangle, which can include overlapping windows, so its UI remains disabled |
-| Text/drawing annotations and video export | Basic rasterized text overlays are implemented; freehand drawing and video export are not migrated yet |
+| Text/drawing annotations and video export | Basic rasterized text overlays and H.264 MP4 export are implemented; freehand drawing and additional video encoders are not migrated yet |
 | Windows platform adapter | Win32 monitor/window enumeration and bounded GDI desktop-region recording implemented; runtime needs Windows verification |
 
 The original WPF application remains in this repository as the baseline in `GifRecorder.sln`. The new application is in `FrameStudio.sln` and does not reference the WPF UI projects.
@@ -34,7 +35,7 @@ The [capture notes](docs/before-after/README.md) link to the upstream screenshot
 
 ![Frame Studio early home shell on macOS](docs/before-after/after-home-shell-macos.png)
 
-The editor screenshot predates the text annotation tool and records a macOS UI smoke check with a local sample project. It shows the editor shell only; the text dialog still needs a visual smoke check, and capture still requires Windows validation.
+The editor screenshot predates the text annotation and MP4 export tools and records a macOS UI smoke check with a local sample project. It shows the earlier editor shell only; the current dialogs and export controls still need a fresh visual check, and capture still requires Windows validation.
 
 ![Frame Studio editor preview on macOS](docs/before-after/after-editor-preview-macos.jpg)
 
@@ -42,7 +43,7 @@ The editor screenshot predates the text annotation tool and records a macOS UI s
 
 Requirements: .NET SDK 9.0.318 or a compatible .NET 9 feature-band SDK, with NuGet access for the Avalonia packages.
 
-The Avalonia UI uses the desktop Avalonia stack. This branch has a local macOS arm64 publish and a Windows x64 cross-publish; neither is a released challenge download, and only Windows has a capture backend. Screen capture requires Windows 10 version 2004 or later because the app excludes its own windows from captured frames. Core project editing and GIF export are platform-neutral. The full recording workflow must be exercised on Windows before claiming a verified Windows release; no macOS or Linux capture support is claimed.
+The Avalonia UI uses the desktop Avalonia stack. This branch has a local macOS arm64 publish and a Windows x64 cross-publish; neither is a released challenge download, and only Windows has a capture backend. Screen capture requires Windows 10 version 2004 or later because the app excludes its own windows from captured frames. Core project editing and GIF export are platform-neutral. MP4 export calls the user's FFmpeg installation and needs `libx264`; Frame Studio does not redistribute FFmpeg. The full recording workflow must be exercised on Windows before claiming a verified Windows release; no macOS or Linux capture support is claimed.
 
 ```sh
 dotnet build FrameStudio.sln

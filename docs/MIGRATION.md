@@ -179,6 +179,23 @@ This log records the independent Avalonia port of ScreenToGif. The port uses new
 - Rebuilt the self-contained Windows x64 candidate from clean commit `9b5248a`. ZIP integrity and an independent SHA-256 check passed; its hash is `d7f514158ac22727e47997c25886ad768d5620be6a6ec97a0c01857f3bee45da`.
 - The package includes the SkiaSharp text renderer and identifies its Mac build host. It is still a local development candidate; Windows runtime and UI validation remain outstanding.
 
+## 2026-10-03 — FFmpeg MP4 export
+
+- Added an MP4 export service that writes project frames as PNG inputs in a private temporary directory, creates a concat manifest with per-frame timing, and calls a local FFmpeg process with H.264 `libx264`, CRF 23, and `yuv420p`. An even-dimension pad supports H.264's common 4:2:0 format. Frame Studio does not bundle FFmpeg; the user needs an FFmpeg build with `libx264` on `PATH`.
+- Added an editor MP4 action and generalized the completion window for GIF and MP4. The same edited frame ordering and durations feed either encoder. The final repeated input sample provides an end timestamp for the last visible frame.
+- The editor integration test changes a two-frame order and sets 120 ms/80 ms durations, exports MP4, and checks `ffprobe` timestamps at 0/120/199 ms and a 200 ms stream duration. The final repeated sample carries the last 1 ms with identical pixels so the visible frame interval and total remain exact. FFmpeg's concat `duration` entries and `-fps_mode vfr` are based on the [FFmpeg format documentation](https://ffmpeg.org/ffmpeg-formats.html) and [FFmpeg command-line documentation](https://ffmpeg.org/ffmpeg.html). The macOS suite passes 24 tests and skips the three Windows capture checks.
+- Windows capture remains unverified. The current candidate has been cross-published but still needs a Windows run; the MP4 action also needs a visual smoke check and verification with FFmpeg installed and absent.
+
+## 2026-10-03 — Candidate rebuilt with MP4 export
+
+- Rebuilt the self-contained Windows x64 candidate from source revision `76c9996` plus the current worktree changes. The archive SHA-256 is `b6c18b7d5d0c84282d7af14f7be4d5d2cbaf2c7ff9721a393525390ef3c0b533`; an independent archive check and checksum comparison passed.
+- The package README states that FFmpeg with `libx264` must be installed separately. The package was cross-published on macOS arm64 and has not been run on Windows; its capture and export UI still require runtime checks.
+
+## 2026-10-03 — End-to-end record, edit, and GIF check
+
+- Added a platform-independent workflow test that feeds three frames through the recording view model, moves a frame and changes its duration in the editor, saves and reopens the `.fsp`, then exports and inspects the GIF frame delays and loop metadata. The saved frame pixels confirm the reordered content.
+- The source is a deterministic fake `IRecordingSession`, so the test proves the app's recording-to-editor-to-export handoff but does not replace the skipped Windows GDI runtime checks. The suite now passes 25 tests and skips those three Windows checks on macOS.
+
 ## Migration decisions
 
 - Keep the original WPF projects intact as the baseline and source reference.

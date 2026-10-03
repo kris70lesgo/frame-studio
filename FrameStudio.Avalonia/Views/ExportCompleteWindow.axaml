@@ -1,7 +1,7 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:Class="FrameStudio.Avalonia.Views.ExportCompleteWindow"
-        Title="GIF export complete"
+        Title="Export complete"
         Width="520" Height="292" MinWidth="520" MinHeight="292"
         CanResize="False"
         WindowStartupLocation="CenterOwner"
@@ -19,7 +19,7 @@
                           Width="19" Height="19" HorizontalAlignment="Center" VerticalAlignment="Center" />
                 </Border>
                 <StackPanel Spacing="3" VerticalAlignment="Center">
-                    <TextBlock Text="GIF exported" FontSize="18" FontWeight="SemiBold"
+                    <TextBlock x:Name="ExportHeading" Text="Export complete" FontSize="18" FontWeight="SemiBold"
                                Foreground="{DynamicResource TextPrimary}" />
                     <TextBlock x:Name="FileDetails" FontSize="11" Foreground="{DynamicResource TextSecondary}" />
                 </StackPanel>
@@ -38,10 +38,10 @@
                        Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" />
 
             <Grid Grid.Row="4" ColumnDefinitions="*,Auto,Auto,Auto" ColumnSpacing="8">
-                <Button Classes="primary-button" Click="OpenFile_OnClick" AutomationProperties.Name="Open exported GIF">
+                <Button Classes="primary-button" Click="OpenFile_OnClick" AutomationProperties.Name="Open exported file">
                     <StackPanel Orientation="Horizontal" Spacing="7">
                         <TextBlock Text="↗" FontSize="13" />
-                        <TextBlock Text="Open GIF" FontSize="12" />
+                        <TextBlock x:Name="OpenFileLabel" Text="Open file" FontSize="12" />
                     </StackPanel>
                 </Button>
                 <Button Grid.Column="1" Classes="quiet-button" Click="OpenFolder_OnClick"

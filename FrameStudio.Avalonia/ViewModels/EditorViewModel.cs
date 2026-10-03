@@ -241,6 +241,31 @@ public partial class EditorViewModel : ObservableObject
         }
     }
 
+    public async Task ExportMp4Async(string destinationPath, CancellationToken cancellationToken = default)
+    {
+        if (IsBusy)
+            return;
+
+        IsBusy = true;
+        Status = "Exporting MP4…";
+        try
+        {
+            var references = GetFrameReferences();
+            var sourcePath = _workingProjectPath;
+            await Task.Run(async () => await new FfmpegMp4ExportService().ExportSelectionAsync(sourcePath, destinationPath, references,
+                cancellationToken).ConfigureAwait(false), cancellationToken);
+            Status = "MP4 exported";
+        }
+        catch (Exception ex)
+        {
+            Status = $"Export failed: {ex.Message}";
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
     partial void OnSelectedFrameChanging(TimelineFrameViewModel? oldValue, TimelineFrameViewModel? newValue)
     {
         if (oldValue is not null)

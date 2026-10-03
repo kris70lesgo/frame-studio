@@ -3,6 +3,8 @@ using FrameStudio.Core.Codification.Gif.Encoder;
 using FrameStudio.Core.Export;
 using FrameStudio.Core.Projects;
 using FrameStudio.Avalonia.ViewModels;
+using System.Diagnostics;
+using System.Globalization;
 
 namespace FrameStudio.Tests;
 
@@ -272,6 +274,78 @@ public sealed class FrameProjectTests
         }
     }
 
+    [FfmpegRequiredFact]
+    public async Task EditorViewModel_ExportsEditedFramesToMp4WithVariableDurations()
+    {
+        var directory = Path.Combine(Path.GetTempPath(), $"frame-studio-mp4-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(directory);
+        var projectPath = Path.Combine(directory, "timing.fsp");
+        var mp4Path = Path.Combine(directory, "timing.mp4");
+        var size = new PixelSize(2, 2);
+        var red = Enumerable.Repeat(new byte[] { 255, 0, 0, 255 }, 4).SelectMany(pixel => pixel).ToArray();
+        var blue = Enumerable.Repeat(new byte[] { 0, 0, 255, 255 }, 4).SelectMany(pixel => pixel).ToArray();
+
+        try
+        {
+            await using (var writer = await FrameProjectArchiveWriter.CreateAsync(projectPath, "MP4 timing", size))
+            {
+                await writer.WriteFrameAsync(size, red, 70);
+                await writer.WriteFrameAsync(size, blue, 110);
+                await writer.CompleteAsync();
+            }
+
+            var project = await FrameProjectArchiveReader.ReadProjectAsync(projectPath);
+            var editor = new EditorViewModel(projectPath, project);
+            editor.MoveSelectedFrameLaterCommand.Execute(null);
+            editor.SelectedFrame = editor.Frames[0];
+            editor.DurationText = "120";
+            editor.ApplyDurationCommand.Execute(null);
+            editor.SelectedFrame = editor.Frames[1];
+            editor.DurationText = "80";
+            editor.ApplyDurationCommand.Execute(null);
+            await editor.ExportMp4Async(mp4Path);
+            Assert.Equal("MP4 exported", editor.Status);
+
+            var mp4Header = await File.ReadAllBytesAsync(mp4Path);
+            Assert.True(mp4Header.Length > 12);
+            Assert.Equal("ftyp", System.Text.Encoding.ASCII.GetString(mp4Header, 4, 4));
+
+            var startInfo = new ProcessStartInfo("ffprobe")
+            {
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                CreateNoWindow = true
+            };
+            foreach (var argument in new[]
+            {
+                "-v", "error", "-select_streams", "v:0", "-show_entries",
+                "frame=best_effort_timestamp_time:stream=duration", "-of", "json", mp4Path
+            })
+                startInfo.ArgumentList.Add(argument);
+
+            using var probe = Process.Start(startInfo) ?? throw new InvalidOperationException("Could not start ffprobe.");
+            var outputTask = probe.StandardOutput.ReadToEndAsync();
+            var errorTask = probe.StandardError.ReadToEndAsync();
+            await probe.WaitForExitAsync();
+            Assert.True(probe.ExitCode == 0, await errorTask);
+            using var metadata = System.Text.Json.JsonDocument.Parse(await outputTask);
+            var timestamps = metadata.RootElement.GetProperty("frames").EnumerateArray()
+                .Select(frame => double.Parse(frame.GetProperty("best_effort_timestamp_time").GetString()!, CultureInfo.InvariantCulture))
+                .ToArray();
+            Assert.Equal(3, timestamps.Length); // The final repeated sample closes the last frame's interval.
+            Assert.Equal(120, Math.Round((timestamps[1] - timestamps[0]) * 1000));
+            Assert.Equal(199, Math.Round(timestamps[2] * 1000));
+            var duration = double.Parse(metadata.RootElement.GetProperty("streams")[0].GetProperty("duration").GetString()!,
+                CultureInfo.InvariantCulture);
+            Assert.Equal(200, Math.Round(duration * 1000));
+        }
+        finally
+        {
+            Directory.Delete(directory, recursive: true);
+        }
+    }
+
     internal static GifMetadata ReadGifMetadata(byte[] bytes)
     {
         using var stream = new MemoryStream(bytes);
@@ -395,4 +469,13 @@ public sealed class FrameProjectTests
     }
 
     internal sealed record GifMetadata(PixelSize CanvasSize, IReadOnlyList<int> FrameDurationsMilliseconds, int RepeatCount);
+}
+
+public sealed class FfmpegRequiredFactAttribute : FactAttribute
+{
+    public FfmpegRequiredFactAttribute()
+    {
+        if (!FfmpegMp4ExportService.IsFfmpegAvailable || !FfmpegMp4ExportService.IsFfprobeAvailable)
+            Skip = "FFmpeg and ffprobe are required for this MP4 timing integration test.";
+    }
 }
