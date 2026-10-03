@@ -32,7 +32,7 @@ public partial class MainWindow : Window
         FrameProjectArchiveWriter? writer = null;
         try
         {
-            var monitors = await service.GetMonitorsAsync();
+            var monitors = AddAvaloniaScreenScaling(await service.GetMonitorsAsync());
             var setup = await new CaptureSetupWindow(monitors).ShowDialog<CaptureSetupResult?>(this);
             if (setup is null)
                 return;
@@ -102,5 +102,26 @@ public partial class MainWindow : Window
     {
         var editor = await EditorWindow.CreateAsync(projectPath);
         editor.Show(this);
+    }
+
+    private IReadOnlyList<MonitorDescriptor> AddAvaloniaScreenScaling(IReadOnlyList<MonitorDescriptor> monitors)
+    {
+        // Avalonia screen bounds are device pixels; Scaling converts the selector's logical coordinates to pixels.
+        var screens = Screens.All;
+        var result = new List<MonitorDescriptor>(monitors.Count);
+        foreach (var monitor in monitors)
+        {
+            var screen = screens.FirstOrDefault(candidate =>
+                candidate.Bounds.X == monitor.Bounds.X &&
+                candidate.Bounds.Y == monitor.Bounds.Y &&
+                candidate.Bounds.Width == monitor.Bounds.Width &&
+                candidate.Bounds.Height == monitor.Bounds.Height);
+            if (screen is null)
+                throw new InvalidOperationException($"Could not match Avalonia display information for {monitor.Name}.");
+
+            result.Add(monitor with { ScaleFactor = screen.Scaling });
+        }
+
+        return result;
     }
 }

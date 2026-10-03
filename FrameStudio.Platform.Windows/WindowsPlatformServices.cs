@@ -22,20 +22,12 @@ public sealed class WindowsPlatformServices : IScreenCaptureService, IWindowCapt
             if (!Win32Native.GetMonitorInfo(monitor, ref info))
                 return true;
 
-            var dpi = 96u;
-            try
-            {
-                if (Win32Native.GetDpiForMonitor(monitor, 0, out var xDpi, out _) == 0)
-                    dpi = xDpi;
-            }
-            catch (DllNotFoundException) { }
-            catch (EntryPointNotFoundException) { }
-
             monitors.Add(new MonitorDescriptor(
                 monitor.ToInt64().ToString("X"),
                 $"Display {monitors.Count + 1}",
                 new PixelRect(bounds.Left, bounds.Top, bounds.Right - bounds.Left, bounds.Bottom - bounds.Top),
-                dpi / 96d,
+                // The Avalonia UI maps this physical display to Screen.Scaling before opening the area selector.
+                ScaleFactor: 1d,
                 (info.Flags & Win32Native.MonitorInfoPrimary) != 0));
             return true;
         };

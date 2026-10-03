@@ -22,6 +22,8 @@ public sealed record CaptureCapability(
     FeatureReadiness Readiness,
     string Detail);
 
+/// <param name="Bounds">The monitor's bounds in device pixels.</param>
+/// <param name="ScaleFactor">The display scale used to convert device-independent UI coordinates to device pixels.</param>
 public sealed record MonitorDescriptor(
     string Id,
     string Name,

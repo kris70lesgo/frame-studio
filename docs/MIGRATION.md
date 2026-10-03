@@ -56,6 +56,12 @@ This log records the independent Avalonia port of ScreenToGif. The port uses new
 - The test now parses the exported GIF structure and checks the 2 × 2 canvas, three frames, 90/110/130 ms delays, and infinite-loop metadata. `dotnet test FrameStudio.sln --configuration Debug --no-restore` passes 11 tests on macOS and skips the Windows capture integration test.
 - This test validates archive editing and GIF metadata; it does not decode exported GIF pixels in a viewer or verify the Windows GDI capture path.
 
+## 2026-10-03 — Per-monitor scaling source
+
+- The Windows app manifest declares Per-Monitor V2 DPI awareness. Review of the Win32 DPI documentation showed that `GetDpiForMonitor` is marked unsuitable for a per-monitor-aware thread. The Windows adapter now supplies physical monitor bounds, and the Avalonia UI matches those bounds to `Screens.All` and uses each `Screen.Scaling` for region-selector sizing and coordinate conversion.
+- This follows Avalonia's screen API, whose bounds are device pixels and whose scaling is the OS-provided display scale. It reduces the risk of selecting the wrong pixel region on mixed-DPI displays, but still needs verification on Windows.
+- References: [Microsoft GetDpiForMonitor documentation](https://learn.microsoft.com/en-us/windows/win32/api/shellscalingapi/nf-shellscalingapi-getdpiformonitor), [Avalonia Screen API](https://docs.avaloniaui.net/api/avalonia/platform/screen).
+
 ## Migration decisions
 
 - Keep the original WPF projects intact as the baseline and source reference.
