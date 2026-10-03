@@ -218,6 +218,11 @@ This log records the independent Avalonia port of ScreenToGif. The port uses new
 - If at least one frame reached the project writer, Stop completes the partial `.fsp` and opens it in the editor. If capture failed before the first frame, the recorder reports the cause and discards the empty draft. Project write failures still follow the existing save-error path.
 - Added a deterministic test that injects a capture-stream error after one frame, then verifies the completed project retains its RGBA pixels and duration. The Release suite passes 26 tests and skips the three Windows desktop checks on macOS. This exercises recovery above the native capture boundary; it does not replace Windows runtime validation.
 
+## 2026-10-03 — Candidate rebuilt with partial-recording recovery
+
+- Rebuilt the self-contained Windows x64 candidate from clean commit `40cf9a1`. ZIP integrity passed and the archive SHA-256 is `b0428891f935a80080ea69444f2ba1a50dc016322b65631e8fc6647d2e70a541`.
+- The package includes the recovery path and identifies its macOS arm64 build host. It remains a local development candidate; it has not been run on Windows.
+
 ## Ongoing log
 
 Add dated entries here as migrations reveal framework differences, platform constraints, or performance fixes.
