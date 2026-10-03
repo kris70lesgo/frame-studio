@@ -66,6 +66,7 @@ This log records the independent Avalonia port of ScreenToGif. The port uses new
 
 - The original root MSBuild properties label the WPF product as ScreenToGif 2.43.2 by Nicke Manarin. Added conditional metadata for `FrameStudio.*` projects so their binaries identify as Frame Studio 0.1.0 and no longer inherit the upstream author or repository fields; the original WPF projects retain their existing metadata.
 - Added `scripts/package-windows-candidate.py` to publish a self-contained Windows x64 build, include the development README and complete license, validate the archive, and write a SHA-256 checksum. The package README marks it as unverified until Windows runtime checks pass.
+- Built the current local package from clean commit `a2ee9a3`; Release assembly metadata reports Frame Studio `0.1.0`. The archive passed integrity validation and has SHA-256 `db2844326841f470ad0f2dc1a8baf4d4523ccaeeac83f3ed4f10dac9f2fb4e19`. It remains cross-published and unexecuted on Windows.
 
 ## Migration decisions
 
