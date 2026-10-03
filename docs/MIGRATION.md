@@ -68,6 +68,13 @@ This log records the independent Avalonia port of ScreenToGif. The port uses new
 - Added `scripts/package-windows-candidate.py` to publish a self-contained Windows x64 build, include the development README and complete license, validate the archive, and write a SHA-256 checksum. The package README marks it as unverified until Windows runtime checks pass.
 - Built the current local package from clean commit `a2ee9a3`; Release assembly metadata reports Frame Studio `0.1.0`. The archive passed integrity validation and has SHA-256 `db2844326841f470ad0f2dc1a8baf4d4523ccaeeac83f3ed4f10dac9f2fb4e19`. It remains cross-published and unexecuted on Windows.
 
+## 2026-10-03 — Persistent recent projects
+
+- Replaced the fixed home-screen project count and empty state with a recent-project list. Opening a valid `.fsp` project records its full path and last-opened time in the user's local application data folder; the home screen shows its dimensions, frame count, and open time.
+- The catalog keeps up to eight unique existing `.fsp` paths, writes updates atomically, and ignores damaged preference JSON or missing files. The editor still opens if saving recent history fails.
+- Added tests for persistence across catalog instances, newest-first ordering, duplicate updates, the entry limit, missing files, and extension validation. Full solution build succeeds with zero warnings/errors; macOS test run passes 13 and skips the Windows capture integration test.
+- A fresh visual check could not be made because the desktop session is locked. The existing macOS screenshots predate this home-screen update and remain explicitly non-comparison smoke evidence.
+
 ## Migration decisions
 
 - Keep the original WPF projects intact as the baseline and source reference.

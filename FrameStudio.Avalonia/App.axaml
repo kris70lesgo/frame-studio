@@ -119,6 +119,19 @@
             <Setter Property="Background" Value="{DynamicResource SurfaceHover}" />
             <Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
         </Style>
+        <Style Selector="Button.recent-project-card">
+            <Setter Property="Background" Value="{DynamicResource Surface}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource Border}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="11" />
+            <Setter Property="Padding" Value="14,12" />
+            <Setter Property="Margin" Value="0,0,0,8" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        </Style>
+        <Style Selector="Button.recent-project-card:pointerover">
+            <Setter Property="Background" Value="{DynamicResource SurfaceHover}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource Accent}" />
+        </Style>
         <Style Selector="Button.primary-button">
             <Setter Property="Background" Value="{DynamicResource AccentStrong}" />
             <Setter Property="Foreground" Value="#071510" />

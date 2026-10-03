@@ -246,13 +246,46 @@
                     <Grid ColumnDefinitions="*,Auto" VerticalAlignment="Center">
                         <StackPanel Spacing="5">
                             <TextBlock Text="Recent projects" Classes="Title" FontSize="17" />
-                            <TextBlock Text="Your latest recordings and edits will be ready here."
+                            <TextBlock Text="Pick up where you left off."
                                        FontSize="12" Foreground="{DynamicResource TextSecondary}" />
                         </StackPanel>
-                        <TextBlock Grid.Column="1" Text="0 PROJECTS" Classes="Caption" VerticalAlignment="Center" />
+                        <TextBlock Grid.Column="1" Text="{Binding RecentProjectsCountLabel}" Classes="Caption" VerticalAlignment="Center" />
                     </Grid>
 
-                    <Border Padding="20" CornerRadius="12" Background="{DynamicResource Surface}"
+                    <ItemsControl ItemsSource="{Binding RecentProjects}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:RecentProjectViewModel">
+                                <Button Classes="recent-project-card" Click="OpenRecentProject_OnClick"
+                                        AutomationProperties.Name="{Binding Name}"
+                                        ToolTip.Tip="{Binding Path}">
+                                    <Grid ColumnDefinitions="42,*,Auto" ColumnSpacing="13" VerticalAlignment="Center">
+                                        <Border Width="40" Height="40" CornerRadius="10"
+                                                Background="{DynamicResource BackgroundSecondary}"
+                                                BorderBrush="{DynamicResource Border}" BorderThickness="1">
+                                            <Path Data="M5,3 L15,3 L20,8 L20,21 L5,21 Z M15,3 L15,8 L20,8 M8,12 L17,12 M8,16 L17,16"
+                                                  Stroke="{DynamicResource Accent}" StrokeThickness="1.35"
+                                                  StrokeLineCap="Round" Width="19" Height="19"
+                                                  HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                        </Border>
+                                        <StackPanel Grid.Column="1" Spacing="5" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding Name}" FontSize="13" FontWeight="SemiBold"
+                                                       Foreground="{DynamicResource TextPrimary}" TextTrimming="CharacterEllipsis" />
+                                            <TextBlock Text="{Binding Details}" FontSize="11"
+                                                       Foreground="{DynamicResource TextSecondary}" />
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="2" Spacing="4" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding OpenedLabel}" FontSize="10"
+                                                       Foreground="{DynamicResource TextTertiary}" HorizontalAlignment="Right" />
+                                            <TextBlock Text="OPEN  ↗" FontSize="9" FontWeight="SemiBold"
+                                                       Foreground="{DynamicResource Accent}" HorizontalAlignment="Right" />
+                                        </StackPanel>
+                                    </Grid>
+                                </Button>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <Border IsVisible="{Binding IsRecentProjectsEmpty}" Padding="20" CornerRadius="12" Background="{DynamicResource Surface}"
                             BorderBrush="{DynamicResource Border}" BorderThickness="1">
                         <Grid ColumnDefinitions="52,*" ColumnSpacing="15" VerticalAlignment="Center">
                             <Border Width="46" Height="46" CornerRadius="11" Background="{DynamicResource BackgroundSecondary}"

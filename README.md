@@ -12,7 +12,7 @@ The Avalonia app now connects Windows screen-region recording to a native `.fsp`
 
 | Area | Status |
 | --- | --- |
-| Avalonia home shell | Implemented; builds; early macOS shell capture included below |
+| Avalonia home shell | Implemented; persistent recent-project list; builds; early macOS shell capture included below |
 | Dark and light appearance | Implemented |
 | Neutral frame/project foundation | Frame model and compressed `.fsp` archive read/write implemented |
 | Platform service contracts | Defined |
@@ -20,7 +20,7 @@ The Avalonia app now connects Windows screen-region recording to a native `.fsp`
 | End-to-end recording workflow | Records frames into `.fsp` projects and opens the editor when recording stops |
 | Editor | Frame thumbnails, preview/playback, selection, earlier/later ordering, duplicate/delete, duration edits, drag crop, project-wide resize, save/discard, and GIF export implemented |
 | GIF export | Migrated encoder and editor export flow implemented |
-| Core workflow checks | 11 tests pass on macOS; archive editing and exported GIF dimensions, frame timing, and looping are checked |
+| Core workflow checks | 13 tests pass on macOS; archive editing, recent-project history, and exported GIF dimensions, frame timing, and looping are checked |
 | Webcam, window capture, sketchboard | Not migrated yet |
 | Text/drawing annotations and video export | Not migrated yet |
 | Windows platform adapter | Win32 monitor/window enumeration and bounded GDI desktop-region recording implemented; runtime needs Windows verification |

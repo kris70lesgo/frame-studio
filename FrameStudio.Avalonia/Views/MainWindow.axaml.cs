@@ -19,8 +19,13 @@ public partial class MainWindow : Window
     public MainWindow(string? projectPath)
     {
         InitializeComponent();
-        if (!string.IsNullOrWhiteSpace(projectPath))
-            Loaded += async (_, _) => await OpenEditorAsync(projectPath);
+        Loaded += async (_, _) =>
+        {
+            if (DataContext is MainViewModel viewModel)
+                await viewModel.LoadRecentProjectsAsync();
+            if (!string.IsNullOrWhiteSpace(projectPath))
+                await OpenEditorAsync(projectPath);
+        };
     }
 
     private async void ScreenCapture_OnClick(object? sender, RoutedEventArgs e)
@@ -98,9 +103,35 @@ public partial class MainWindow : Window
         }
     }
 
+    private async void OpenRecentProject_OnClick(object? sender, RoutedEventArgs e)
+    {
+        if (sender is not Button { DataContext: RecentProjectViewModel recentProject })
+            return;
+
+        try
+        {
+            await OpenEditorAsync(recentProject.Path);
+        }
+        catch (Exception ex)
+        {
+            (DataContext as MainViewModel)?.ReportCaptureStatus($"Could not open project: {ex.Message}");
+        }
+    }
+
     private async Task OpenEditorAsync(string projectPath)
     {
         var editor = await EditorWindow.CreateAsync(projectPath);
+        if (DataContext is MainViewModel viewModel)
+        {
+            try
+            {
+                await viewModel.AddRecentProjectAsync(projectPath);
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                viewModel.ReportCaptureStatus($"Project opened, but recent history could not be saved: {ex.Message}");
+            }
+        }
         editor.Show(this);
     }
 
