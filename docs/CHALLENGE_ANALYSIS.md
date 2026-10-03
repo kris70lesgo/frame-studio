@@ -32,10 +32,10 @@ Categories are Best Cross-Platform Port, Best Legacy Revival, Best Everyday Tool
 
 ## Current evidence and gaps
 
-- The independent Avalonia solution builds on macOS arm64. An earlier shell build was inspected and captured; the new recorder/editor windows have not had a fresh visual smoke check on this host.
+- The independent Avalonia solution builds on macOS arm64. On 2026-10-03, the published app opened a local 24-frame `.fsp` fixture in its editor window. The 640 × 360 preview, timeline thumbnails, frame properties, and editor actions were visible. This confirms a macOS UI smoke check only; it does not exercise Windows capture or GIF playback in an external viewer. See [the editor preview](before-after/after-editor-preview-macos.jpg).
 - Self-contained publish checks succeeded for macOS arm64 and Windows x64. The Windows package has not been run on Windows and is not yet a public challenge download.
 - A Windows desktop integration test now covers display enumeration and a short capture/pause/resume/stop session. It is explicitly skipped on macOS and still needs to pass on Windows.
 - The Windows screen recording flow now connects display/region setup, bounded GDI capture, pause/resume/stop, `.fsp` project storage, an editor with frame thumbnails/playback/reordering/crop/resize/basic frame edits, and GIF export.
 - The Windows GDI monitor/window/screen-region service cross-compiles, but screen capture still needs runtime verification on Windows. Webcam, sketchboard, window-capture UI, text/drawing annotations, and video export remain incomplete.
 - The original WPF app could not be launched on the macOS development host. The original project was compiled with its Windows-only post-build event disabled. A Windows machine is still needed to capture true before/after images and exercise the recorder.
-- No public downloadable Windows build exists yet. The next challenge-critical work is Windows runtime validation, paired screenshots, and a measured migration write-up. Do not claim a cross-platform capture port from the Avalonia UI alone.
+- No public downloadable build or public challenge repository exists yet. The next challenge-critical work is Windows runtime validation, paired screenshots, a measured migration write-up, and a public release location. Do not claim a cross-platform capture port from the Avalonia UI alone.

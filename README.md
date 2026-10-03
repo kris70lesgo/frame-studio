@@ -32,6 +32,10 @@ This macOS capture documents an early Avalonia shell only. It is not a Windows b
 
 ![Frame Studio early home shell on macOS](docs/before-after/after-home-shell-macos.png)
 
+The current editor has also had a macOS UI smoke check with a local sample project. It is visual evidence of the editor shell only; capture still requires Windows validation.
+
+![Frame Studio editor preview on macOS](docs/before-after/after-editor-preview-macos.jpg)
+
 ## Build and run
 
 Requirements: .NET SDK 9.0.318 or a compatible .NET 9 feature-band SDK, with NuGet access for the Avalonia packages.

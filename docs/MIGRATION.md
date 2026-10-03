@@ -44,6 +44,12 @@ This log records the independent Avalonia port of ScreenToGif. The port uses new
 - The current port does not yet implement window recording, webcam, sketchboard, text/drawing annotations, or video export. Frame reordering uses explicit earlier/later controls; drag-to-reorder is not implemented. These limits should be explicit in any challenge write-up.
 - Added a Windows-only desktop integration test for monitor discovery, frame dimensions/timing, and capture-session pause/resume/stop. It is skipped on macOS, so it is still pending execution on a real Windows desktop. See [WINDOWS_VALIDATION.md](WINDOWS_VALIDATION.md) for the run checklist.
 
+## 2026-10-03 — Avalonia UI smoke check
+
+- Published and launched the current macOS arm64 bundle in the background with a local 24-frame `.fsp` fixture. The app opened both the home window and editor window; the editor showed a 640 × 360 preview, frame thumbnails and durations, frame properties, playback, editing controls, and GIF export.
+- Inspected the editor screenshot and accessibility tree without raising the app over the active user application. Saved the screenshot as [after-editor-preview-macos.jpg](before-after/after-editor-preview-macos.jpg).
+- This is a rendering and project-open smoke check only. It does not test screen capture, editor operations, or GIF decoding in another viewer. It is not a challenge comparison image; Windows runtime validation and paired screenshots remain pending.
+
 ## Migration decisions
 
 - Keep the original WPF projects intact as the baseline and source reference.
