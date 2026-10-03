@@ -205,13 +205,13 @@ This log records the independent Avalonia port of ScreenToGif. The port uses new
 - Keep Avalonia bitmap objects at the UI edge. Core pixel and frame data should use explicit neutral buffers and metadata.
 - Start with an Avalonia shell and then connect a complete recording → project → edit → GIF export workflow before secondary features.
 
-## Ongoing log
-
-Add dated entries here as migrations reveal framework differences, platform constraints, or performance fixes.
-
 ## 2026-10-03 — Common desktop DC ownership
 
 - Reviewed Microsoft's `GetDC`/`ReleaseDC` contract after tracing the capture thread boundary. A common DC must be released on the same thread that acquired it; the previous grabber retained a desktop DC created by the UI thread and later released it from the capture worker.
 - Updated the GDI grabber to release its setup DC on the acquiring thread, then acquire and release a desktop DC inside each synchronous frame capture. The compatible memory DC and bitmap remain allocated and reused between frames.
 - `dotnet test FrameStudio.sln --configuration Release --no-restore` passes 25 tests and skips the three Windows desktop checks on macOS. `dotnet build FrameStudio.sln --configuration Release --no-restore` succeeds with zero warnings and errors. Native behavior remains unverified until these desktop checks run on Windows.
 - Reference: [Microsoft GetDC documentation](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getdc).
+
+## Ongoing log
+
+Add dated entries here as migrations reveal framework differences, platform constraints, or performance fixes.

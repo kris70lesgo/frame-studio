@@ -6,9 +6,9 @@ The Windows capture backend and app package have been cross-compiled on macOS, b
 
 - Package: `dist/FrameStudio-win-x64.zip` (ignored local build output; not publicly downloadable).
 - Rebuild it with `python3 scripts/package-windows-candidate.py`; this reads the Frame Studio version from MSBuild, includes the README and license, checks archive contents, and writes the matching `.sha256` file.
-- Source revision: `fff6398`; Frame Studio `0.1.0`, self-contained `win-x64` publish using .NET SDK `9.0.318` on macOS arm64.
-- SHA-256: `3cf97aa271beff60f52ba1f9b5c08b822f75e46e3136f34327323c56e0d1ad99` (also written to `dist/FrameStudio-win-x64.zip.sha256`).
-- The package script and an independent `unzip -t` check both confirmed archive integrity. A separate SHA-256 calculation matched the checksum file; the archive includes the package README and complete MS-PL license. This does not establish that the executable runs or captures correctly on Windows.
+- Source revision: `d453ff4`; Frame Studio `0.1.0`, self-contained `win-x64` publish using .NET SDK `9.0.318` on macOS arm64.
+- SHA-256: `af747748005d39f5c678cbcf6e54904cb4624142874aa869213b78d1d8038538` (also written to `dist/FrameStudio-win-x64.zip.sha256`).
+- The package script and an independent `unzip -t` check both confirmed archive integrity. A separate SHA-256 calculation matched the checksum file; the archive includes the package README and complete MS-PL license. Its README identifies the commit and macOS build host and explicitly says Windows execution, capture, mixed-DPI selection, and end-to-end workflow are unverified.
 
 ## Automated desktop check
 
