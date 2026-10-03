@@ -85,6 +85,11 @@ This log records the independent Avalonia port of ScreenToGif. The port uses new
 - Rebuilt the self-contained Windows x64 candidate from clean commit `85b7206` after adding persistent recent projects. The packager verified archive contents and wrote `dist/FrameStudio-win-x64.zip` with SHA-256 `05b35eb68221daba27661ec64cf6b5ab59a1ce9509ba56aa5046088ea2ad76d9`.
 - The embedded README identifies the source revision, host, SDK, and unverified status. This is still a local development package; it has not been launched on Windows.
 
+## 2026-10-03 — Candidate rebuilt with GIF pixel verification
+
+- Rebuilt the self-contained Windows x64 candidate from clean commit `d605513`. The package integrity check passed and the current local archive has SHA-256 `b7367c25f15ac36d07a497469d3c0a06d39c02afbe89f7463c3e18f0114fb650`.
+- The package includes the persistent recent-project home screen. Its source README still labels it as an unverified local candidate; the Windows desktop runtime gate has not been run.
+
 ## Migration decisions
 
 - Keep the original WPF projects intact as the baseline and source reference.
