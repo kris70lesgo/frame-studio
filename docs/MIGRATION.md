@@ -137,7 +137,7 @@ This log records the independent Avalonia port of ScreenToGif. The port uses new
 
 ## 2026-10-03 — Candidate rebuilt with recorder handoff check
 
-- Rebuilt the self-contained Windows x64 candidate from clean commit `5401729`. ZIP integrity and independent SHA-256 checks passed; the archive hash is `7124e0d17c94c0ca4a71238c1525e0898aab0a7aeb248ce54850c4b870b4c962`.
+- Rebuilt the self-contained Windows x64 candidate from clean commit `485c57b`. ZIP integrity and independent SHA-256 checks passed; the archive hash is `f5af7525bf4ab88b8552c20ba683322b4d16aa255f152a2ead1d66275921eee0`.
 - The package carries the updated capture-window exclusion path and the Windows 10 version 2004+ requirement. It still has not been launched on Windows.
 
 ## 2026-10-03 — Theme and timeline selection smoke check
