@@ -90,6 +90,13 @@ This log records the independent Avalonia port of ScreenToGif. The port uses new
 - Added a compact completion window after a successful editor export with actions to open the GIF, open its folder, or copy the full path. The shell integration uses the operating system's file association and Avalonia clipboard, with errors shown in the completion state.
 - The completion view builds with the solution. A fresh visual check is unavailable while the desktop session is locked; platform shell actions still need Windows runtime verification.
 
+## 2026-10-03 — Capture readiness status
+
+- Updated the home-screen capability detail to say Windows screen capture is wired and still needs runtime validation. Window capture, webcam, and sketchboard remain marked as planned on Windows; all capture remains unavailable on other platforms.
+- Added a capability-report test for the host platform so UI status cannot silently regress to claiming capture support elsewhere.
+- Fixed the Avalonia diagnostics package reference so its compile assets are available after a normal restore, and configured the current `WithDeveloperTools` options overload.
+- The macOS suite now passes 16 tests and skips the Windows capture integration test. Debug and Release solution builds both complete with zero warnings and errors.
+
 ## 2026-10-03 — Windows candidate rebuilt
 
 - Rebuilt the self-contained Windows x64 candidate from clean commit `85b7206` after adding persistent recent projects. The packager verified archive contents and wrote `dist/FrameStudio-win-x64.zip` with SHA-256 `05b35eb68221daba27661ec64cf6b5ab59a1ce9509ba56aa5046088ea2ad76d9`.

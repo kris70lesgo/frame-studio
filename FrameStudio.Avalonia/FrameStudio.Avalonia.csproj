@@ -17,8 +17,7 @@
     <PackageReference Include="Avalonia.Themes.Fluent" VersionOverride="12.1.3" />
     <PackageReference Include="Avalonia.Fonts.Inter" VersionOverride="12.1.3" />
     <PackageReference Include="AvaloniaUI.DiagnosticsSupport" VersionOverride="2.2.3">
-      <IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>
-      <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
+      <PrivateAssets>All</PrivateAssets>
     </PackageReference>
     <PackageReference Include="CommunityToolkit.Mvvm" VersionOverride="8.4.2" />
   </ItemGroup>
