@@ -456,11 +456,15 @@ public partial class EditorWindow : Window
             });
             var path = file?.TryGetLocalPath();
             if (!string.IsNullOrWhiteSpace(path))
+            {
                 await _viewModel.ExportGifAsync(path);
+                if (string.Equals(_viewModel.Status, "GIF exported", StringComparison.Ordinal))
+                    await new ExportCompleteWindow(path).ShowDialog(this);
+            }
         }
         catch (Exception ex)
         {
-            _viewModel.ReportStatus($"Could not open the GIF export dialog: {ex.Message}");
+            _viewModel.ReportStatus($"Could not complete GIF export: {ex.Message}");
         }
     }
 }

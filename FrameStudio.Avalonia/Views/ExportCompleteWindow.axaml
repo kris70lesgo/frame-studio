@@ -1,0 +1,61 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="FrameStudio.Avalonia.Views.ExportCompleteWindow"
+        Title="GIF export complete"
+        Width="520" Height="292" MinWidth="520" MinHeight="292"
+        CanResize="False"
+        WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource BackgroundPrimary}"
+        FontFamily="Inter, Segoe UI, sans-serif">
+    <Border Padding="24" Background="{DynamicResource BackgroundPrimary}"
+            BorderBrush="{DynamicResource Border}" BorderThickness="1">
+        <Grid RowDefinitions="Auto,Auto,*,Auto,Auto" RowSpacing="16">
+            <StackPanel Orientation="Horizontal" Spacing="13" VerticalAlignment="Center">
+                <Border Width="38" Height="38" CornerRadius="12"
+                        Background="{DynamicResource SurfaceRaised}"
+                        BorderBrush="{DynamicResource Border}" BorderThickness="1">
+                    <Path Data="M4,12 L9,17 L20,6" Stroke="{DynamicResource Success}"
+                          StrokeThickness="2" StrokeLineCap="Round" StrokeJoin="Round"
+                          Width="19" Height="19" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                </Border>
+                <StackPanel Spacing="3" VerticalAlignment="Center">
+                    <TextBlock Text="GIF exported" FontSize="18" FontWeight="SemiBold"
+                               Foreground="{DynamicResource TextPrimary}" />
+                    <TextBlock x:Name="FileDetails" FontSize="11" Foreground="{DynamicResource TextSecondary}" />
+                </StackPanel>
+            </StackPanel>
+
+            <StackPanel Grid.Row="1" Spacing="7">
+                <TextBlock Text="SAVED TO" Classes="Caption" FontSize="9" />
+                <Border Padding="11,9" CornerRadius="8" Background="{DynamicResource Surface}"
+                        BorderBrush="{DynamicResource Border}" BorderThickness="1">
+                    <TextBlock x:Name="PathLabel" FontSize="11" Foreground="{DynamicResource TextSecondary}"
+                               TextTrimming="CharacterEllipsis" />
+                </Border>
+            </StackPanel>
+
+            <TextBlock Grid.Row="3" x:Name="StatusLabel" FontSize="11"
+                       Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" />
+
+            <Grid Grid.Row="4" ColumnDefinitions="*,Auto,Auto,Auto" ColumnSpacing="8">
+                <Button Classes="primary-button" Click="OpenFile_OnClick" AutomationProperties.Name="Open exported GIF">
+                    <StackPanel Orientation="Horizontal" Spacing="7">
+                        <TextBlock Text="↗" FontSize="13" />
+                        <TextBlock Text="Open GIF" FontSize="12" />
+                    </StackPanel>
+                </Button>
+                <Button Grid.Column="1" Classes="quiet-button" Click="OpenFolder_OnClick"
+                        AutomationProperties.Name="Show exported GIF in its folder">
+                    <TextBlock Text="Show in folder" FontSize="11" />
+                </Button>
+                <Button Grid.Column="2" Classes="quiet-button" Click="CopyPath_OnClick"
+                        AutomationProperties.Name="Copy exported GIF path">
+                    <TextBlock Text="Copy path" FontSize="11" />
+                </Button>
+                <Button Grid.Column="3" Classes="quiet-button" Click="Close_OnClick">
+                    <TextBlock Text="Done" FontSize="11" />
+                </Button>
+            </Grid>
+        </Grid>
+    </Border>
+</Window>

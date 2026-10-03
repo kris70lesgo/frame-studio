@@ -85,6 +85,11 @@ This log records the independent Avalonia port of ScreenToGif. The port uses new
 - Added an Avalonia project reference to the test project so it can exercise `EditorViewModel` without launching a window. The test invokes the same commands as the UI for move, duplicate, duration edit, delete, save, and GIF export, then reads the saved frame payloads and exported GIF metadata.
 - The complete macOS run passes 15 tests and skips the single Windows capture integration test. The full solution builds with zero warnings and errors. This verifies editor/model/export wiring, but cannot validate Win32 capture or visual interaction.
 
+## 2026-10-03 — GIF export completion actions
+
+- Added a compact completion window after a successful editor export with actions to open the GIF, open its folder, or copy the full path. The shell integration uses the operating system's file association and Avalonia clipboard, with errors shown in the completion state.
+- The completion view builds with the solution. A fresh visual check is unavailable while the desktop session is locked; platform shell actions still need Windows runtime verification.
+
 ## 2026-10-03 — Windows candidate rebuilt
 
 - Rebuilt the self-contained Windows x64 candidate from clean commit `85b7206` after adding persistent recent projects. The packager verified archive contents and wrote `dist/FrameStudio-win-x64.zip` with SHA-256 `05b35eb68221daba27661ec64cf6b5ab59a1ce9509ba56aa5046088ea2ad76d9`.
