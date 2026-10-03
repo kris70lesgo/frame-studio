@@ -16,5 +16,6 @@ ScreenToGif/Util/Secret.cs
 /packages
 obj
 bin
+dist/
 /log.txt
 *.user
