@@ -189,7 +189,7 @@ This log records the independent Avalonia port of ScreenToGif. The port uses new
 
 ## 2026-10-03 — Candidate rebuilt with MP4 export
 
-- Rebuilt the self-contained Windows x64 candidate from clean commit `da83c48`. The archive SHA-256 is `9c396136dc4f5e95be6ca6164d7633defc4b3cb7440eb1a16d9db6a9b634e04c`; an independent archive check and checksum comparison passed.
+- Rebuilt the self-contained Windows x64 candidate from clean commit `fff6398`. The archive SHA-256 is `3cf97aa271beff60f52ba1f9b5c08b822f75e46e3136f34327323c56e0d1ad99`; an independent archive check and checksum comparison passed.
 - The package README states that FFmpeg with `libx264` must be installed separately. The package was cross-published on macOS arm64 and has not been run on Windows; its capture and export UI still require runtime checks.
 
 ## 2026-10-03 — End-to-end record, edit, and GIF check
