@@ -59,6 +59,8 @@ See [the source audit](docs/MIGRATION_AUDIT.md) for reusable modules, framework 
 
 See [the challenge analysis](docs/CHALLENGE_ANALYSIS.md) for the judging criteria, entry requirements, and the schedule used to prioritize migration work.
 
+The [Windows validation checklist](docs/WINDOWS_VALIDATION.md) describes the automated and manual checks still required before claiming the capture workflow is verified.
+
 ## Attribution and license
 
 The source application is [ScreenToGif](https://github.com/NickeManarin/ScreenToGif), created by Nicke Manarin and contributors. Its original source is licensed under the **Microsoft Public License (MS-PL)**. The complete upstream license and required notices are preserved in [`LICENSE.txt`](LICENSE.txt). Source derived from ScreenToGif is distributed under the terms of that license.

@@ -34,6 +34,7 @@ Categories are Best Cross-Platform Port, Best Legacy Revival, Best Everyday Tool
 
 - The independent Avalonia solution builds on macOS arm64. An earlier shell build was inspected and captured; the new recorder/editor windows have not had a fresh visual smoke check on this host.
 - Self-contained publish checks succeeded for macOS arm64 and Windows x64. The Windows package has not been run on Windows and is not yet a public challenge download.
+- A Windows desktop integration test now covers display enumeration and a short capture/pause/resume/stop session. It is explicitly skipped on macOS and still needs to pass on Windows.
 - The Windows screen recording flow now connects display/region setup, bounded GDI capture, pause/resume/stop, `.fsp` project storage, an editor with frame thumbnails/playback/reordering/crop/resize/basic frame edits, and GIF export.
 - The Windows GDI monitor/window/screen-region service cross-compiles, but screen capture still needs runtime verification on Windows. Webcam, sketchboard, window-capture UI, text/drawing annotations, and video export remain incomplete.
 - The original WPF app could not be launched on the macOS development host. The original project was compiled with its Windows-only post-build event disabled. A Windows machine is still needed to capture true before/after images and exercise the recorder.
