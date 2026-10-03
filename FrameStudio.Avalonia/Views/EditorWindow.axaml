@@ -27,6 +27,7 @@
                     <TextBlock Text="{Binding CanvasLabel}" FontSize="10" Foreground="{DynamicResource TextTertiary}" />
                 </StackPanel>
                 <Button Grid.Column="2" Classes="quiet-button" Command="{Binding SaveProjectCommand}"
+                        ToolTip.Tip="Save project (Ctrl/Cmd+S)"
                         IsEnabled="{Binding CanSave}" AutomationProperties.Name="Save edited project">
                     <StackPanel Orientation="Horizontal" Spacing="7">
                         <TextBlock Text="↧" FontSize="15" />
@@ -84,7 +85,8 @@
                     </Grid>
                 </Border>
                 <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,13" Spacing="8">
-                    <Button x:Name="PlayButton" Classes="quiet-button" Click="Play_OnClick" Content="▶ Play" />
+                    <Button x:Name="PlayButton" Classes="quiet-button" Click="Play_OnClick" Content="▶ Play"
+                            ToolTip.Tip="Play or pause the preview (Space)" />
                     <StackPanel x:Name="CropControls" Orientation="Horizontal" IsVisible="False" Spacing="8">
                         <TextBlock Text="Drag a crop area over the preview" FontSize="11" Foreground="{DynamicResource TextSecondary}"
                                    VerticalAlignment="Center" />
@@ -121,14 +123,18 @@
                     <StackPanel Grid.Row="4" Spacing="8">
                         <Grid ColumnDefinitions="*,*" ColumnSpacing="7">
                             <Button Classes="quiet-button" Command="{Binding MoveSelectedFrameEarlierCommand}"
-                                    IsEnabled="{Binding CanMoveSelectedEarlier}" Content="Move earlier" />
+                                    IsEnabled="{Binding CanMoveSelectedEarlier}" Content="Move earlier"
+                                    ToolTip.Tip="Move selected frame earlier (Ctrl/Cmd+Left)" />
                             <Button Grid.Column="1" Classes="quiet-button" Command="{Binding MoveSelectedFrameLaterCommand}"
-                                    IsEnabled="{Binding CanMoveSelectedLater}" Content="Move later" />
+                                    IsEnabled="{Binding CanMoveSelectedLater}" Content="Move later"
+                                    ToolTip.Tip="Move selected frame later (Ctrl/Cmd+Right)" />
                         </Grid>
                         <Button Classes="quiet-button" Command="{Binding DuplicateSelectedFrameCommand}"
-                                IsEnabled="{Binding CanEdit}" Content="Duplicate frame" />
+                                IsEnabled="{Binding CanEdit}" Content="Duplicate frame"
+                                ToolTip.Tip="Duplicate selected frame (Ctrl/Cmd+D)" />
                         <Button Classes="quiet-button destructive-button" Command="{Binding DeleteSelectedFrameCommand}"
-                                IsEnabled="{Binding CanEdit}" Content="Delete frame" />
+                                IsEnabled="{Binding CanEdit}" Content="Delete frame"
+                                ToolTip.Tip="Delete selected frame (Delete)" />
                     </StackPanel>
                 </Grid>
             </Border>

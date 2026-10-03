@@ -41,6 +41,7 @@ public partial class EditorWindow : Window
     public EditorWindow()
     {
         InitializeComponent();
+        AddHandler(InputElement.KeyDownEvent, EditorWindow_OnKeyDown, RoutingStrategies.Tunnel);
         _previewImage = this.FindControl<Image>("PreviewImage")!;
         _previewEmptyText = this.FindControl<TextBlock>("PreviewEmptyText")!;
         _timelineList = this.FindControl<ListBox>("TimelineList")!;
@@ -404,6 +405,53 @@ public partial class EditorWindow : Window
         else
             _playTimer.Stop();
     }
+
+    private async void EditorWindow_OnKeyDown(object? sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.S && HasShortcutModifier(e))
+        {
+            await _viewModel.SaveProjectCommand.ExecuteAsync(null);
+            e.Handled = true;
+            return;
+        }
+
+        if (e.Source is TextBox)
+            return;
+
+        if (e.Key == Key.D && HasShortcutModifier(e))
+        {
+            _viewModel.DuplicateSelectedFrameCommand.Execute(null);
+            e.Handled = true;
+        }
+        else if (e.Key == Key.Left && HasShortcutModifier(e))
+        {
+            _viewModel.MoveSelectedFrameEarlierCommand.Execute(null);
+            e.Handled = true;
+        }
+        else if (e.Key == Key.Right && HasShortcutModifier(e))
+        {
+            _viewModel.MoveSelectedFrameLaterCommand.Execute(null);
+            e.Handled = true;
+        }
+        else if (e.Key == Key.Delete && e.KeyModifiers == KeyModifiers.None && e.Source is not Button)
+        {
+            _viewModel.DeleteSelectedFrameCommand.Execute(null);
+            e.Handled = true;
+        }
+        else if (e.Key == Key.Space && e.KeyModifiers == KeyModifiers.None && e.Source is not Button)
+        {
+            Play_OnClick(this, new RoutedEventArgs());
+            e.Handled = true;
+        }
+        else if (e.Key == Key.Escape && _cropCanvas.IsVisible)
+        {
+            EndCropMode();
+            e.Handled = true;
+        }
+    }
+
+    private static bool HasShortcutModifier(KeyEventArgs e) =>
+        e.KeyModifiers is KeyModifiers.Control or KeyModifiers.Meta;
 
     private async void PlayTimer_OnTick(object? sender, EventArgs e)
     {
