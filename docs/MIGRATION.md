@@ -241,6 +241,11 @@ This log records the independent Avalonia port of ScreenToGif. The port uses new
 - The UI converts preview coordinates to neutral pixel coordinates. `FrameStudio.Core` validates the stroke, rasterizes it through Skia into RGBA buffers, and rewrites the project through the same atomic draft path as crop, resize, and text edits. GIF and MP4 exports therefore receive the drawing automatically.
 - Added transform validation, transform pixel-boundary, editor persistence, and all-frame application tests. The control builds on macOS; the already-running app had a user project at an unsaved-changes dialog, so a fresh live UI interaction check remains pending rather than altering that project.
 
+## 2026-10-04 — Candidate rebuilt with freehand annotations
+
+- Rebuilt the self-contained Windows x64 candidate from clean commit `71c000c`. ZIP integrity passed and the archive SHA-256 is `918c78eda21e491b4446b9b4b196f21230bc8fa4875849df49deeb93aa330526`.
+- The package includes the freehand editor annotation workflow and preserves the unverified Windows-runtime status in its bundled README. It remains a local development candidate until the desktop validation checklist passes.
+
 ## Ongoing log
 
 Add dated entries here as migrations reveal framework differences, platform constraints, or performance fixes.
