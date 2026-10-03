@@ -9,7 +9,6 @@ internal sealed class Win32FrameGrabber : IDisposable
 {
     private readonly PixelRect _region;
     private readonly bool _captureCursor;
-    private IntPtr _desktopDc;
     private IntPtr _memoryDc;
     private IntPtr _bitmap;
     private IntPtr _previousBitmap;
@@ -23,44 +22,41 @@ internal sealed class Win32FrameGrabber : IDisposable
         _region = region;
         _captureCursor = captureCursor;
 
-        _desktopDc = Win32Native.GetDC(IntPtr.Zero);
-        if (_desktopDc == IntPtr.Zero)
+        var desktopDc = Win32Native.GetDC(IntPtr.Zero);
+        if (desktopDc == IntPtr.Zero)
             throw LastError("Could not open the desktop drawing context.");
 
-        _memoryDc = Win32Native.CreateCompatibleDC(_desktopDc);
-        if (_memoryDc == IntPtr.Zero)
+        try
         {
-            Dispose();
-            throw LastError("Could not create an in-memory drawing context.");
-        }
+            _memoryDc = Win32Native.CreateCompatibleDC(desktopDc);
+            if (_memoryDc == IntPtr.Zero)
+                throw LastError("Could not create an in-memory drawing context.");
 
-        _bitmap = Win32Native.CreateCompatibleBitmap(_desktopDc, Width, Height);
-        if (_bitmap == IntPtr.Zero)
-        {
-            Dispose();
-            throw LastError("Could not allocate a screen capture bitmap.");
-        }
+            _bitmap = Win32Native.CreateCompatibleBitmap(desktopDc, Width, Height);
+            if (_bitmap == IntPtr.Zero)
+                throw LastError("Could not allocate a screen capture bitmap.");
 
-        _previousBitmap = Win32Native.SelectObject(_memoryDc, _bitmap);
-        if (_previousBitmap == IntPtr.Zero || _previousBitmap == new IntPtr(-1))
+            _previousBitmap = Win32Native.SelectObject(_memoryDc, _bitmap);
+            if (_previousBitmap == IntPtr.Zero || _previousBitmap == new IntPtr(-1))
+            {
+                _previousBitmap = IntPtr.Zero;
+                throw LastError("Could not select the screen capture bitmap.");
+            }
+        }
+        catch
         {
-            _previousBitmap = IntPtr.Zero;
             Dispose();
-            throw LastError("Could not select the screen capture bitmap.");
+            throw;
+        }
+        finally
+        {
+            _ = Win32Native.ReleaseDC(IntPtr.Zero, desktopDc);
         }
     }
 
     public byte[] CaptureRgba()
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
-
-        var copied = Win32Native.BitBlt(_memoryDc, 0, 0, Width, Height, _desktopDc,
-            _region.X, _region.Y, Win32Native.SourceCopy | Win32Native.CaptureBlt);
-        if (!copied)
-            throw LastError("Could not copy pixels from the selected screen region.");
-
-        if (_captureCursor)
-            DrawCursor();
 
         var header = new Win32Native.BitmapInfo
         {
@@ -76,19 +72,38 @@ internal sealed class Win32FrameGrabber : IDisposable
             }
         };
         var bgra = new byte[checked(Width * Height * 4)];
-        _ = Win32Native.SelectObject(_memoryDc, _previousBitmap);
-        int lines;
+        var desktopDc = Win32Native.GetDC(IntPtr.Zero);
+        if (desktopDc == IntPtr.Zero)
+            throw LastError("Could not open the desktop drawing context.");
+
         try
         {
+            var copied = Win32Native.BitBlt(_memoryDc, 0, 0, Width, Height, desktopDc,
+                _region.X, _region.Y, Win32Native.SourceCopy | Win32Native.CaptureBlt);
+            if (!copied)
+                throw LastError("Could not copy pixels from the selected screen region.");
+
+            if (_captureCursor)
+                DrawCursor();
+
             // GetDIBits requires the bitmap to be deselected from every memory DC.
-            lines = Win32Native.GetDIBits(_desktopDc, _bitmap, 0, (uint)Height, bgra, ref header, Win32Native.DibRgbColors);
+            _ = Win32Native.SelectObject(_memoryDc, _previousBitmap);
+            try
+            {
+                var lines = Win32Native.GetDIBits(desktopDc, _bitmap, 0, (uint)Height, bgra, ref header, Win32Native.DibRgbColors);
+                if (lines != Height)
+                    throw LastError("Could not read pixels from the screen capture bitmap.");
+            }
+            finally
+            {
+                _ = Win32Native.SelectObject(_memoryDc, _bitmap);
+            }
         }
         finally
         {
-            _ = Win32Native.SelectObject(_memoryDc, _bitmap);
+            // GetDC returns a common DC, which must be released on this same capture thread.
+            _ = Win32Native.ReleaseDC(IntPtr.Zero, desktopDc);
         }
-        if (lines != Height)
-            throw LastError("Could not read pixels from the screen capture bitmap.");
 
         for (var index = 0; index < bgra.Length; index += 4)
         {
@@ -111,13 +126,9 @@ internal sealed class Win32FrameGrabber : IDisposable
             _ = Win32Native.DeleteObject(_bitmap);
         if (_memoryDc != IntPtr.Zero)
             _ = Win32Native.DeleteDC(_memoryDc);
-        if (_desktopDc != IntPtr.Zero)
-            _ = Win32Native.ReleaseDC(IntPtr.Zero, _desktopDc);
-
         _previousBitmap = IntPtr.Zero;
         _bitmap = IntPtr.Zero;
         _memoryDc = IntPtr.Zero;
-        _desktopDc = IntPtr.Zero;
     }
 
     private void DrawCursor()
