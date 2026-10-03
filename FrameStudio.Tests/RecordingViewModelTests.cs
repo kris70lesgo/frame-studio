@@ -121,6 +121,11 @@ public sealed class RecordingViewModelTests
                 Assert.Equal(size, metadata.CanvasSize);
                 Assert.Equal(new[] { 70, 40, 60 }, metadata.FrameDurationsMilliseconds);
                 Assert.Equal(0, metadata.RepeatCount);
+                var decodedFrames = GifLzwRoundTripTests.DecodeFrameRgba(gif);
+                Assert.Equal(3, decodedFrames.Count);
+                Assert.Equal(green, decodedFrames[0]);
+                Assert.Equal(red, decodedFrames[1]);
+                Assert.Equal(blue, decodedFrames[2]);
             }
             finally
             {

@@ -6,6 +6,65 @@ namespace FrameStudio.Tests;
 
 public sealed class GifLzwRoundTripTests
 {
+    internal static IReadOnlyList<byte[]> DecodeFrameRgba(byte[] gif)
+    {
+        using var stream = new MemoryStream(gif);
+        using var reader = new BinaryReader(stream);
+        if (System.Text.Encoding.ASCII.GetString(ReadExactly(reader, 6)) != "GIF89a")
+            throw new InvalidDataException("Expected a GIF89a image.");
+
+        _ = ReadExactly(reader, 4); // Logical canvas size.
+        var screenFlags = reader.ReadByte();
+        _ = ReadExactly(reader, 2); // Background index and pixel aspect ratio.
+        var globalPalette = (screenFlags & 0x80) != 0
+            ? ReadExactly(reader, 3 * (1 << ((screenFlags & 0x07) + 1)))
+            : null;
+        var frames = new List<byte[]>();
+
+        while (stream.Position < stream.Length)
+        {
+            switch (reader.ReadByte())
+            {
+                case 0x21:
+                    _ = reader.ReadByte(); // Extension label.
+                    SkipSubBlocks(reader);
+                    break;
+
+                case 0x2c:
+                    var descriptor = ReadExactly(reader, 9);
+                    var width = System.Buffers.Binary.BinaryPrimitives.ReadUInt16LittleEndian(descriptor.AsSpan(4, 2));
+                    var height = System.Buffers.Binary.BinaryPrimitives.ReadUInt16LittleEndian(descriptor.AsSpan(6, 2));
+                    var imageFlags = descriptor[8];
+                    var palette = (imageFlags & 0x80) != 0
+                        ? ReadExactly(reader, 3 * (1 << ((imageFlags & 0x07) + 1)))
+                        : globalPalette ?? throw new InvalidDataException("GIF image has no color table.");
+                    var minimumCodeSize = reader.ReadByte();
+                    var compressedData = ReadSubBlocks(reader);
+                    var (indexes, _) = DecodeLzw(compressedData, minimumCodeSize, width * height);
+                    var rgba = new byte[indexes.Length * 4];
+                    for (var index = 0; index < indexes.Length; index++)
+                    {
+                        var paletteOffset = indexes[index] * 3;
+                        var pixelOffset = index * 4;
+                        rgba[pixelOffset] = palette[paletteOffset];
+                        rgba[pixelOffset + 1] = palette[paletteOffset + 1];
+                        rgba[pixelOffset + 2] = palette[paletteOffset + 2];
+                        rgba[pixelOffset + 3] = byte.MaxValue;
+                    }
+                    frames.Add(rgba);
+                    break;
+
+                case 0x3b:
+                    return frames;
+
+                default:
+                    throw new InvalidDataException("GIF contains an unknown block marker.");
+            }
+        }
+
+        throw new EndOfStreamException("GIF is missing its trailer.");
+    }
+
     [Fact]
     public void GifFile_RoundTripsQuantizedPixelsAcrossLzwCodeWidthGrowth()
     {

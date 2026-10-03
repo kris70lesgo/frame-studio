@@ -194,7 +194,7 @@ This log records the independent Avalonia port of ScreenToGif. The port uses new
 
 ## 2026-10-03 — End-to-end record, edit, and GIF check
 
-- Added a platform-independent workflow test that feeds three frames through the recording view model, moves a frame and changes its duration in the editor, saves and reopens the `.fsp`, then exports and inspects the GIF frame delays and loop metadata. The saved frame pixels confirm the reordered content.
+- Added a platform-independent workflow test that feeds three frames through the recording view model, moves a frame and changes its duration in the editor, saves and reopens the `.fsp`, then decodes the exported GIF and checks its RGBA frames, delays, and loop metadata.
 - The source is a deterministic fake `IRecordingSession`, so the test proves the app's recording-to-editor-to-export handoff but does not replace the skipped Windows GDI runtime checks. The suite now passes 25 tests and skips those three Windows checks on macOS.
 
 ## Migration decisions
