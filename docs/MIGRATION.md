@@ -162,6 +162,11 @@ This log records the independent Avalonia port of ScreenToGif. The port uses new
 - Added platform-independent tests confirming that invalid screen frame rates, empty screen regions, and invalid window frame rates are rejected before monitor enumeration or other Win32 calls.
 - The focused test run passes 20 tests and skips the three Windows desktop integration checks on macOS. The new checks guard early request validation; they do not verify the GDI backend or app-window exclusion on Windows.
 
+## 2026-10-03 — Candidate rebuilt with capture validation
+
+- Rebuilt the self-contained Windows x64 candidate from clean commit `5b589a6`. ZIP integrity and an independent SHA-256 check passed; its hash is `95c4a2271c919abd5ac0f80e2588e0cb7bf1998b888b05e1daf0152eaa00a157`.
+- The package includes the new request validation checks in its source revision record. It remains a local development candidate and has not been launched on Windows.
+
 ## Migration decisions
 
 - Keep the original WPF projects intact as the baseline and source reference.
