@@ -2,6 +2,13 @@
 
 The Windows capture backend and app package have been cross-compiled on macOS, but have not yet been run on Windows. This checklist records the evidence needed before claiming the record → edit → GIF workflow is verified.
 
+## Current local Windows x64 candidate
+
+- Package: `dist/FrameStudio-win-x64.zip` (ignored local build output; not publicly downloadable).
+- Source revision: `32ab6c7`; self-contained `win-x64` publish using .NET SDK `9.0.318` on macOS arm64.
+- SHA-256: `804d923af09daacc5fc9c545b3685b1663650b4253cff50646d9619218b776cb`.
+- Archive integrity passed with `unzip -t`; the archive includes the package README and complete MS-PL license. This does not establish that the executable runs or captures correctly on Windows.
+
 ## Automated desktop check
 
 Run from a Windows 10 or Windows 11 desktop session with at least one active display:
