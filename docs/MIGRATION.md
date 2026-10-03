@@ -174,6 +174,11 @@ This log records the independent Avalonia port of ScreenToGif. The port uses new
 - Moved crop, resize, text rasterization, and GIF encoding onto worker tasks so frame processing does not hold the UI thread. The editor blocks closing while a raster edit writes its temporary archive.
 - `dotnet test FrameStudio.sln --configuration Debug --no-restore` passes 23 tests and skips the three Windows desktop checks. Release build succeeds with zero warnings/errors. A fresh visual check of the text dialog has not yet been completed; the prior editor screenshot predates this feature.
 
+## 2026-10-03 — Candidate rebuilt with text overlays
+
+- Rebuilt the self-contained Windows x64 candidate from clean commit `9b5248a`. ZIP integrity and an independent SHA-256 check passed; its hash is `d7f514158ac22727e47997c25886ad768d5620be6a6ec97a0c01857f3bee45da`.
+- The package includes the SkiaSharp text renderer and identifies its Mac build host. It is still a local development candidate; Windows runtime and UI validation remain outstanding.
+
 ## Migration decisions
 
 - Keep the original WPF projects intact as the baseline and source reference.
