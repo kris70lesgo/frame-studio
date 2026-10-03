@@ -17,7 +17,7 @@ public sealed class ShellCapabilityProviderTests
             if (OperatingSystem.IsWindowsVersionAtLeast(10, 0, 19041))
             {
                 Assert.Equal(FeatureReadiness.Ready, screen.Readiness);
-                Assert.Contains("validate capture", screen.Detail);
+                Assert.Contains("Validate capture", screen.Detail);
             }
             else
             {
