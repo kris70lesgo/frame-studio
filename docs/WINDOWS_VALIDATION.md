@@ -26,7 +26,7 @@ dotnet test FrameStudio.sln --configuration Debug
 2. Choose a display and a small region. Record for several seconds, pause, resume, and stop.
 3. Confirm a `.fsp` project is written and opens in the editor. Check preview, playback, thumbnail rendering, frame durations, duplicate/delete, and move earlier/later.
 4. Drag a crop over the preview and apply it. Resize the project with aspect ratio retained, save, close, reopen, and confirm dimensions and edits persist.
-5. Export a looping GIF and open it in a separate viewer. Check that it animates, uses the edited ordering and timing, and has the expected canvas dimensions.
+5. Export a looping GIF. In the completion window, verify Open GIF, Show in folder, and Copy path; then check the GIF in a separate viewer for animation, edited ordering and timing, and expected canvas dimensions.
 6. Repeat with a full display. On a multi-monitor setup, test a non-primary display and a mixed-DPI display if available.
 
 ## Challenge evidence to capture
