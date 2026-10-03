@@ -50,6 +50,12 @@ This log records the independent Avalonia port of ScreenToGif. The port uses new
 - Inspected the editor screenshot and accessibility tree without raising the app over the active user application. Saved the screenshot as [after-editor-preview-macos.jpg](before-after/after-editor-preview-macos.jpg).
 - This is a rendering and project-open smoke check only. It does not test screen capture, editor operations, or GIF decoding in another viewer. It is not a challenge comparison image; Windows runtime validation and paired screenshots remain pending.
 
+## 2026-10-03 — Core workflow verification
+
+- Expanded the archive round-trip test to assert the intended blue → red → blue frame order and RGBA pixels after project rewrite, crop, and resize.
+- The test now parses the exported GIF structure and checks the 2 × 2 canvas, three frames, 90/110/130 ms delays, and infinite-loop metadata. `dotnet test FrameStudio.sln --configuration Debug --no-restore` passes 11 tests on macOS and skips the Windows capture integration test.
+- This test validates archive editing and GIF metadata; it does not decode exported GIF pixels in a viewer or verify the Windows GDI capture path.
+
 ## Migration decisions
 
 - Keep the original WPF projects intact as the baseline and source reference.
