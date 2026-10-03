@@ -18,7 +18,7 @@ Run from a Windows 10 version 2004+ or Windows 11 desktop session with at least 
 dotnet test FrameStudio.sln --configuration Debug
 ```
 
-`WindowsCaptureIntegrationTests` checks that capture-window affinity applies and restores, that cleanup handles a closed window, then enumerates a monitor, captures a 64 × 64 pixel region, checks RGBA frame dimensions and timing, and exercises pause, resume, and stop. These tests are intentionally skipped off Windows and are not evidence until they pass on a Windows desktop.
+`WindowsCaptureIntegrationTests` includes cross-platform checks that malformed screen and window requests fail before native calls. Three desktop-only tests check capture-window affinity apply/restore, cleanup after a window closes, and monitor enumeration plus a 64 × 64 pixel capture with pause, resume, and stop. The desktop tests are intentionally skipped off Windows and are not evidence until they pass on a Windows desktop.
 
 ## Manual recording and editing check
 

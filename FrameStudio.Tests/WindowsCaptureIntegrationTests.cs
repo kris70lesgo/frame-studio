@@ -27,6 +27,35 @@ public sealed class WindowsCaptureExclusionFactAttribute : FactAttribute
 
 public sealed class WindowsCaptureIntegrationTests
 {
+    [Fact]
+    public async Task ScreenCapture_RejectsInvalidFrameRateBeforeDisplayEnumeration()
+    {
+        var service = new WindowsPlatformServices();
+        var request = new ScreenCaptureRequest("unused", new PixelRect(0, 0, 1, 1), FramesPerSecond: 0,
+            CaptureCursor: false);
+
+        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(async () => await service.StartAsync(request));
+    }
+
+    [Fact]
+    public async Task ScreenCapture_RejectsEmptyRegionBeforeDisplayEnumeration()
+    {
+        var service = new WindowsPlatformServices();
+        var request = new ScreenCaptureRequest("unused", new PixelRect(0, 0, 0, 10), FramesPerSecond: 10,
+            CaptureCursor: false);
+
+        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(async () => await service.StartAsync(request));
+    }
+
+    [Fact]
+    public async Task WindowCapture_RejectsInvalidFrameRateBeforeWindowsApiCalls()
+    {
+        var service = new WindowsPlatformServices();
+        var request = new WindowCaptureRequest(IntPtr.Zero, FramesPerSecond: 121, CaptureCursor: false);
+
+        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(async () => await service.StartAsync(request));
+    }
+
     [WindowsCaptureExclusionFact]
     public void CaptureWindowExclusion_AppliesAndRestoresDisplayAffinity()
     {
