@@ -4,115 +4,216 @@
         x:Class="FrameStudio.Avalonia.Views.EditorWindow"
         x:DataType="vm:EditorViewModel"
         Title="Frame Studio editor"
-        Width="1440" Height="940" MinWidth="1100" MinHeight="720"
+        Width="1440" Height="900" MinWidth="1100" MinHeight="700"
         WindowStartupLocation="CenterOwner"
         Background="{DynamicResource BackgroundPrimary}"
         FontFamily="Inter, Segoe UI, sans-serif"
         Loaded="Editor_OnLoaded">
-    <Grid RowDefinitions="58,*,214">
-        <Border Grid.Row="0" Background="{DynamicResource BackgroundPrimary}"
-                BorderBrush="{DynamicResource Border}" BorderThickness="0,0,0,1">
-            <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto" Margin="22,0" ColumnSpacing="10" VerticalAlignment="Center">
+    <Grid RowDefinitions="48,*,178">
+        <!-- Compact command bar: familiar editor chrome with Frame Studio tools and actions. -->
+        <Border Grid.Row="0" Background="#1B1A20" BorderBrush="#302E36" BorderThickness="0,0,0,1">
+            <Grid ColumnDefinitions="Auto,Auto,*,Auto" Margin="11,0" ColumnSpacing="13" VerticalAlignment="Center">
                 <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
                     <Grid Width="27" Height="27">
-                        <Border Width="16" Height="16" CornerRadius="5" BorderThickness="1.6" BorderBrush="{DynamicResource Accent}"
+                        <Border Width="16" Height="16" CornerRadius="4" BorderThickness="1.6" BorderBrush="#B99CFF"
                                 HorizontalAlignment="Left" VerticalAlignment="Top" />
-                        <Border Width="16" Height="16" CornerRadius="5" BorderThickness="1.6" BorderBrush="{DynamicResource AccentStrong}"
+                        <Border Width="16" Height="16" CornerRadius="4" BorderThickness="1.6" BorderBrush="#8B5CF6"
                                 HorizontalAlignment="Right" VerticalAlignment="Bottom" />
                     </Grid>
-                    <TextBlock Text="FRAME STUDIO" Classes="Caption" Foreground="{DynamicResource TextPrimary}" />
+                    <StackPanel Spacing="1" VerticalAlignment="Center">
+                        <TextBlock Text="FRAME STUDIO" FontSize="11" FontWeight="Bold" Foreground="#F4F3F6" />
+                        <TextBlock Text="EDITOR" FontSize="9" FontWeight="SemiBold" Foreground="#A5A3AD" />
+                    </StackPanel>
                 </StackPanel>
-                <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
-                    <TextBlock Text="{Binding ProjectName}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" />
-                    <TextBlock Text="{Binding CanvasLabel}" FontSize="10" Foreground="{DynamicResource TextTertiary}" />
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="3" VerticalAlignment="Center">
+                    <Button Classes="editor-tool-button selected" IsTabStop="False"
+                            ToolTip.Tip="Frame selection" AutomationProperties.Name="Frame selection">
+                        <Path Data="M4,2 L4,20 L9,15 L13,22 L16,20 L12,14 L19,14 Z"
+                              Fill="Transparent" Stroke="#C7B2FF" StrokeThickness="1.6"
+                              Width="19" Height="19" />
+                    </Button>
+                    <Button x:Name="CropToolButton" Classes="editor-tool-button" Click="CropTool_OnClick"
+                            IsEnabled="{Binding CanEdit}" ToolTip.Tip="Crop all frames"
+                            AutomationProperties.Name="Crop every frame">
+                        <Path Data="M6,3 L6,17 L20,17 M10,6 L10,21 M3,10 L17,10 M17,3 L17,10"
+                              Stroke="#D6D4DD" StrokeThickness="1.5" StrokeLineCap="Round"
+                              Width="20" Height="20" />
+                    </Button>
+                    <Button Classes="editor-tool-button" Click="ResizeTool_OnClick" IsEnabled="{Binding CanEdit}"
+                            ToolTip.Tip="Resize canvas" AutomationProperties.Name="Resize canvas">
+                        <Path Data="M4,8 L4,4 L8,4 M16,4 L20,4 L20,8 M20,16 L20,20 L16,20 M8,20 L4,20 L4,16 M8,8 L16,16 M16,8 L8,16"
+                              Stroke="#D6D4DD" StrokeThickness="1.4" StrokeLineCap="Round"
+                              Width="20" Height="20" />
+                    </Button>
+                    <Border Width="1" Height="22" Margin="5,0" Background="#3B3942" VerticalAlignment="Center" />
+                    <Button Classes="editor-tool-button" Click="TextTool_OnClick" IsEnabled="{Binding CanEdit}"
+                            ToolTip.Tip="Add text to every frame" AutomationProperties.Name="Add text annotation to all frames">
+                        <TextBlock Text="T" FontSize="15" FontWeight="SemiBold" Foreground="#D6D4DD" />
+                    </Button>
+                    <Button x:Name="DrawToolButton" Classes="editor-tool-button" Click="DrawTool_OnClick"
+                            IsEnabled="{Binding CanEdit}" ToolTip.Tip="Draw on every frame"
+                            AutomationProperties.Name="Add freehand drawing to all frames">
+                        <Path Data="M4,16 L3,21 L8,20 L20,8 L16,4 Z M14,6 L18,10"
+                              Stroke="#D6D4DD" StrokeThickness="1.5" StrokeLineCap="Round"
+                              Width="20" Height="20" />
+                    </Button>
                 </StackPanel>
-                <Button Grid.Column="2" Classes="quiet-button" Command="{Binding SaveProjectCommand}"
-                        ToolTip.Tip="Save project (Ctrl/Cmd+S)"
-                        IsEnabled="{Binding CanSave}" AutomationProperties.Name="Save edited project">
-                    <StackPanel Orientation="Horizontal" Spacing="7">
-                        <TextBlock Text="↧" FontSize="15" />
-                        <TextBlock Text="Save" FontSize="12" />
+
+                <StackPanel Grid.Column="2" HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="2">
+                    <TextBlock Text="{Binding ProjectName}" FontSize="12" FontWeight="SemiBold"
+                               Foreground="#F4F3F6" HorizontalAlignment="Center" />
+                    <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Center">
+                        <TextBlock Text="{Binding CanvasLabel}" FontSize="10" Foreground="#AAA8B2" />
+                        <Ellipse Width="4" Height="4" Fill="#B99CFF" VerticalAlignment="Center" IsVisible="{Binding IsDirty}" />
+                        <TextBlock Text="Unsaved" FontSize="10" Foreground="#C7C5CE" IsVisible="{Binding IsDirty}" />
                     </StackPanel>
-                </Button>
-                <Button Grid.Column="3" Classes="primary-button" Click="ExportGif_OnClick"
-                        IsEnabled="{Binding CanEdit}" AutomationProperties.Name="Export animation as GIF">
-                    <StackPanel Orientation="Horizontal" Spacing="7">
-                        <TextBlock Text="↗" FontSize="14" />
-                        <TextBlock Text="Export GIF" FontSize="12" />
-                    </StackPanel>
-                </Button>
-                <Button Grid.Column="4" Classes="quiet-button" Click="ExportMp4_OnClick"
-                        IsEnabled="{Binding CanEdit}" AutomationProperties.Name="Export animation as MP4">
-                    <StackPanel Orientation="Horizontal" Spacing="7">
-                        <TextBlock Text="↗" FontSize="14" />
-                        <TextBlock Text="Export MP4" FontSize="12" />
-                    </StackPanel>
-                </Button>
+                </StackPanel>
+
+                <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="7" VerticalAlignment="Center">
+                    <Button Classes="toolbar-save-button" Command="{Binding SaveProjectCommand}"
+                            IsEnabled="{Binding CanSave}" ToolTip.Tip="Save project (Ctrl/Cmd+S)"
+                            AutomationProperties.Name="Save edited project">
+                        <StackPanel Orientation="Horizontal" Spacing="7">
+                            <TextBlock Text="↧" FontSize="15" Foreground="#E7E5EB" />
+                            <TextBlock Text="Save" FontSize="11" Foreground="#E7E5EB" />
+                        </StackPanel>
+                    </Button>
+                    <Button Classes="primary-button toolbar-export-button" Click="ExportGif_OnClick"
+                            IsEnabled="{Binding CanEdit}" AutomationProperties.Name="Export animation as GIF">
+                        <StackPanel Orientation="Horizontal" Spacing="7">
+                            <TextBlock Text="↗" FontSize="14" />
+                            <TextBlock Text="Export GIF" FontSize="11" />
+                        </StackPanel>
+                    </Button>
+                    <Button Classes="toolbar-save-button" Click="ExportMp4_OnClick" IsEnabled="{Binding CanEdit}"
+                            ToolTip.Tip="Export an H.264 MP4 using FFmpeg"
+                            AutomationProperties.Name="Export animation as MP4">
+                        <TextBlock Text="MP4" FontSize="10" FontWeight="SemiBold" Foreground="#E7E5EB" />
+                    </Button>
+                </StackPanel>
             </Grid>
         </Border>
 
-        <Grid Grid.Row="1" ColumnDefinitions="70,*,264">
+        <Grid Grid.Row="1" ColumnDefinitions="240,*,252">
+            <!-- Frame navigator mirrors an editor's layer outline while retaining frame-centric semantics. -->
             <Border Grid.Column="0" Background="{DynamicResource BackgroundSecondary}"
                     BorderBrush="{DynamicResource Border}" BorderThickness="0,0,1,0">
-                <StackPanel Margin="9,17" Spacing="7">
-                    <Button Classes="tool-button selected" ToolTip.Tip="Frame selection">
-                        <TextBlock Text="↖" FontSize="17" />
-                    </Button>
-                    <Button x:Name="CropToolButton" Classes="tool-button" Click="CropTool_OnClick"
-                            IsEnabled="{Binding CanEdit}" ToolTip.Tip="Drag on the preview to crop every frame">
-                        <TextBlock Text="⌗" FontSize="16" />
-                    </Button>
-                    <Button Classes="tool-button" Click="ResizeTool_OnClick" IsEnabled="{Binding CanEdit}"
-                            ToolTip.Tip="Resize every frame in this project">
-                        <TextBlock Text="□" FontSize="16" />
-                    </Button>
-                    <Border Height="1" Margin="6,5" Background="{DynamicResource Border}" />
-                    <Button Classes="tool-button" Click="TextTool_OnClick" IsEnabled="{Binding CanEdit}"
-                            ToolTip.Tip="Add a text overlay to every frame"
-                            AutomationProperties.Name="Add text annotation to all frames">
-                        <TextBlock Text="T" FontSize="14" FontWeight="SemiBold" />
-                    </Button>
-                    <Button x:Name="DrawToolButton" Classes="tool-button" Click="DrawTool_OnClick" IsEnabled="{Binding CanEdit}"
-                            ToolTip.Tip="Draw a freehand annotation onto every frame"
-                            AutomationProperties.Name="Add freehand drawing to all frames">
-                        <TextBlock Text="✎" FontSize="17" />
-                    </Button>
-                </StackPanel>
+                <Grid RowDefinitions="Auto,Auto,*,Auto">
+                    <Grid Margin="16,17,14,9" ColumnDefinitions="*,Auto" VerticalAlignment="Center">
+                        <TextBlock Text="FRAMES" Classes="Caption" Foreground="{DynamicResource TextPrimary}" />
+                        <TextBlock Grid.Column="1" Text="{Binding Frames.Count, StringFormat='{}{0}'}"
+                                   FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource TextTertiary}" />
+                    </Grid>
+                    <TextBlock Grid.Row="1" Text="Capture sequence" Margin="16,0,14,12"
+                               FontSize="11" Foreground="{DynamicResource TextSecondary}" />
+                    <ListBox Grid.Row="2" x:Name="FrameList" ItemsSource="{Binding Frames}"
+                             SelectedItem="{Binding SelectedFrame, Mode=TwoWay}"
+                             SelectionChanged="Timeline_OnSelectionChanged"
+                             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                             ScrollViewer.VerticalScrollBarVisibility="Auto"
+                             SelectionMode="Single" Background="Transparent" BorderThickness="0">
+                        <ListBox.Styles>
+                            <Style Selector="ListBoxItem">
+                                <Setter Property="Padding" Value="0" />
+                                <Setter Property="Margin" Value="4,0" />
+                                <Setter Property="Background" Value="Transparent" />
+                                <Setter Property="BorderThickness" Value="0" />
+                                <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                                <Setter Property="VerticalContentAlignment" Value="Stretch" />
+                            </Style>
+                            <Style Selector="ListBoxItem:selected /template/ ContentPresenter">
+                                <Setter Property="Background" Value="#F1EDFC" />
+                                <Setter Property="BorderBrush" Value="Transparent" />
+                            </Style>
+                        </ListBox.Styles>
+                        <ListBox.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <VirtualizingStackPanel Orientation="Vertical" />
+                            </ItemsPanelTemplate>
+                        </ListBox.ItemsPanel>
+                        <ListBox.ItemTemplate>
+                            <DataTemplate x:DataType="vm:TimelineFrameViewModel">
+                                <Grid Height="38">
+                                    <Border Margin="0" Padding="7,0" CornerRadius="3"
+                                            Background="Transparent" BorderBrush="Transparent" BorderThickness="1">
+                                        <Grid ColumnDefinitions="27,*,Auto" ColumnSpacing="8" VerticalAlignment="Center">
+                                            <Border Width="23" Height="22" CornerRadius="3" Background="{DynamicResource SurfaceRaised}"
+                                                    VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding FrameLabel}" FontFamily="Consolas" FontSize="9"
+                                                           FontWeight="SemiBold" Foreground="{DynamicResource TextSecondary}"
+                                                           HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                            </Border>
+                                            <TextBlock Grid.Column="1" Text="Frame" FontSize="10" FontWeight="Medium"
+                                                       Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center" />
+                                            <TextBlock Grid.Column="2" Text="{Binding DurationLabel}" FontSize="9"
+                                                       Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" />
+                                        </Grid>
+                                    </Border>
+                                    <Border CornerRadius="3" BorderBrush="{DynamicResource Accent}" BorderThickness="1"
+                                            IsVisible="{Binding IsSelected}" IsHitTestVisible="False" />
+                                </Grid>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                    <Border Grid.Row="3" Margin="14,10,14,14" Padding="10,9" CornerRadius="7"
+                            Background="{DynamicResource Surface}" BorderBrush="{DynamicResource Border}" BorderThickness="1">
+                        <StackPanel Spacing="3">
+                            <TextBlock Text="PROJECT CANVAS" Classes="Caption" FontSize="9" />
+                            <TextBlock Text="{Binding CanvasLabel}" FontSize="11" FontWeight="SemiBold"
+                                       Foreground="{DynamicResource TextPrimary}" />
+                        </StackPanel>
+                    </Border>
+                </Grid>
             </Border>
 
-            <Grid Grid.Column="1" RowDefinitions="*,Auto" Background="{DynamicResource BackgroundPrimary}">
-                <Border Margin="24" CornerRadius="10" Background="#080B0D" BorderBrush="{DynamicResource Border}" BorderThickness="1">
+            <!-- Quiet stage keeps the captured frame visually dominant. -->
+            <Grid Grid.Column="1" RowDefinitions="*,Auto" Background="#F1F1F4">
+                <Border Grid.Row="0" Margin="12,12,12,7" CornerRadius="2"
+                        Background="#EEEEF2" BorderBrush="#E0DFE5" BorderThickness="1">
                     <Grid>
-                        <Image x:Name="PreviewImage" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                        <Border HorizontalAlignment="Left" VerticalAlignment="Top" Margin="12" Padding="9,6" CornerRadius="5"
-                                Background="{DynamicResource SurfaceRaised}" BorderBrush="{DynamicResource Border}" BorderThickness="1">
-                            <TextBlock Text="PREVIEW" Classes="Caption" FontSize="9" Foreground="{DynamicResource TextSecondary}" />
+                        <Border Margin="40,32" CornerRadius="0" Background="#FFFFFF"
+                                BorderBrush="#D9D8DF" BorderThickness="1">
+                            <Grid>
+                                <Image x:Name="PreviewImage" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                <TextBlock x:Name="PreviewEmptyText" Text="Select a frame to preview" HorizontalAlignment="Center"
+                                           VerticalAlignment="Center" IsVisible="True" Foreground="#92919B" FontSize="13" />
+                                <Canvas x:Name="CropCanvas" IsVisible="False" Background="Transparent"
+                                        PointerPressed="CropCanvas_OnPointerPressed" PointerMoved="CropCanvas_OnPointerMoved"
+                                        PointerReleased="CropCanvas_OnPointerReleased">
+                                    <Border x:Name="CropSelectionVisual" IsVisible="False" BorderBrush="#8A61EC"
+                                            BorderThickness="2" Background="#248A61EC" IsHitTestVisible="False" />
+                                </Canvas>
+                                <Canvas x:Name="DrawingCanvas" IsVisible="False" Background="Transparent"
+                                        PointerPressed="DrawingCanvas_OnPointerPressed" PointerMoved="DrawingCanvas_OnPointerMoved"
+                                        PointerReleased="DrawingCanvas_OnPointerReleased" />
+                            </Grid>
                         </Border>
-                        <TextBlock x:Name="PreviewEmptyText" Text="Select a frame to preview" HorizontalAlignment="Center"
-                                   VerticalAlignment="Center" IsVisible="True" Foreground="{DynamicResource TextTertiary}" FontSize="13" />
-                        <Canvas x:Name="CropCanvas" IsVisible="False" Background="Transparent"
-                                PointerPressed="CropCanvas_OnPointerPressed" PointerMoved="CropCanvas_OnPointerMoved"
-                                PointerReleased="CropCanvas_OnPointerReleased">
-                            <Border x:Name="CropSelectionVisual" IsVisible="False" BorderBrush="{DynamicResource Accent}"
-                                    BorderThickness="2" Background="#2478D8BC" IsHitTestVisible="False" />
-                        </Canvas>
-                        <Canvas x:Name="DrawingCanvas" IsVisible="False" Background="Transparent"
-                                PointerPressed="DrawingCanvas_OnPointerPressed" PointerMoved="DrawingCanvas_OnPointerMoved"
-                                PointerReleased="DrawingCanvas_OnPointerReleased" />
+
+                        <Border HorizontalAlignment="Left" VerticalAlignment="Top" Margin="12" Padding="9,5" CornerRadius="4"
+                                Background="#F7FFFFFF" BorderBrush="#E4E3E9" BorderThickness="1" IsHitTestVisible="False">
+                            <TextBlock Text="PREVIEW" FontSize="9" FontWeight="SemiBold" Foreground="#66656F" />
+                        </Border>
+                        <Border HorizontalAlignment="Right" VerticalAlignment="Top" Margin="12" Padding="9,5" CornerRadius="4"
+                                Background="#F7FFFFFF" BorderBrush="#E4E3E9" BorderThickness="1" IsHitTestVisible="False">
+                            <StackPanel Orientation="Horizontal" Spacing="7">
+                                <Ellipse Width="5" Height="5" Fill="#8A61EC" VerticalAlignment="Center" />
+                                <TextBlock Text="{Binding CanvasLabel}" FontSize="9" Foreground="#66656F" />
+                            </StackPanel>
+                        </Border>
                     </Grid>
                 </Border>
-                <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,13" Spacing="8">
-                    <Button x:Name="PlayButton" Classes="quiet-button" Click="Play_OnClick" Content="▶ Play"
-                            ToolTip.Tip="Play or pause the preview (Space)" />
+
+                <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,10" Spacing="9">
                     <StackPanel x:Name="CropControls" Orientation="Horizontal" IsVisible="False" Spacing="8">
-                        <TextBlock Text="Drag a crop area over the preview" FontSize="11" Foreground="{DynamicResource TextSecondary}"
+                        <TextBlock Text="Drag a crop on the preview" FontSize="10" Foreground="{DynamicResource TextSecondary}"
                                    VerticalAlignment="Center" />
                         <Button x:Name="ApplyCropButton" Classes="primary-button" Click="ApplyCrop_OnClick"
                                 IsEnabled="False" Content="Apply crop" />
                         <Button Classes="quiet-button" Click="CancelCrop_OnClick" Content="Cancel" />
                     </StackPanel>
                     <StackPanel x:Name="DrawingControls" Orientation="Horizontal" IsVisible="False" Spacing="8">
-                        <TextBlock Text="Draw in the preview. The teal stroke is applied to every frame." FontSize="11"
+                        <TextBlock Text="Draw on the frame; this applies to every frame" FontSize="10"
                                    Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" />
                         <Button x:Name="ApplyDrawingButton" Classes="primary-button" Click="ApplyDrawing_OnClick"
                                 IsEnabled="False" Content="Apply drawing" />
@@ -122,38 +223,55 @@
                 </StackPanel>
             </Grid>
 
-            <Border Grid.Column="2" Padding="19" Background="{DynamicResource BackgroundSecondary}"
+            <!-- Contextual frame inspector. -->
+            <Border Grid.Column="2" Background="{DynamicResource BackgroundSecondary}"
                     BorderBrush="{DynamicResource Border}" BorderThickness="1,0,0,0">
-                <Grid RowDefinitions="Auto,Auto,Auto,*,Auto" RowSpacing="18">
+                <TabControl Background="Transparent" BorderThickness="0" TabStripPlacement="Top">
+                    <TabItem Header="Frame">
+                <Grid Margin="14,12" RowDefinitions="Auto,Auto,Auto,Auto,*" RowSpacing="13">
                     <StackPanel Spacing="4">
                         <TextBlock Text="INSPECTOR" Classes="Caption" />
                         <TextBlock Text="Frame properties" Classes="Title" FontSize="16" />
                     </StackPanel>
-                    <Border Grid.Row="1" Padding="12" CornerRadius="8" Background="{DynamicResource Surface}"
+
+                    <Border Grid.Row="1" Padding="12,10" CornerRadius="7" Background="{DynamicResource Surface}"
                             BorderBrush="{DynamicResource Border}" BorderThickness="1">
-                        <StackPanel Spacing="5">
-                            <TextBlock Text="{Binding SelectedFrameNumberLabel}" FontSize="12" FontWeight="SemiBold"
-                                       Foreground="{DynamicResource TextPrimary}" />
-                            <TextBlock Text="{Binding CanvasLabel}" FontSize="11" Foreground="{DynamicResource TextSecondary}" />
-                        </StackPanel>
+                        <Grid ColumnDefinitions="*,Auto" VerticalAlignment="Center">
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="{Binding SelectedFrameNumberLabel}" FontSize="11" FontWeight="SemiBold"
+                                           Foreground="{DynamicResource TextPrimary}" />
+                                <TextBlock Text="Selected frame" FontSize="10" Foreground="{DynamicResource TextTertiary}" />
+                            </StackPanel>
+                            <Border Grid.Column="1" Padding="7,5" CornerRadius="5" Background="{DynamicResource BackgroundSecondary}">
+                                <TextBlock Text="{Binding CanvasLabel}" FontSize="9" Foreground="{DynamicResource TextSecondary}" />
+                            </Border>
+                        </Grid>
                     </Border>
+
                     <StackPanel Grid.Row="2" Spacing="7">
-                        <TextBlock Text="Duration" Classes="Caption" />
-                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                        <TextBlock Text="FRAME DURATION" Classes="Caption" FontSize="9" />
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="7">
                             <TextBox Text="{Binding DurationText, Mode=TwoWay}" PlaceholderText="Milliseconds" />
                             <Button Grid.Column="1" Classes="quiet-button" Command="{Binding ApplyDurationCommand}"
                                     IsEnabled="{Binding CanEdit}" Content="Apply" />
                         </Grid>
                     </StackPanel>
-                    <StackPanel Grid.Row="4" Spacing="8">
+
+                    <StackPanel Grid.Row="3" Spacing="7">
+                        <TextBlock Text="FRAME ORDER" Classes="Caption" FontSize="9" />
                         <Grid ColumnDefinitions="*,*" ColumnSpacing="7">
                             <Button Classes="quiet-button" Command="{Binding MoveSelectedFrameEarlierCommand}"
-                                    IsEnabled="{Binding CanMoveSelectedEarlier}" Content="Move earlier"
+                                    IsEnabled="{Binding CanMoveSelectedEarlier}" Content="↑ Earlier"
                                     ToolTip.Tip="Move selected frame earlier (Ctrl/Cmd+Left)" />
                             <Button Grid.Column="1" Classes="quiet-button" Command="{Binding MoveSelectedFrameLaterCommand}"
-                                    IsEnabled="{Binding CanMoveSelectedLater}" Content="Move later"
+                                    IsEnabled="{Binding CanMoveSelectedLater}" Content="↓ Later"
                                     ToolTip.Tip="Move selected frame later (Ctrl/Cmd+Right)" />
                         </Grid>
+                    </StackPanel>
+
+                    <StackPanel Grid.Row="4" Spacing="8" VerticalAlignment="Top">
+                        <Border Height="1" Background="{DynamicResource Border}" Margin="0,0,0,3" />
+                        <TextBlock Text="ACTIONS" Classes="Caption" FontSize="9" />
                         <Button Classes="quiet-button" Command="{Binding DuplicateSelectedFrameCommand}"
                                 IsEnabled="{Binding CanEdit}" Content="Duplicate frame"
                                 ToolTip.Tip="Duplicate selected frame (Ctrl/Cmd+D)" />
@@ -162,19 +280,59 @@
                                 ToolTip.Tip="Delete selected frame (Delete)" />
                     </StackPanel>
                 </Grid>
+                    </TabItem>
+                    <TabItem Header="Project">
+                        <StackPanel Margin="14,15" Spacing="15">
+                            <StackPanel Spacing="5">
+                                <TextBlock Text="Project canvas" FontSize="14" FontWeight="SemiBold"
+                                           Foreground="{DynamicResource TextPrimary}" />
+                                <TextBlock Text="Sequence properties" FontSize="10"
+                                           Foreground="{DynamicResource TextSecondary}" />
+                            </StackPanel>
+                            <Border Padding="11" CornerRadius="4" Background="{DynamicResource SurfaceRaised}"
+                                    BorderBrush="{DynamicResource Border}" BorderThickness="1">
+                                <StackPanel Spacing="5">
+                                    <TextBlock Text="CANVAS SIZE" Classes="Caption" FontSize="9" />
+                                    <TextBlock Text="{Binding CanvasLabel}" FontSize="14" FontWeight="SemiBold"
+                                               Foreground="{DynamicResource TextPrimary}" />
+                                </StackPanel>
+                            </Border>
+                            <Border Padding="11" CornerRadius="4" Background="{DynamicResource SurfaceRaised}"
+                                    BorderBrush="{DynamicResource Border}" BorderThickness="1">
+                                <StackPanel Spacing="5">
+                                    <TextBlock Text="FRAMES" Classes="Caption" FontSize="9" />
+                                    <TextBlock Text="{Binding Frames.Count}" FontSize="14" FontWeight="SemiBold"
+                                               Foreground="{DynamicResource TextPrimary}" />
+                                </StackPanel>
+                            </Border>
+                            <TextBlock Text="Use the timeline below to preview and select frames."
+                                       FontSize="10" Foreground="{DynamicResource TextSecondary}"
+                                       TextWrapping="Wrap" />
+                        </StackPanel>
+                    </TabItem>
+                </TabControl>
             </Border>
         </Grid>
 
+        <!-- Timing strip remains distinct from the frame navigator, as layers and animation views are in Jitter. -->
         <Border Grid.Row="2" Background="{DynamicResource BackgroundSecondary}"
                 BorderBrush="{DynamicResource Border}" BorderThickness="0,1,0,0">
-            <Grid RowDefinitions="Auto,*" Margin="17,12,17,12" RowSpacing="8">
-                <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="12" VerticalAlignment="Center">
-                    <TextBlock Text="TIMELINE" Classes="Caption" Foreground="{DynamicResource TextPrimary}" />
-                    <TextBlock Grid.Column="1" Text="{Binding Status}" FontSize="10" Foreground="{DynamicResource TextTertiary}"
+            <Grid RowDefinitions="Auto,*" Margin="14,9,14,10" RowSpacing="7">
+                <Grid ColumnDefinitions="Auto,Auto,*,Auto,Auto" ColumnSpacing="12" VerticalAlignment="Center">
+                    <Button x:Name="PlayButton" Classes="timeline-play-button" Click="Play_OnClick"
+                            AutomationProperties.Name="Play or pause preview" ToolTip.Tip="Play or pause preview (Space)">
+                        <TextBlock Text="▶" FontSize="10" />
+                    </Button>
+                    <TextBlock Grid.Column="1" Text="TIMELINE" Classes="Caption" Foreground="{DynamicResource TextPrimary}"
                                VerticalAlignment="Center" />
-                    <TextBlock Grid.Column="2" Text="{Binding Frames.Count, StringFormat='{}{0} FRAMES'}" Classes="Caption" FontSize="9" />
-                    <TextBlock Grid.Column="3" Text="Clip" FontSize="10" Foreground="{DynamicResource TextSecondary}" />
+                    <TextBlock Grid.Column="2" Text="{Binding Status}" FontSize="10" Foreground="{DynamicResource TextTertiary}"
+                               VerticalAlignment="Center" />
+                    <TextBlock Grid.Column="3" Text="{Binding Frames.Count, StringFormat='{}{0} FRAMES'}"
+                               Classes="Caption" FontSize="9" VerticalAlignment="Center" />
+                    <TextBlock Grid.Column="4" Text="{Binding SelectedFrameNumberLabel}" FontSize="10"
+                               Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" />
                 </Grid>
+
                 <ListBox Grid.Row="1" x:Name="TimelineList" ItemsSource="{Binding Frames}"
                          SelectedItem="{Binding SelectedFrame, Mode=TwoWay}" SelectionChanged="Timeline_OnSelectionChanged"
                          ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Disabled"
@@ -194,34 +352,36 @@
                         </Style>
                     </ListBox.Styles>
                     <ListBox.ItemsPanel>
-                    <ItemsPanelTemplate>
+                        <ItemsPanelTemplate>
                             <VirtualizingStackPanel Orientation="Horizontal" />
-                    </ItemsPanelTemplate>
+                        </ItemsPanelTemplate>
                     </ListBox.ItemsPanel>
                     <ListBox.ItemTemplate>
                         <DataTemplate x:DataType="vm:TimelineFrameViewModel">
-                            <Grid Width="112" Height="104" Margin="0,0,8,0">
-                                <Border Padding="9" CornerRadius="8" Background="{DynamicResource Surface}"
+                                            <Grid Width="128" Height="105" Margin="0,0,8,0">
+                                <Border Padding="7" CornerRadius="7" Background="{DynamicResource Surface}"
                                         BorderBrush="{DynamicResource Border}" BorderThickness="1">
-                                    <Grid RowDefinitions="*,Auto" RowSpacing="8">
-                                    <Border Background="#080B0D" CornerRadius="5">
-                                        <Grid>
-                                            <Image Width="92" Height="58" Stretch="Uniform" Loaded="TimelineThumbnail_OnLoaded"
-                                                   Unloaded="TimelineThumbnail_OnUnloaded" />
-                                            <Border HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5" Padding="4,2"
-                                                    CornerRadius="3" Background="#CC080B0D">
-                                                <TextBlock Text="{Binding FrameLabel}" FontFamily="Consolas" FontSize="9" FontWeight="SemiBold"
-                                                           Foreground="{DynamicResource TextPrimary}" />
-                                            </Border>
+                                    <Grid RowDefinitions="*,Auto" RowSpacing="6">
+                                        <Border Background="#F2F2F5" CornerRadius="3">
+                                            <Grid>
+                                                <Image Width="106" Height="60" Stretch="Uniform" Loaded="TimelineThumbnail_OnLoaded"
+                                                       Unloaded="TimelineThumbnail_OnUnloaded" />
+                                                <Border HorizontalAlignment="Left" VerticalAlignment="Top" Margin="4" Padding="4,2"
+                                                        CornerRadius="3" Background="#F7FFFFFF" BorderBrush="#E4E3E9" BorderThickness="1">
+                                                    <TextBlock Text="{Binding FrameLabel}" FontFamily="Consolas" FontSize="9"
+                                                               FontWeight="SemiBold" Foreground="#4A4852" />
+                                                </Border>
+                                            </Grid>
+                                        </Border>
+                                        <Grid Grid.Row="1" ColumnDefinitions="*,Auto">
+                                            <TextBlock Text="{Binding DurationLabel}" FontSize="9"
+                                                       Foreground="{DynamicResource TextSecondary}" />
+                                            <Ellipse Grid.Column="1" Width="5" Height="5" Fill="{DynamicResource Accent}"
+                                                     VerticalAlignment="Center" IsVisible="{Binding IsSelected}" />
                                         </Grid>
-                                    </Border>
-                                    <Grid Grid.Row="1" ColumnDefinitions="*,Auto">
-                                        <TextBlock Text="{Binding DurationLabel}" FontSize="9" Foreground="{DynamicResource TextSecondary}" />
-                                        <Ellipse Grid.Column="1" Width="5" Height="5" Fill="{DynamicResource Accent}" VerticalAlignment="Center" />
-                                    </Grid>
                                     </Grid>
                                 </Border>
-                                <Border CornerRadius="8" BorderBrush="{DynamicResource Accent}" BorderThickness="2"
+                                <Border CornerRadius="7" BorderBrush="{DynamicResource Accent}" BorderThickness="1.5"
                                         IsVisible="{Binding IsSelected}" IsHitTestVisible="False" />
                             </Grid>
                         </DataTemplate>
