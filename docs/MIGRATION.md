@@ -9,6 +9,7 @@ This log records the independent Avalonia port of ScreenToGif. The port uses new
 - Updated the project picker with an Apple UTI and `.fsp` extension validation because Avalonia's glob `Patterns` are not used by Apple file pickers.
 - `dotnet test FrameStudio.sln --configuration Release --no-restore` passed 33 tests and skipped three Windows desktop checks on macOS after that fix.
 - Built the self-contained Windows x64 candidate from clean source revision `582dd12a`. The local archive at `dist/FrameStudio-win-x64.zip` passed package-script checks, an independent SHA-256 check, and `unzip -t`. Its SHA-256 is `0c4e1461837f59bee14366c6ffe42368ca21d20c279efbfe76a2bf38a2990b25`.
+- [GitHub Actions run 37975333856](https://github.com/kris70lesgo/frame-studio/actions/runs/37975333856) passed macOS and Windows build/test jobs and Windows x64 publishing. The hosted test command filters out the three interactive Windows desktop-capture checks.
 - The Win32 capture implementation still needs an interactive Windows run. Webcam, isolated window capture, and sketchboard remain outside this focused first port. Fresh paired screenshots and the hands-on migration time were not collected, so the app is not ready for challenge submission yet.
 
 ## 2026-10-03 — Baseline and architecture audit
