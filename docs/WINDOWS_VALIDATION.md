@@ -1,6 +1,6 @@
 # Windows validation checklist
 
-The Windows capture backend and app package have been cross-compiled on macOS, but have not yet been run on Windows. This checklist records the evidence needed before claiming the record → edit → export workflow is verified. Screen recording requires Windows 10 version 2004 (build 19041) or later because the app excludes its own windows using [`WDA_EXCLUDEFROMCAPTURE`](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setwindowdisplayaffinity). MP4 export also needs an installed FFmpeg build with `libx264` available on `PATH`.
+The Windows native capture backend now passes its integration suite on a hosted Windows runner. The app itself has not yet been launched in an interactive Windows desktop session; this checklist records the remaining evidence needed before claiming the record → edit → export workflow is verified. Screen recording requires Windows 10 version 2004 (build 19041) or later because the app excludes its own windows using [`WDA_EXCLUDEFROMCAPTURE`](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setwindowdisplayaffinity). MP4 export also needs an installed FFmpeg build with `libx264` available on `PATH`.
 
 ## Current Windows candidate (2026-10-10)
 
@@ -11,8 +11,8 @@ The Windows capture backend and app package have been cross-compiled on macOS, b
 - SHA-256: `a889b6a9781e6a722be3b5556b35d4277c86e52cd1f6305f51a570bddd2493d5`.
 - The package script verified the executable, README, license, ZIP archive, and checksum. I downloaded the CI artifact and independently verified its checksum with `shasum -a 256 -c` and its ZIP with `unzip -t`. The bundled README identifies source revision `408babf` and accurately says runtime behavior is unverified.
 - The artifact expires on 2027-01-07 and requires a GitHub account with repository read access. The public Preview 3 release below is older and does not contain the latest UI redesign. The current Windows-built candidate has not been launched in an interactive Windows desktop session and is not a verified capture release.
-- The latest macOS Release test run passed 33 tests and skipped three Windows-only desktop checks. This does not establish native capture behavior.
-- [GitHub Actions run 37978232349](https://github.com/kris70lesgo/frame-studio/actions/runs/37978232349) passed macOS build/tests, Windows build/tests, and Windows x64 package/artifact creation with current action runtimes. The CI test command filters out `WindowsCaptureIntegrationTests`; it is not a Windows desktop runtime result.
+- The latest macOS Release test run passed 33 tests and skipped three Windows-only desktop checks.
+- [GitHub Actions run 37978232349](https://github.com/kris70lesgo/frame-studio/actions/runs/37978232349) produced the independently downloaded and verified package. [Run 37979662238](https://github.com/kris70lesgo/frame-studio/actions/runs/37979662238) on commit `6055f287` passed macOS and Windows builds/tests, Windows x64 packaging, and all 6 `WindowsCaptureIntegrationTests`. The native tests include window-affinity apply/restore, safe cleanup after a test window closes, and a 64 × 64 GDI capture that verifies a known marker pixel across pause, resume, and stop. They validate the backend on the hosted Windows runner, not the Avalonia UI flow, whether the real app windows disappear from recordings, or mixed-DPI selection.
 
 ## Preview 3 release record
 
@@ -30,7 +30,7 @@ Run from a Windows 10 version 2004+ or Windows 11 desktop session with at least 
 dotnet test FrameStudio.sln --configuration Debug
 ```
 
-`WindowsCaptureIntegrationTests` includes cross-platform checks that malformed screen and window requests fail before native calls. Three desktop-only tests check capture-window affinity apply/restore, cleanup after a window closes, and monitor enumeration plus a 64 × 64 capture whose expected system-color marker pixel must survive capture, pause, resume, and stop. The desktop tests are intentionally skipped off Windows and are not evidence until they pass on a Windows desktop.
+`WindowsCaptureIntegrationTests` includes cross-platform checks that malformed screen and window requests fail before native calls. The three desktop tests check capture-window affinity apply/restore, cleanup after a window closes, and monitor enumeration plus a 64 × 64 capture whose expected system-color marker pixel must survive capture, pause, resume, and stop. All six tests in the class passed on hosted Windows in run 37979662238; they skip on macOS. The hosted run is native-backend evidence, but does not replace launching Frame Studio on the target Windows desktop and checking the actual recorder windows, display picker, and mixed-DPI behavior.
 
 The MP4 editor-export integration test requires both `ffmpeg` and `ffprobe` on `PATH`. It checks an edited two-frame project with changed durations by reading the emitted MP4 presentation timestamps.
 
@@ -51,4 +51,4 @@ Run the original WPF app and Frame Studio against the same content. The source b
 
 Use [the Windows result template](WINDOWS_TEST_RESULTS_TEMPLATE.md) to record the run and collect the screenshot names. Do not include the raw recording or project if it contains private desktop content; a harmless test scene is sufficient for the comparison.
 
-This checklist is preparation only. Fill in the environment and results after the Windows run; do not present the current macOS cross-publish or skipped test as runtime verification.
+The hosted integration suite is backend evidence only. Fill in the environment and results after the interactive Windows app run; do not present the CI result as verification of the app UI, app-window exclusion in recordings, or the full record → edit → export workflow.

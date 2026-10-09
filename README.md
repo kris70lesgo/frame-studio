@@ -12,7 +12,7 @@ The first challenge entry targets **Windows x64** and is positioned as a legacy 
 
 ## Current status
 
-The Avalonia app connects Windows screen-region recording to a native `.fsp` project, a frame editor, and GIF/MP4 export. The current home and editor UI use a Jitter-inspired workspace layout adapted for Frame Studio's frame workflow. The Win32/GDI capture backend is implemented and wired into the UI, but its runtime behavior still needs validation on Windows. macOS builds and core tests work; screen capture is Windows-only.
+The Avalonia app connects Windows screen-region recording to a native `.fsp` project, a frame editor, and GIF/MP4 export. The current home and editor UI use a Jitter-inspired workspace layout adapted for Frame Studio's frame workflow. The Win32/GDI capture backend is implemented and wired into the UI; its native integration tests now pass on a hosted Windows runner, while the interactive app workflow still needs a Windows desktop check. macOS builds and core tests work; screen capture is Windows-only.
 
 | Area | Status |
 | --- | --- |
@@ -20,15 +20,15 @@ The Avalonia app connects Windows screen-region recording to a native `.fsp` pro
 | Dark and light appearance | Implemented |
 | Neutral frame/project foundation | Frame model and compressed `.fsp` archive read/write implemented |
 | Platform service contracts | Defined |
-| Windows screen-region capture | Setup, display selection, area selection, frame rate, cursor option, pause, stop, and app-window exclusion are wired; Windows runtime still needs verification |
+| Windows screen-region capture | Setup, display selection, area selection, frame rate, cursor option, pause, stop, and app-window exclusion are wired; native backend tests pass on hosted Windows, while the full interactive app workflow still needs verification |
 | End-to-end recording workflow | Records frames into `.fsp` projects and opens the editor when recording stops |
 | Editor | Frame thumbnails, preview/playback, selection, earlier/later ordering, duplicate/delete, duration edits, drag crop, project-wide resize, all-frame text and freehand overlays, save/discard, and GIF export implemented; keyboard shortcuts cover save, duplicate, reorder, delete, playback, and crop cancel |
 | GIF export | Migrated encoder, editor export flow, and completion actions for opening the GIF, showing its folder, or copying its path |
 | MP4 export | H.264 MP4 through FFmpeg's `libx264`, with variable frame durations preserved; requires FFmpeg on `PATH` with `libx264` enabled |
-| Core workflow checks | On 2026-10-10, 33 tests passed on macOS. GitHub Actions also passed Windows/macOS build and test jobs plus Windows x64 publishing. Interactive desktop-capture checks are filtered out of hosted CI and remain unverified. Cross-platform checks cover recording → edit → save/reopen → GIF export, editor commands, text/freehand overlays, recovery, capture validation, project archives, GIF pixels/timing, and MP4 timing |
+| Core workflow checks | On 2026-10-10, 33 tests passed on macOS and three Windows-only tests skipped there. [Windows CI run 37979662238](https://github.com/kris70lesgo/frame-studio/actions/runs/37979662238) passed 29 deterministic tests (one FFmpeg-dependent test skipped) and all 6 Windows capture integration tests; the same run passed macOS/Windows builds and Windows x64 packaging. These tests exercise GDI pixel capture, pause/resume/stop, and window-affinity lifecycle, but not the interactive Avalonia app or mixed-DPI selection. Cross-platform checks cover recording → edit → save/reopen → GIF export, editor commands, text/freehand overlays, recovery, project archives, GIF pixels/timing, and MP4 timing |
 | Webcam, isolated window capture, sketchboard | Not migrated yet; the current Win32 window service captures a desktop rectangle, which can include overlapping windows, so its UI remains disabled |
 | Annotations and video export | Rasterized text and freehand overlays plus H.264 MP4 export are implemented; additional video encoders are not migrated yet |
-| Windows platform adapter | Win32 monitor/window enumeration and bounded GDI desktop-region recording implemented; runtime needs Windows verification |
+| Windows platform adapter | Win32 monitor/window enumeration and bounded GDI desktop-region recording implemented; native backend tests pass on hosted Windows, with interactive UI, app-window exclusion, and mixed-DPI validation still pending |
 
 The original WPF application remains in this repository as the baseline in `GifRecorder.sln`. The new application is in `FrameStudio.sln` and does not reference the WPF UI projects.
 
@@ -38,7 +38,7 @@ The source baseline is ScreenToGif 2.43.2 at upstream commit `a4d0a67c2131cd048c
 
 The byte-oriented GIF encoder and selected quantizers moved into `FrameStudio.Core` after replacing WPF geometry and color boundaries with neutral pixel types. The old model, ViewModels, and UI could not be referenced directly: they depend on WPF media, dispatcher, and input types. I rebuilt the recording/editor shell in Avalonia, added a compressed `.fsp` project archive, and placed capture behind platform interfaces with a Windows GDI implementation. The original MS-PL notices and license remain in the repository.
 
-Cross-platform tests feed deterministic fake frames through recording, edit/reorder, text/freehand raster edits, save/reopen, and GIF export, then decode and check the GIF pixels and timing. They establish the workflow between the capture-service boundary and export. They do not establish that native Windows capture works. The three Windows desktop tests remain unrun on this Mac; the [validation checklist](docs/WINDOWS_VALIDATION.md) records the required Windows checks. Webcam, sketchboard, isolated window capture, and macOS/Linux capture are not complete.
+Cross-platform tests feed deterministic fake frames through recording, edit/reorder, text/freehand raster edits, save/reopen, and GIF export, then decode and check the GIF pixels and timing. They establish the workflow between the capture-service boundary and export. Separate hosted Windows integration tests now verify native GDI capture, pause/resume/stop, and display-affinity lifecycle. They do not launch the actual Avalonia recorder or verify that its windows disappear from the recording. The [Windows validation checklist](docs/WINDOWS_VALIDATION.md) records the remaining interactive checks. Webcam, sketchboard, isolated window capture, and macOS/Linux capture are not complete.
 
 Two surprises shaped the port. The legacy model and utility projects carry WPF types far beyond the visible UI, so a neutral core boundary proved more practical than referencing those assemblies. Windows GDI's common desktop DC must also be released by the thread that acquired it; a source review caught and fixed that lifetime issue before the Windows runtime check. The [audit](docs/MIGRATION_AUDIT.md) and [journal](docs/MIGRATION.md) record the source classification and implementation decisions.
 
