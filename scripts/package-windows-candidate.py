@@ -106,7 +106,7 @@ Frame Studio is an independent Avalonia port based on ScreenToGif. It is not the
             temporary_archive.unlink(missing_ok=True)
 
     digest = hashlib.sha256(ARCHIVE.read_bytes()).hexdigest()
-    CHECKSUM_FILE.write_text(f"{digest}  {ARCHIVE.name}\n", encoding="ascii")
+    CHECKSUM_FILE.write_bytes(f"{digest}  {ARCHIVE.name}\n".encode("ascii"))
     print(f"Package: {ARCHIVE}")
     print(f"SHA-256: {digest}")
     print("Status: preview package built; Windows runtime validation is still required.")
