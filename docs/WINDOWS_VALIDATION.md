@@ -4,15 +4,15 @@ The Windows native capture backend now passes its integration suite on a hosted 
 
 ## Current Windows candidate (2026-10-10)
 
-- PR source head: `d7bd0435e3fb32c00a1c11e908238003b9361536`; the app implementation is unchanged from `408babf6` (the later changes update CI and documentation).
-- The bundled README records `2593e14`, the synthetic pull-request merge revision used by GitHub Actions, rather than the PR source head.
-- Download: [FrameStudio-win-x64 CI artifact](https://github.com/kris70lesgo/frame-studio/actions/runs/37980141540/artifacts/11641166214), produced by [GitHub Actions run 37980141540](https://github.com/kris70lesgo/frame-studio/actions/runs/37980141540) on Windows AMD64 with .NET SDK `9.0.318`.
+- PR source head: `4b39179a3d587a3d0ba94244a3da9d4802cc0c40`; the app implementation is unchanged from `408babf6` (the later changes update CI and documentation).
+- The bundled README records `f7fc082`, the synthetic pull-request merge revision used by GitHub Actions, rather than the PR source head.
+- Download: [FrameStudio-win-x64 CI artifact](https://github.com/kris70lesgo/frame-studio/actions/runs/37980913612/artifacts/11640408653), produced by [GitHub Actions run 37980913612](https://github.com/kris70lesgo/frame-studio/actions/runs/37980913612) on Windows AMD64 with .NET SDK `9.0.318`.
 - Local package: `dist/FrameStudio-win-x64.zip` (self-contained `win-x64`; the package directory is ignored by Git).
-- SHA-256: `6a5655b61cc6d909e4a690850537f0e614bf3315ea4b4f20a747047526f60a3d`.
+- SHA-256: `a8b3813ac4532d676c617877d7e18d8882e118ad077e67b2b10fe8d517d45e14`.
 - I downloaded the latest artifact from the run, independently verified its package checksum with `shasum -a 256 -c`, and verified the ZIP with `unzip -t`. The package includes the executable, README, and complete license. Its README accurately says the interactive Windows runtime behavior is unverified.
 - The artifact expires on 2027-01-07 and requires a GitHub account with repository read access. The public Preview 3 release below is older and does not contain the latest UI redesign. The current Windows-built candidate has not been launched in an interactive Windows desktop session and is not a verified capture release.
 - The latest macOS Release test run passed 33 tests and skipped three Windows-only desktop checks.
-- [GitHub Actions run 37980141540](https://github.com/kris70lesgo/frame-studio/actions/runs/37980141540) on PR head `d7bd0435` passed macOS and Windows builds/tests plus Windows x64 packaging. On hosted Windows, 29 deterministic tests passed with one FFmpeg-dependent test skipped, then all 6 `WindowsCaptureIntegrationTests` passed with no skips. These native tests include window-affinity apply/restore, safe cleanup after a test window closes, and a 64 × 64 GDI capture that verifies a known marker pixel across pause, resume, and stop. They validate the backend on the hosted Windows runner, not the Avalonia UI flow, whether the real app windows disappear from recordings, or mixed-DPI selection.
+- [GitHub Actions run 37980913612](https://github.com/kris70lesgo/frame-studio/actions/runs/37980913612) on PR head `4b39179a` passed macOS and Windows builds/tests plus Windows x64 packaging. On hosted Windows, 29 deterministic tests passed with one FFmpeg-dependent test skipped, then all 6 `WindowsCaptureIntegrationTests` passed with no skips. These native tests include window-affinity apply/restore, safe cleanup after a test window closes, and a 64 × 64 GDI capture that verifies a known marker pixel across pause, resume, and stop. They validate the backend on the hosted Windows runner, not the Avalonia UI flow, whether the real app windows disappear from recordings, or mixed-DPI selection.
 
 ## Preview 3 release record
 
@@ -30,7 +30,7 @@ Run from a Windows 10 version 2004+ or Windows 11 desktop session with at least 
 dotnet test FrameStudio.sln --configuration Debug
 ```
 
-`WindowsCaptureIntegrationTests` includes cross-platform checks that malformed screen and window requests fail before native calls. The three desktop tests check capture-window affinity apply/restore, cleanup after a window closes, and monitor enumeration plus a 64 × 64 capture whose expected system-color marker pixel must survive capture, pause, resume, and stop. All six tests in the class passed on hosted Windows in run 37980141540; they skip on macOS. The hosted run is native-backend evidence, but does not replace launching Frame Studio on the target Windows desktop and checking the actual recorder windows, display picker, and mixed-DPI behavior.
+`WindowsCaptureIntegrationTests` includes cross-platform checks that malformed screen and window requests fail before native calls. The three desktop tests check capture-window affinity apply/restore, cleanup after a window closes, and monitor enumeration plus a 64 × 64 capture whose expected system-color marker pixel must survive capture, pause, resume, and stop. All six tests in the class passed on hosted Windows in run 37980913612; they skip on macOS. The hosted run is native-backend evidence, but does not replace launching Frame Studio on the target Windows desktop and checking the actual recorder windows, display picker, and mixed-DPI behavior.
 
 The MP4 editor-export integration test requires both `ffmpeg` and `ffprobe` on `PATH`. It checks an edited two-frame project with changed durations by reading the emitted MP4 presentation timestamps.
 
