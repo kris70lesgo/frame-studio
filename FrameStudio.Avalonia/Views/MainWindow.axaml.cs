@@ -11,6 +11,12 @@ namespace FrameStudio.Avalonia.Views;
 
 public partial class MainWindow : Window
 {
+    private static readonly FilePickerFileType FrameProjectFileType = new("Frame Studio project")
+    {
+        Patterns = ["*.fsp"],
+        AppleUniformTypeIdentifiers = ["public.data"]
+    };
+
     public MainWindow()
         : this(null)
     {
@@ -50,7 +56,7 @@ public partial class MainWindow : Window
                 SuggestedFileName = $"Capture {DateTime.Now:yyyy-MM-dd HH-mm}.fsp",
                 DefaultExtension = "fsp",
                 ShowOverwritePrompt = true,
-                FileTypeChoices = [new FilePickerFileType("Frame Studio project") { Patterns = ["*.fsp"] }]
+                FileTypeChoices = [FrameProjectFileType]
             });
             var projectPath = projectFile?.TryGetLocalPath();
             if (string.IsNullOrWhiteSpace(projectPath))
@@ -115,11 +121,19 @@ public partial class MainWindow : Window
             {
                 Title = "Open Frame Studio project",
                 AllowMultiple = false,
-                FileTypeFilter = [new FilePickerFileType("Frame Studio project") { Patterns = ["*.fsp"] }]
+                FileTypeFilter = [FrameProjectFileType]
             });
             var projectPath = projects.FirstOrDefault()?.TryGetLocalPath();
             if (!string.IsNullOrWhiteSpace(projectPath))
+            {
+                if (!string.Equals(Path.GetExtension(projectPath), ".fsp", StringComparison.OrdinalIgnoreCase))
+                {
+                    viewModel.ReportCaptureStatus("Choose a Frame Studio project with the .fsp extension.");
+                    return;
+                }
+
                 await OpenEditorAsync(projectPath);
+            }
         }
         catch (Exception ex)
         {

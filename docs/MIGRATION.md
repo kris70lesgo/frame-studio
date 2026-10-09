@@ -2,6 +2,14 @@
 
 This log records the independent Avalonia port of ScreenToGif. The port uses new branding and is not an official ScreenToGif application. The upstream app remains the reference implementation.
 
+## 2026-10-10 — Current UI and Windows candidate check
+
+- Reworked the Avalonia home and editor into a Jitter-inspired light workspace with a compact dark toolbar, frame navigation, centered canvas, inspector, and bottom timeline. Frame Studio keeps its own branding and recording/editing actions.
+- Visually reviewed the current home/editor preview and resize dialog on macOS. This is not a Windows before/after comparison; the checked-in macOS screenshots remain historical.
+- `dotnet test FrameStudio.sln --configuration Release --no-restore` passed 33 tests and skipped three Windows desktop checks on macOS.
+- Built the self-contained Windows x64 candidate from clean code revision `7e969110`. The local archive at `dist/FrameStudio-win-x64.zip` passed the package script's archive checks and has SHA-256 `b79e84e37d6ae913dd0300239a1f72e17673afb653d0de90e13646872b986b10`.
+- The Win32 capture implementation still needs an interactive Windows run. Webcam, isolated window capture, and sketchboard remain outside this focused first port. Fresh paired screenshots and the hands-on migration time were not collected, so the app is not ready for challenge submission yet.
+
 ## 2026-10-03 — Baseline and architecture audit
 
 - Cloned `https://github.com/NickeManarin/ScreenToGif` into this workspace and created local branch `avalonia-port`.

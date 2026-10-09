@@ -8,11 +8,11 @@ This is an independent project. It is not the official ScreenToGif application a
 
 ## Current status
 
-The Avalonia app now connects Windows screen-region recording to a native `.fsp` project, a frame editor, and GIF/MP4 export. The Win32/GDI capture backend is implemented and wired into the UI, but its runtime behavior still needs validation on Windows. macOS builds and core tests work; screen capture is Windows-only.
+The Avalonia app connects Windows screen-region recording to a native `.fsp` project, a frame editor, and GIF/MP4 export. The current home and editor UI use a Jitter-inspired workspace layout adapted for Frame Studio's frame workflow. The Win32/GDI capture backend is implemented and wired into the UI, but its runtime behavior still needs validation on Windows. macOS builds and core tests work; screen capture is Windows-only.
 
 | Area | Status |
 | --- | --- |
-| Avalonia home shell | Implemented; persistent recent-project list; builds; early macOS shell capture included below |
+| Avalonia home and editor | Implemented; persistent recent-project list; Jitter-inspired light workspace and editor; current Mac visual review completed, Windows visual comparison still pending |
 | Dark and light appearance | Implemented |
 | Neutral frame/project foundation | Frame model and compressed `.fsp` archive read/write implemented |
 | Platform service contracts | Defined |
@@ -21,7 +21,7 @@ The Avalonia app now connects Windows screen-region recording to a native `.fsp`
 | Editor | Frame thumbnails, preview/playback, selection, earlier/later ordering, duplicate/delete, duration edits, drag crop, project-wide resize, all-frame text and freehand overlays, save/discard, and GIF export implemented; keyboard shortcuts cover save, duplicate, reorder, delete, playback, and crop cancel |
 | GIF export | Migrated encoder, editor export flow, and completion actions for opening the GIF, showing its folder, or copying its path |
 | MP4 export | H.264 MP4 through FFmpeg's `libx264`, with variable frame durations preserved; requires FFmpeg on `PATH` with `libx264` enabled |
-| Core workflow checks | 33 tests pass on macOS; a recording → edit → save/reopen → GIF export handoff, editor commands, text and freehand overlays, partial-project recovery after a capture error, capture-request validation, capture-readiness reporting, archive editing, recent-project history, GIF pixels and timing, and MP4 timing are checked. Three Windows runtime checks are skipped here |
+| Core workflow checks | On 2026-10-10, 33 tests passed on macOS and three Windows runtime checks were skipped. Checks cover a recording → edit → save/reopen → GIF export handoff, editor commands, text and freehand overlays, partial-project recovery after a capture error, capture-request validation, capture-readiness reporting, archive editing, recent-project history, GIF pixels and timing, and MP4 timing |
 | Webcam, isolated window capture, sketchboard | Not migrated yet; the current Win32 window service captures a desktop rectangle, which can include overlapping windows, so its UI remains disabled |
 | Annotations and video export | Rasterized text and freehand overlays plus H.264 MP4 export are implemented; additional video encoders are not migrated yet |
 | Windows platform adapter | Win32 monitor/window enumeration and bounded GDI desktop-region recording implemented; runtime needs Windows verification |
@@ -80,7 +80,7 @@ See [the source audit](docs/MIGRATION_AUDIT.md) for reusable modules, framework 
 
 See [the challenge analysis](docs/CHALLENGE_ANALYSIS.md) for the judging criteria, entry requirements, and the schedule used to prioritize migration work.
 
-The [Windows validation checklist](docs/WINDOWS_VALIDATION.md) describes the automated and manual checks still required before claiming the capture workflow is verified.
+The current self-contained Windows x64 candidate was built from commit `7e969110`; its local package and checksum are recorded in the [Windows validation checklist](docs/WINDOWS_VALIDATION.md). It has not been run on Windows. That checklist describes the remaining automated and manual checks before claiming the capture workflow is verified.
 
 ## Attribution and license
 
