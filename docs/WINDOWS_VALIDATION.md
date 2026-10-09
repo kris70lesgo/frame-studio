@@ -10,7 +10,7 @@ The Windows capture backend and app package have been cross-compiled on macOS, b
 - The packaging script verified the executable, README, license, and ZIP archive. Independent SHA-256 and `unzip -t` checks also passed. It has not been launched on Windows and is not a verified capture release.
 - The public Preview 3 release below is older and does not contain the latest UI redesign. The current ZIP remains an ignored local build artifact; copy it to a Windows machine for the checks in this document.
 - The latest macOS Release test run passed 33 tests and skipped three Windows-only desktop checks. This does not establish native capture behavior.
-- [GitHub Actions run 37975333856](https://github.com/kris70lesgo/frame-studio/actions/runs/37975333856) passed macOS build/tests, Windows build/tests, and Windows x64 publishing for the pushed revision. The CI test command filters out `WindowsCaptureIntegrationTests`; it is not a Windows desktop runtime result.
+- [GitHub Actions run 37976358834](https://github.com/kris70lesgo/frame-studio/actions/runs/37976358834) passed macOS build/tests, Windows build/tests, and Windows x64 publishing with the current action runtimes. The CI test command filters out `WindowsCaptureIntegrationTests`; it is not a Windows desktop runtime result.
 
 ## Preview 3 release record
 
