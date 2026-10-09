@@ -6,6 +6,10 @@ Frame Studio is a new desktop workspace for recording, editing, and exporting sh
 
 This is an independent project. It is not the official ScreenToGif application and is not affiliated with or endorsed by Nicke Manarin or N-Tech.
 
+## Challenge target
+
+The first challenge entry targets **Windows x64** and is positioned as a legacy revival/everyday tool. The Avalonia editor and project/export core also run on macOS, but screen recording is unavailable there; Linux has not been packaged or validated. Frame Studio is not claiming a three-platform capture port, so it should not be entered as a Best Cross-Platform Port in its current state. The Windows Actions artifact linked below is a temporary validation candidate, not the permanent judge-facing download; publish a release asset after the interactive Windows checks pass.
+
 ## Current status
 
 The Avalonia app connects Windows screen-region recording to a native `.fsp` project, a frame editor, and GIF/MP4 export. The current home and editor UI use a Jitter-inspired workspace layout adapted for Frame Studio's frame workflow. The Win32/GDI capture backend is implemented and wired into the UI, but its runtime behavior still needs validation on Windows. macOS builds and core tests work; screen capture is Windows-only.

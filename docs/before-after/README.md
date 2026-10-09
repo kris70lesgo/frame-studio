@@ -24,3 +24,5 @@ Capture fresh, consistent Windows screenshots here before challenge submission:
 - `before-export.png` / `after-export.png`
 
 The Avalonia screenshots should be taken from a runnable Windows build and use the same project/content as the baseline.
+
+For the original WPF application, download the [ScreenToGif 2.43.2 release](https://github.com/NickeManarin/ScreenToGif/releases/tag/2.43.2), which matches the audited source baseline. Use a harmless sample recording and the same captured region/project in both applications. The paired images are evidence of the migration, not a claim that Frame Studio has full ScreenToGif feature parity.
