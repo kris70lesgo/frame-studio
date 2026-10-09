@@ -59,7 +59,7 @@ The editor screenshot predates the text annotation and MP4 export tools and reco
 
 Requirements: .NET SDK 9.0.318 or a compatible .NET 9 feature-band SDK, with NuGet access for the Avalonia packages.
 
-The Avalonia UI uses the desktop Avalonia stack. The current self-contained Windows x64 candidate is available from the [latest CI run's `FrameStudio-win-x64` artifact](https://github.com/kris70lesgo/frame-studio/actions/runs/37977060116/artifacts/11638503643); sign in to GitHub with repository read access to download it. The older [Preview 3 release](https://github.com/kris70lesgo/frame-studio/releases/tag/v0.1.0-preview.3) does not contain the current UI. Only Windows has a capture backend. Screen capture requires Windows 10 version 2004 or later because the app excludes its own windows from captured frames. Core project editing and GIF export are platform-neutral. MP4 export calls the user's FFmpeg installation and needs `libx264`; Frame Studio does not redistribute FFmpeg. The full recording workflow must be exercised on Windows before claiming a verified Windows release; no macOS or Linux capture support is claimed.
+The Avalonia UI uses the desktop Avalonia stack. The current self-contained Windows x64 candidate is available from [CI run 37978232349's `FrameStudio-win-x64` artifact](https://github.com/kris70lesgo/frame-studio/actions/runs/37978232349/artifacts/11639728675); sign in to GitHub with repository read access to download it. The older [Preview 3 release](https://github.com/kris70lesgo/frame-studio/releases/tag/v0.1.0-preview.3) does not contain the current UI. Only Windows has a capture backend. Screen capture requires Windows 10 version 2004 or later because the app excludes its own windows from captured frames. Core project editing and GIF export are platform-neutral. MP4 export calls the user's FFmpeg installation and needs `libx264`; Frame Studio does not redistribute FFmpeg. The full recording workflow must be exercised on Windows before claiming a verified Windows release; no macOS or Linux capture support is claimed.
 
 ```sh
 dotnet build FrameStudio.sln
@@ -84,7 +84,7 @@ See [the source audit](docs/MIGRATION_AUDIT.md) for reusable modules, framework 
 
 See [the challenge analysis](docs/CHALLENGE_ANALYSIS.md) for the judging criteria, entry requirements, and the schedule used to prioritize migration work.
 
-The current self-contained Windows x64 candidate was built on Windows from clean app revision `408babf6`; the package and checksum are recorded in the [Windows validation checklist](docs/WINDOWS_VALIDATION.md). CI compiled and packaged it, but it still needs an interactive Windows launch and capture run. That checklist describes the remaining checks before claiming the capture workflow is verified.
+The current self-contained Windows x64 candidate was built by the Windows runner in [CI run 37978232349](https://github.com/kris70lesgo/frame-studio/actions/runs/37978232349). Its bundled README records checkout revision `7cd1b0a`; the Frame Studio implementation is unchanged from app revision `408babf6` (the later commits only update documentation). The package and verified checksum are recorded in the [Windows validation checklist](docs/WINDOWS_VALIDATION.md). CI passed, but the candidate still needs an interactive Windows launch and capture run before the capture workflow can be claimed as verified.
 
 ## Attribution and license
 

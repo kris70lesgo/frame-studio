@@ -4,8 +4,9 @@ Fill this out while running the current Windows candidate. Replace each `TBD` wi
 
 ## Test environment
 
-- Candidate source revision: `408babf6`
-- Candidate ZIP SHA-256: `612507e387c528a9b6dcbd89611a5dc5bc687ecbfb533625ad2166dd844f6e78`
+- App source revision: `408babf6`
+- Package checkout revision from the bundled README: `7cd1b0a`
+- Candidate ZIP SHA-256: `a889b6a9781e6a722be3b5556b35d4277c86e52cd1f6305f51a570bddd2493d5`
 - Windows edition and build: TBD
 - PC / CPU architecture: TBD
 - Display resolution and scale: TBD

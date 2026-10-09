@@ -4,14 +4,15 @@ The Windows capture backend and app package have been cross-compiled on macOS, b
 
 ## Current Windows candidate (2026-10-10)
 
-- Source revision: `408babf6` (Jitter-inspired UI, Apple file-picker handling, and portable checksum generation).
-- Download: [FrameStudio-win-x64 CI artifact](https://github.com/kris70lesgo/frame-studio/actions/runs/37977060116/artifacts/11638503643), produced by [GitHub Actions run 37977060116](https://github.com/kris70lesgo/frame-studio/actions/runs/37977060116) on Windows AMD64 with .NET SDK `9.0.318`.
+- App source revision: `408babf6` (Jitter-inspired UI, Apple file-picker handling, and portable checksum generation; later commits only changed documentation).
+- Package checkout revision: `7cd1b0a`, recorded by the bundled README for the pull-request merge build.
+- Download: [FrameStudio-win-x64 CI artifact](https://github.com/kris70lesgo/frame-studio/actions/runs/37978232349/artifacts/11639728675), produced by [GitHub Actions run 37978232349](https://github.com/kris70lesgo/frame-studio/actions/runs/37978232349) on Windows AMD64 with .NET SDK `9.0.318`.
 - Package: `dist/FrameStudio-win-x64.zip` (local copy of the CI package; self-contained `win-x64`).
-- SHA-256: `612507e387c528a9b6dcbd89611a5dc5bc687ecbfb533625ad2166dd844f6e78`.
+- SHA-256: `a889b6a9781e6a722be3b5556b35d4277c86e52cd1f6305f51a570bddd2493d5`.
 - The package script verified the executable, README, license, ZIP archive, and checksum. I downloaded the CI artifact and independently verified its checksum with `shasum -a 256 -c` and its ZIP with `unzip -t`. The bundled README identifies source revision `408babf` and accurately says runtime behavior is unverified.
 - The artifact expires on 2027-01-07 and requires a GitHub account with repository read access. The public Preview 3 release below is older and does not contain the latest UI redesign. The current Windows-built candidate has not been launched in an interactive Windows desktop session and is not a verified capture release.
 - The latest macOS Release test run passed 33 tests and skipped three Windows-only desktop checks. This does not establish native capture behavior.
-- [GitHub Actions run 37977060116](https://github.com/kris70lesgo/frame-studio/actions/runs/37977060116) passed macOS build/tests, Windows build/tests, and Windows x64 package/artifact creation with current action runtimes. The CI test command filters out `WindowsCaptureIntegrationTests`; it is not a Windows desktop runtime result.
+- [GitHub Actions run 37978232349](https://github.com/kris70lesgo/frame-studio/actions/runs/37978232349) passed macOS build/tests, Windows build/tests, and Windows x64 package/artifact creation with current action runtimes. The CI test command filters out `WindowsCaptureIntegrationTests`; it is not a Windows desktop runtime result.
 
 ## Preview 3 release record
 
