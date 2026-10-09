@@ -4,20 +4,20 @@ The Windows capture backend and app package have been cross-compiled on macOS, b
 
 ## Current local candidate (2026-10-10)
 
-- Source revision: `7e969110` (Frame Studio UI redesign commit).
+- Source revision: `582dd12a` (includes the Jitter-inspired UI and Apple file-picker handling).
 - Package: `dist/FrameStudio-win-x64.zip` (built locally on macOS arm64 with .NET SDK `9.0.318`; self-contained `win-x64`).
-- SHA-256: `b79e84e37d6ae913dd0300239a1f72e17673afb653d0de90e13646872b986b10`.
-- The packaging script verified the executable, README, license, and ZIP archive. It has not been launched on Windows and is not a verified capture release.
+- SHA-256: `0c4e1461837f59bee14366c6ffe42368ca21d20c279efbfe76a2bf38a2990b25`.
+- The packaging script verified the executable, README, license, and ZIP archive. Independent SHA-256 and `unzip -t` checks also passed. It has not been launched on Windows and is not a verified capture release.
 - The public Preview 3 release below is older and does not contain the latest UI redesign. The current ZIP remains an ignored local build artifact; copy it to a Windows machine for the checks in this document.
 - The latest macOS Release test run passed 33 tests and skipped three Windows-only desktop checks. This does not establish native capture behavior.
 
-## Current Windows x64 preview candidate
+## Preview 3 release record
 
 - Older public preview: [Frame Studio 0.1.0 Preview 3](https://github.com/kris70lesgo/frame-studio/releases/tag/v0.1.0-preview.3), built from an earlier revision.
 - Rebuild the current local package with `python3 scripts/package-windows-candidate.py`; it publishes the current source, includes the README and license, checks archive contents, and writes the matching `.sha256` file.
 - Source revision: `5184f661`; Frame Studio `0.1.0`, self-contained `win-x64` publish using .NET SDK `9.0.318` on macOS arm64.
-- SHA-256: `de2c97b7ff8a63d1fd0be7ba62c30a502d6b8b3797389cec02e65a910cc9fb65` (also written to `dist/FrameStudio-win-x64.zip.sha256` and uploaded with the preview release).
-- The package script and an independent `unzip -t` check both confirmed archive integrity. A separate SHA-256 calculation matched the checksum file; GitHub reports the same ZIP digest after upload. The archive contains the executable, package README, and complete MS-PL license. Its README identifies the commit and macOS build host and explicitly says Windows execution, capture, mixed-DPI selection, and end-to-end workflow are unverified. The [hosted CI run](https://github.com/kris70lesgo/frame-studio/actions/runs/37146520922) passed its macOS build/test, Windows build/test, and Windows x64 publishing jobs for this revision.
+- SHA-256: `de2c97b7ff8a63d1fd0be7ba62c30a502d6b8b3797389cec02e65a910cc9fb65` (recorded with the Preview 3 release asset).
+- At release time, the package script, an independent `unzip -t` check, and a separate SHA-256 calculation confirmed archive integrity; GitHub reports the same ZIP digest. The archive contains the executable, package README, and complete MS-PL license. Its README identifies the commit and macOS build host and explicitly says Windows execution, capture, mixed-DPI selection, and end-to-end workflow are unverified. The [hosted CI run](https://github.com/kris70lesgo/frame-studio/actions/runs/37146520922) passed its macOS build/test, Windows build/test, and Windows x64 publishing jobs for this revision.
 
 ## Automated desktop check
 

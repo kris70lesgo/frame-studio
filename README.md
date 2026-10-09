@@ -80,7 +80,7 @@ See [the source audit](docs/MIGRATION_AUDIT.md) for reusable modules, framework 
 
 See [the challenge analysis](docs/CHALLENGE_ANALYSIS.md) for the judging criteria, entry requirements, and the schedule used to prioritize migration work.
 
-The current self-contained Windows x64 candidate was built from commit `7e969110`; its local package and checksum are recorded in the [Windows validation checklist](docs/WINDOWS_VALIDATION.md). It has not been run on Windows. That checklist describes the remaining automated and manual checks before claiming the capture workflow is verified.
+The current self-contained Windows x64 candidate was built from commit `582dd12a`; its local package and checksum are recorded in the [Windows validation checklist](docs/WINDOWS_VALIDATION.md). It has not been run on Windows. That checklist describes the remaining automated and manual checks before claiming the capture workflow is verified.
 
 ## Attribution and license
 
