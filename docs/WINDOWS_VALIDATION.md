@@ -4,9 +4,9 @@ The Windows capture backend and app package have been cross-compiled on macOS, b
 
 ## Current local candidate (2026-10-10)
 
-- Source revision: `582dd12a` (includes the Jitter-inspired UI and Apple file-picker handling).
+- Source revision: `0cfafe3f` (includes the Jitter-inspired UI and Apple file-picker handling; subsequent branch changes are documentation-only).
 - Package: `dist/FrameStudio-win-x64.zip` (built locally on macOS arm64 with .NET SDK `9.0.318`; self-contained `win-x64`).
-- SHA-256: `0c4e1461837f59bee14366c6ffe42368ca21d20c279efbfe76a2bf38a2990b25`.
+- SHA-256: `00cf4cd854c4a255fde77dddd976fb6255f2725569797577504d6186b1312d6e`.
 - The packaging script verified the executable, README, license, and ZIP archive. Independent SHA-256 and `unzip -t` checks also passed. It has not been launched on Windows and is not a verified capture release.
 - The public Preview 3 release below is older and does not contain the latest UI redesign. The current ZIP remains an ignored local build artifact; copy it to a Windows machine for the checks in this document.
 - The latest macOS Release test run passed 33 tests and skipped three Windows-only desktop checks. This does not establish native capture behavior.
