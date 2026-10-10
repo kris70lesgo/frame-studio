@@ -20,6 +20,7 @@ The prize pool is **$15,000 USD**: a $5,000 grand prize, four $2,000 category pr
 
 - Entries close at **23:59 UTC on 23 October 2026**. Winners are announced on 6 November 2026.
 - Open-source entries need a public repository under an OSI-approved license, downloadable builds for each target platform, before-and-after screenshots, and a short migration write-up. The upstream MS-PL is OSI-approved ([OSI license page](https://opensource.org/license/MS-PL)); its conditions still require preserving notices and including the complete license with source distributions.
+- When the Windows run and paired screenshots are complete and the README points to a permanent runnable build, submit the public repository through the [official Avalonia Port Challenge entry form](https://docs.google.com/forms/d/e/1FAIpQLSfJsgz1HRHKsxH0yRnn2wcvbZ-tSkmnjDXxIhE5YjM1v3lVkg/viewform?usp=send_form).
 - Closed-source entries have the same runnable-build, screenshot, and migration-write-up requirements. Because ScreenToGif's MS-PL allows this derivative to remain open, a public repository is the clearest fit for the challenge's learning and review goals.
 - The migration write-up is mandatory and counts toward judging. It should state how much work the migration took, what moved cleanly, what needed redesign, and what surprised the team.
 - The original application must predate the contest. Rewrites count, and another author's code may be used when its license permits.
