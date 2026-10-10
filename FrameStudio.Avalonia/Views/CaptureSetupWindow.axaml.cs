@@ -7,6 +7,7 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Platform;
 using FrameStudio.Core.Models;
 using FrameStudio.Platform.Abstractions;
+using CorePixelSize = FrameStudio.Core.Models.PixelSize;
 using PixelRect = FrameStudio.Core.Models.PixelRect;
 
 namespace FrameStudio.Avalonia.Views;
@@ -112,8 +113,10 @@ public partial class RegionSelectorWindow : Window
 
         WindowStartupLocation = WindowStartupLocation.Manual;
         Position = new PixelPoint(monitor.Bounds.X, monitor.Bounds.Y);
-        Width = monitor.Bounds.Width / Math.Max(1d, monitor.ScaleFactor);
-        Height = monitor.Bounds.Height / Math.Max(1d, monitor.ScaleFactor);
+        var logicalSize = ScreenRegionScaling.ToLogicalSize(
+            new CorePixelSize(monitor.Bounds.Width, monitor.Bounds.Height), monitor.ScaleFactor);
+        Width = logicalSize.Width;
+        Height = logicalSize.Height;
     }
 
     private void InitializeComponent() => AvaloniaXamlLoader.Load(this);
@@ -159,9 +162,9 @@ public partial class RegionSelectorWindow : Window
         Canvas.SetTop(_selectionVisual, _selection.Y);
         _selectionVisual.Width = _selection.Width;
         _selectionVisual.Height = _selection.Height;
-        var scale = Math.Max(1d, _monitor.ScaleFactor);
-        var width = (int)Math.Round(_selection.Width * scale);
-        var height = (int)Math.Round(_selection.Height * scale);
+        var size = ScreenRegionScaling.ToPixelSize(_selection.Width, _selection.Height, _monitor.ScaleFactor);
+        var width = size.Width;
+        var height = size.Height;
         _sizeLabel.Text = width > 0 && height > 0 ? $"{width:N0} × {height:N0} px" : "Drag to select an area";
     }
 
@@ -171,18 +174,20 @@ public partial class RegionSelectorWindow : Window
 
     private void Confirm_OnClick(object? sender, RoutedEventArgs e)
     {
-        var scale = Math.Max(1d, _monitor.ScaleFactor);
-        var left = Math.Clamp((int)Math.Round(_selection.X * scale), 0, _monitor.Bounds.Width);
-        var top = Math.Clamp((int)Math.Round(_selection.Y * scale), 0, _monitor.Bounds.Height);
-        var right = Math.Clamp((int)Math.Round(_selection.Right * scale), 0, _monitor.Bounds.Width);
-        var bottom = Math.Clamp((int)Math.Round(_selection.Bottom * scale), 0, _monitor.Bounds.Height);
-        if (right - left < 16 || bottom - top < 16)
+        var region = ScreenRegionScaling.ToPixelRegion(
+            new CorePixelSize(_monitor.Bounds.Width, _monitor.Bounds.Height),
+            _monitor.ScaleFactor,
+            _selection.Left,
+            _selection.Top,
+            _selection.Right,
+            _selection.Bottom);
+        if (region.Width < 16 || region.Height < 16)
         {
             _sizeLabel.Text = "Select an area at least 16 × 16 pixels";
             return;
         }
 
-        Close(new PixelRect(left, top, right - left, bottom - top));
+        Close(region);
     }
 
     private void Cancel_OnClick(object? sender, RoutedEventArgs e) => Close(null);
