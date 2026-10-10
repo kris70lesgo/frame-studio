@@ -4,6 +4,9 @@ This log records the independent Avalonia port of ScreenToGif. The port uses new
 
 ## 2026-10-10 — Current UI and Windows candidate check
 
+- Reused a single open ZIP read session across frame edits and exports to avoid reopening the project archive for every frame. Windows CI revealed that replacing an edited `.fsp` in place must happen only after closing the source archive handle; the rewrite paths now release that handle before atomic replacement. The local Release suite passed 44 tests and skipped the three Windows-only desktop checks.
+- [GitHub Actions run 38026224608](https://github.com/kris70lesgo/frame-studio/actions/runs/38026224608) passed macOS and Windows builds/tests plus Windows x64 packaging for source commit `b429e65f`. Hosted Windows ran 40 deterministic tests (one FFmpeg-dependent MP4 test skipped) and all 6 native capture tests. I downloaded [artifact 11660630394](https://github.com/kris70lesgo/frame-studio/actions/runs/38026224608/artifacts/11660630394), verified its sidecar SHA-256 `1ed998d21940d72caa329888fe950da5602d1041ef5dd92548e18f4791524cc4`, and confirmed ZIP integrity. It still requires the interactive Windows app run before submission.
+
 - Reworked the Avalonia home and editor into a Jitter-inspired light workspace with a compact dark toolbar, frame navigation, centered canvas, inspector, and bottom timeline. Frame Studio keeps its own branding and recording/editing actions.
 - Visually reviewed the current home/editor preview and resize dialog on macOS. This is not a Windows before/after comparison; the checked-in macOS screenshots remain historical.
 - Reopened the current checkout from a temporary `osx-arm64` app bundle and loaded the synthetic 8-frame `.fsp` sample. The current capture workspace and editor rendered; the screen-recording controls correctly report that capture is Windows-only. This smoke check did not record, edit, export, or produce challenge comparison screenshots.
