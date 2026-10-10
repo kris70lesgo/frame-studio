@@ -67,7 +67,7 @@ Build host: {host}, .NET SDK {sdk_version}
 
 Run {EXECUTABLE} on Windows 10 version 2004 or later, or Windows 11. Screen recording uses Windows GDI and requires an interactive desktop session.
 
-This preview has not been executed on Windows. The capture path, mixed-DPI selection, and end-to-end record → edit → GIF/MP4 workflow are not runtime verified. Do not treat it as a verified capture release.
+The executable passed a non-interactive startup smoke check on a hosted Windows runner. The app has not been validated in an interactive Windows desktop session; capture, mixed-DPI selection, and the end-to-end record → edit → GIF/MP4 workflow are not runtime verified. Do not treat it as a verified capture release.
 
 MP4 export requires a separately installed FFmpeg build with the libx264 encoder available on PATH. FFmpeg is not included in this package.
 
