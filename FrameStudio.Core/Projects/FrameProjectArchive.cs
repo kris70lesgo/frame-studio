@@ -297,6 +297,9 @@ public static class FrameProjectArchiveEditor
             await writer.WriteFrameAsync(project.CanvasSize, pixels, frame.DurationMilliseconds, cancellationToken).ConfigureAwait(false);
         }
 
+        // Release the source handle before replacing the archive in place. Windows can reject
+        // the atomic rename while the source ZIP is still open, even when delete sharing is set.
+        await reader.DisposeAsync().ConfigureAwait(false);
         return await writer.CompleteAsync(cancellationToken).ConfigureAwait(false);
     }
 
@@ -366,6 +369,9 @@ public static class FrameProjectArchiveEditor
             await writer.WriteFrameAsync(outputSize, transformed, frame.DurationMilliseconds, cancellationToken).ConfigureAwait(false);
         }
 
+        // Release the source handle before replacing the archive in place. Windows can reject
+        // the atomic rename while the source ZIP is still open, even when delete sharing is set.
+        await reader.DisposeAsync().ConfigureAwait(false);
         return await writer.CompleteAsync(cancellationToken).ConfigureAwait(false);
     }
 }
