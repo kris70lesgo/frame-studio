@@ -14,6 +14,25 @@ The Windows native capture backend now passes its integration suite on a hosted 
 - The latest local macOS Release test run passed 44 tests and skipped three Windows-only desktop checks.
 - [GitHub Actions run 38026224608](https://github.com/kris70lesgo/frame-studio/actions/runs/38026224608) on source commit `b429e65f` passed macOS and Windows builds/tests plus Windows x64 packaging. Hosted Windows ran 40 deterministic tests, skipped one FFmpeg-dependent MP4 test, and passed all 6 `WindowsCaptureIntegrationTests`. These native tests include window-affinity apply/restore, safe cleanup after a test window closes, and a 64 × 64 GDI capture that verifies a known marker pixel across pause, resume, and stop. They validate the backend on the hosted Windows runner, not the Avalonia UI flow, whether the real app windows disappear from recordings, or mixed-DPI desktop selection.
 
+## Download, verify, and launch
+
+1. Download the artifact above while signed in to GitHub, then extract the downloaded artifact ZIP. It contains the actual `FrameStudio-win-x64.zip` candidate and its `.sha256` sidecar.
+2. In PowerShell, from the folder containing that inner ZIP, verify its hash:
+
+   ```powershell
+   Get-FileHash .\FrameStudio-win-x64.zip -Algorithm SHA256
+   ```
+
+   Confirm the result matches `1ed998d21940d72caa329888fe950da5602d1041ef5dd92548e18f4791524cc4`.
+3. Extract the candidate and launch the app:
+
+   ```powershell
+   Expand-Archive .\FrameStudio-win-x64.zip -DestinationPath .\candidate
+   .\candidate\FrameStudio-win-x64\FrameStudio.Avalonia.exe
+   ```
+
+The candidate requires Windows 10 version 2004 or later, or Windows 11, and an interactive desktop session.
+
 ## Preview 3 release record
 
 - Older public preview: [Frame Studio 0.1.0 Preview 3](https://github.com/kris70lesgo/frame-studio/releases/tag/v0.1.0-preview.3), built from an earlier revision.
