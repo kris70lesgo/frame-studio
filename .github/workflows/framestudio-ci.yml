@@ -55,6 +55,25 @@ jobs:
         with:
           global-json-file: global.json
       - run: python scripts/package-windows-candidate.py
+      - name: Smoke-launch packaged Windows app
+        shell: pwsh
+        run: |
+          $application = Join-Path $PWD "dist/FrameStudio-win-x64/FrameStudio.Avalonia.exe"
+          $process = Start-Process -FilePath $application -PassThru
+          try {
+            if ($process.WaitForExit(10000)) {
+              throw "The packaged app exited during startup with code $($process.ExitCode)."
+            }
+            Write-Host "The packaged app stayed running for the 10-second startup smoke window."
+          }
+          finally {
+            if (-not $process.WaitForExit(5000)) {
+              Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
+              if (-not $process.WaitForExit(5000)) {
+                throw "The packaged app process did not exit after cleanup."
+              }
+            }
+          }
       - uses: actions/upload-artifact@v7
         with:
           name: FrameStudio-win-x64
