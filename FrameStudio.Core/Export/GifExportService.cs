@@ -32,7 +32,8 @@ public sealed class GifExportService
         if (options.RepeatCount is < -1 or > ushort.MaxValue)
             throw new ArgumentOutOfRangeException(nameof(options), "Repeat count must be -1 (no loop), 0 (forever), or at most 65,535.");
 
-        var project = await FrameProjectArchiveReader.ReadProjectAsync(projectPath, cancellationToken).ConfigureAwait(false);
+        await using var reader = await FrameProjectArchiveReader.OpenAsync(projectPath, cancellationToken).ConfigureAwait(false);
+        var project = reader.Project;
         var frames = frameSelection ?? project.Frames
             .Select(frame => new ProjectFrameReference(frame.Index, frame.DurationMilliseconds)).ToArray();
         if (frames.Count is < 1 or > 100_000)
@@ -65,7 +66,7 @@ public sealed class GifExportService
                     {
                         cancellationToken.ThrowIfCancellationRequested();
                         var frame = frames[index];
-                        var pixels = await FrameProjectArchiveReader.ReadFrameRgbaAsync(projectPath, project, frame.SourceFrameIndex, cancellationToken).ConfigureAwait(false);
+                        var pixels = await reader.ReadFrameRgbaAsync(frame.SourceFrameIndex, cancellationToken).ConfigureAwait(false);
                         var boundedDelay = Math.Clamp(frame.DurationMilliseconds, 10, 655_350);
                         encoder.AddFrame(pixels, new PixelRect(0, 0, project.CanvasSize.Width, project.CanvasSize.Height),
                             boundedDelay, index == frames.Count - 1);

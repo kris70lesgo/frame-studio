@@ -37,7 +37,8 @@ public sealed class FfmpegMp4ExportService
         ArgumentException.ThrowIfNullOrWhiteSpace(destinationPath);
 
         var ffmpegPath = ResolveFfmpegPath();
-        var project = await FrameProjectArchiveReader.ReadProjectAsync(projectPath, cancellationToken).ConfigureAwait(false);
+        await using var reader = await FrameProjectArchiveReader.OpenAsync(projectPath, cancellationToken).ConfigureAwait(false);
+        var project = reader.Project;
         var frames = frameSelection ?? project.Frames
             .Select(frame => new ProjectFrameReference(frame.Index, frame.DurationMilliseconds)).ToArray();
         if (frames.Count is < 1 or > 100_000)
@@ -59,7 +60,7 @@ public sealed class FfmpegMp4ExportService
         try
         {
             var manifestPath = Path.Combine(workingDirectory, "frames.ffconcat");
-            await WriteFramesAndManifestAsync(projectPath, project, frames, workingDirectory, manifestPath, cancellationToken)
+            await WriteFramesAndManifestAsync(reader, frames, workingDirectory, manifestPath, cancellationToken)
                 .ConfigureAwait(false);
 
             await RunFfmpegAsync(ffmpegPath, workingDirectory, Path.GetFileName(manifestPath), partialPath, cancellationToken)
@@ -79,10 +80,11 @@ public sealed class FfmpegMp4ExportService
         }
     }
 
-    private static async Task WriteFramesAndManifestAsync(string projectPath, FrameProject project,
+    private static async Task WriteFramesAndManifestAsync(FrameProjectArchiveReadSession reader,
         IReadOnlyList<ProjectFrameReference> frames, string workingDirectory, string manifestPath,
         CancellationToken cancellationToken)
     {
+        var project = reader.Project;
         await using var manifest = new StreamWriter(manifestPath, append: false, Encoding.ASCII);
         await manifest.WriteLineAsync("ffconcat version 1.0".AsMemory(), cancellationToken).ConfigureAwait(false);
         var terminalSampleNeeded = frames[^1].DurationMilliseconds > 1;
@@ -91,8 +93,7 @@ public sealed class FfmpegMp4ExportService
         {
             cancellationToken.ThrowIfCancellationRequested();
             var imageName = $"frame-{index:D8}.png";
-            var pixels = await FrameProjectArchiveReader.ReadFrameRgbaAsync(projectPath, project,
-                frames[index].SourceFrameIndex, cancellationToken).ConfigureAwait(false);
+            var pixels = await reader.ReadFrameRgbaAsync(frames[index].SourceFrameIndex, cancellationToken).ConfigureAwait(false);
             await WritePngAsync(Path.Combine(workingDirectory, imageName), project.CanvasSize, pixels, cancellationToken)
                 .ConfigureAwait(false);
 
