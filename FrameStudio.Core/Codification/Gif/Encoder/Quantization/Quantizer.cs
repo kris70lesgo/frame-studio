@@ -42,18 +42,18 @@ public abstract class Quantizer
     public Color? TransparentColor { get; set; }
 
     /// <summary>
-    /// TODO: The index of the transparent color.
-    /// Not always MaxColors - 1, since the color table size is ^2 (...64, 128, 256).
-    /// When the user selects a value that doesn't fit nicely in one of those spots (like 200), we can avoid wasting one color position.
+    /// Gets the transparent entry's actual index in the generated palette.
+    /// Returns zero when no transparent entry is configured or the palette is not built.
     /// </summary>
-    public byte TransparentColorIndex 
-    { 
-        get 
+    public byte TransparentColorIndex
+    {
+        get
         {
-            var max = TransparentColor.HasValue ? MaxColors - 1 : MaxColors;
+            if (!TransparentColor.HasValue || ColorTable == null)
+                return 0;
 
-            //?
-            return 0;
+            var index = ColorTable.IndexOf(TransparentColor.Value);
+            return index is >= 0 and <= byte.MaxValue ? (byte)index : (byte)0;
         }
     }
 

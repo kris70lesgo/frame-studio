@@ -12,9 +12,9 @@ The upstream README at baseline commit [`a4d0a67`](https://github.com/NickeManar
 
 These are useful references for the original app's screens and behavior. They are not fresh captures from the exact baseline executable or same-content before/after pairs, so they should not be submitted as the challenge comparisons.
 
-`after-home-shell-macos.png` is an early Avalonia shell check. It is included to track UI progress and must not be used as the final Windows before/after comparison.
+`after-home-current-macos.png` and `after-editor-current-macos.png` are macOS visual-review captures of the Avalonia home workspace and editor using synthetic sample content. They document the redesigned UI, including the recent-project workspace, preview, timeline, drawing panel, and editor controls. They are supplemental UI previews only: they do not verify Windows screen recording or replace same-content WPF/Avalonia before-and-after pairs.
 
-`after-editor-preview-macos.jpg` is a macOS UI smoke check using a local 24-frame, 640 × 360 `.fsp` fixture. It confirms that the editor window, preview, timeline, frame properties, and export action render. It does not verify Windows capture or GIF output, and it is not a challenge before/after image.
+The older `after-home-shell-macos.png` and `after-editor-preview-macos.jpg` remain as historical shell checks. They predate the current editor workflow and should not be used as current screenshots.
 
 Capture fresh, consistent Windows screenshots here before challenge submission:
 
@@ -24,3 +24,5 @@ Capture fresh, consistent Windows screenshots here before challenge submission:
 - `before-export.png` / `after-export.png`
 
 The Avalonia screenshots should be taken from a runnable Windows build and use the same project/content as the baseline.
+
+For the original WPF application, download the [ScreenToGif 2.43.2 release](https://github.com/NickeManarin/ScreenToGif/releases/tag/2.43.2), which matches the audited source baseline. Use a harmless sample recording and the same captured region/project in both applications. The paired images are evidence of the migration, not a claim that Frame Studio has full ScreenToGif feature parity.

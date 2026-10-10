@@ -12,10 +12,10 @@ namespace FrameStudio.Avalonia.ViewModels;
 public partial class MainViewModel : ObservableObject
 {
     [ObservableProperty]
-    private bool _isDarkTheme = true;
+    private bool _isDarkTheme;
 
     [ObservableProperty]
-    private string _themeName = "Dark appearance";
+    private string _themeName = "Light appearance";
 
     public IReadOnlyList<CaptureCapability> CaptureCapabilities { get; }
 

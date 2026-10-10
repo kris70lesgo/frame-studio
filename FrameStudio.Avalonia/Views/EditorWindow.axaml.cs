@@ -38,6 +38,7 @@ public partial class EditorWindow : Window
     private WriteableBitmap? _previewBitmap;
     private bool _isLoadingPreview;
     private bool _isPlaying;
+    private TimelineFrameViewModel? _lastPreviewSelection;
     private bool _isDraggingCrop;
     private bool _allowClose;
     private bool _isConfirmingClose;
@@ -138,19 +139,26 @@ public partial class EditorWindow : Window
     {
         if (_viewModel?.SelectedFrame is not null)
         {
-            _timelineList.SelectedItem = _viewModel.SelectedFrame;
+            _lastPreviewSelection = _viewModel.SelectedFrame;
+            _timelineList.SelectedItem = _lastPreviewSelection;
             await LoadPreviewAsync();
         }
     }
 
     private async void Timeline_OnSelectionChanged(object? sender, SelectionChangedEventArgs e)
     {
-        if (_timelineList.SelectedItem is TimelineFrameViewModel selected)
-        {
+        if (sender is not ListBox list || list.SelectedItem is not TimelineFrameViewModel selected)
+            return;
+
+        if (!ReferenceEquals(_viewModel.SelectedFrame, selected))
             _viewModel.SelectedFrame = selected;
-            await LoadPreviewAsync();
-            UpdatePlaybackInterval();
-        }
+
+        if (ReferenceEquals(_lastPreviewSelection, selected))
+            return;
+
+        _lastPreviewSelection = selected;
+        await LoadPreviewAsync();
+        UpdatePlaybackInterval();
     }
 
     private void CropTool_OnClick(object? sender, RoutedEventArgs e)

@@ -124,9 +124,77 @@ public static class FrameProjectArchiveReader
 
     public static async ValueTask<FrameProject> ReadProjectAsync(string projectPath, CancellationToken cancellationToken = default)
     {
+        await using var session = await OpenAsync(projectPath, cancellationToken).ConfigureAwait(false);
+        return session.Project;
+    }
+
+    public static async ValueTask<FrameProjectArchiveReadSession> OpenAsync(string projectPath,
+        CancellationToken cancellationToken = default)
+    {
         ArgumentException.ThrowIfNullOrWhiteSpace(projectPath);
-        await using var stream = new FileStream(projectPath, FileMode.Open, FileAccess.Read, FileShare.Read | FileShare.Delete, 64 * 1024, useAsync: true);
-        using var archive = new ZipArchive(stream, ZipArchiveMode.Read, leaveOpen: false);
+        cancellationToken.ThrowIfCancellationRequested();
+        var stream = new FileStream(projectPath, FileMode.Open, FileAccess.Read, FileShare.Read | FileShare.Delete, 64 * 1024, useAsync: true);
+        ZipArchive? archive = null;
+        try
+        {
+            archive = new ZipArchive(stream, ZipArchiveMode.Read, leaveOpen: true);
+            var project = await ReadProjectManifestAsync(archive, cancellationToken).ConfigureAwait(false);
+            ValidateProject(project);
+            return new FrameProjectArchiveReadSession(stream, archive, project);
+        }
+        catch
+        {
+            try
+            {
+                archive?.Dispose();
+            }
+            finally
+            {
+                await stream.DisposeAsync().ConfigureAwait(false);
+            }
+            throw;
+        }
+    }
+
+    internal static async ValueTask<FrameProjectArchiveReadSession> OpenAsync(string projectPath, FrameProject project,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(projectPath);
+        ArgumentNullException.ThrowIfNull(project);
+        ValidateProject(project);
+        cancellationToken.ThrowIfCancellationRequested();
+        var stream = new FileStream(projectPath, FileMode.Open, FileAccess.Read, FileShare.Read | FileShare.Delete, 64 * 1024, useAsync: true);
+        ZipArchive? archive = null;
+        try
+        {
+            archive = new ZipArchive(stream, ZipArchiveMode.Read, leaveOpen: true);
+            return new FrameProjectArchiveReadSession(stream, archive, project);
+        }
+        catch
+        {
+            try
+            {
+                archive?.Dispose();
+            }
+            finally
+            {
+                await stream.DisposeAsync().ConfigureAwait(false);
+            }
+            throw;
+        }
+    }
+
+    public static async ValueTask<byte[]> ReadFrameRgbaAsync(string projectPath, FrameProject project, int index,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(project);
+        await using var session = await OpenAsync(projectPath, project, cancellationToken).ConfigureAwait(false);
+        return await session.ReadFrameRgbaAsync(index, cancellationToken).ConfigureAwait(false);
+    }
+
+    private static async ValueTask<FrameProject> ReadProjectManifestAsync(ZipArchive archive,
+        CancellationToken cancellationToken)
+    {
         var entry = archive.GetEntry(ManifestName) ?? throw new InvalidDataException("Project manifest is missing.");
         if (entry.Length > 32 * 1024 * 1024)
             throw new InvalidDataException("Project manifest exceeds the supported size.");
@@ -135,6 +203,11 @@ public static class FrameProjectArchiveReader
         var project = await JsonSerializer.DeserializeAsync<FrameProject>(manifestStream, cancellationToken: cancellationToken).ConfigureAwait(false)
             ?? throw new InvalidDataException("Project manifest is invalid.");
 
+        return project;
+    }
+
+    private static void ValidateProject(FrameProject project)
+    {
         FrameProjectArchiveWriter.ValidateCanvasSize(project.CanvasSize);
         if (string.IsNullOrWhiteSpace(project.Name) || project.Frames.Count is < 1 or > 100_000)
             throw new InvalidDataException("Project metadata is outside the supported limits.");
@@ -146,21 +219,34 @@ public static class FrameProjectArchiveReader
                 throw new InvalidDataException($"Frame {index} has invalid metadata.");
         }
 
-        return project;
+    }
+}
+
+/// <summary>Reads frames serially from one open .fsp archive without reopening its ZIP directory for each frame.</summary>
+public sealed class FrameProjectArchiveReadSession : IAsyncDisposable
+{
+    private readonly FileStream _stream;
+    private readonly ZipArchive _archive;
+    private int _disposed;
+
+    internal FrameProjectArchiveReadSession(FileStream stream, ZipArchive archive, FrameProject project)
+    {
+        _stream = stream;
+        _archive = archive;
+        Project = project;
     }
 
-    public static async ValueTask<byte[]> ReadFrameRgbaAsync(string projectPath, FrameProject project, int index,
-        CancellationToken cancellationToken = default)
+    public FrameProject Project { get; }
+
+    public async ValueTask<byte[]> ReadFrameRgbaAsync(int index, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(project);
-        if ((uint)index >= (uint)project.Frames.Count)
+        ObjectDisposedException.ThrowIf(Volatile.Read(ref _disposed) != 0, this);
+        if ((uint)index >= (uint)Project.Frames.Count)
             throw new ArgumentOutOfRangeException(nameof(index));
 
-        var frame = project.Frames[index];
-        var expectedLength = checked(project.CanvasSize.Width * project.CanvasSize.Height * 4);
-        await using var stream = new FileStream(projectPath, FileMode.Open, FileAccess.Read, FileShare.Read | FileShare.Delete, 64 * 1024, useAsync: true);
-        using var archive = new ZipArchive(stream, ZipArchiveMode.Read, leaveOpen: false);
-        var entry = archive.GetEntry(FrameProjectArchiveWriter.GetFrameEntryName(index))
+        var frame = Project.Frames[index];
+        var expectedLength = checked(Project.CanvasSize.Width * Project.CanvasSize.Height * 4);
+        var entry = _archive.GetEntry(FrameProjectArchiveWriter.GetFrameEntryName(index))
             ?? throw new InvalidDataException($"Frame data for frame {index} is missing.");
         if (entry.Length != expectedLength || frame.DataLength != expectedLength)
             throw new InvalidDataException($"Frame data for frame {index} has an invalid size.");
@@ -169,6 +255,21 @@ public static class FrameProjectArchiveReader
         await using var input = entry.Open();
         await input.ReadExactlyAsync(pixels, cancellationToken).ConfigureAwait(false);
         return pixels;
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (Interlocked.Exchange(ref _disposed, 1) != 0)
+            return;
+
+        try
+        {
+            _archive.Dispose();
+        }
+        finally
+        {
+            await _stream.DisposeAsync().ConfigureAwait(false);
+        }
     }
 }
 
@@ -182,6 +283,7 @@ public static class FrameProjectArchiveEditor
         if (frames.Count is < 1 or > 100_000)
             throw new ArgumentOutOfRangeException(nameof(frames), "An edited project must contain between 1 and 100,000 frames.");
 
+        await using var reader = await FrameProjectArchiveReader.OpenAsync(sourcePath, project, cancellationToken).ConfigureAwait(false);
         await using var writer = await FrameProjectArchiveWriter.CreateAsync(destinationPath, project.Name, project.CanvasSize, cancellationToken)
             .ConfigureAwait(false);
         foreach (var frame in frames)
@@ -191,11 +293,13 @@ public static class FrameProjectArchiveEditor
             if (frame.DurationMilliseconds <= 0)
                 throw new ArgumentOutOfRangeException(nameof(frames), "Edited frame durations must be positive.");
 
-            var pixels = await FrameProjectArchiveReader.ReadFrameRgbaAsync(sourcePath, project, frame.SourceFrameIndex, cancellationToken)
-                .ConfigureAwait(false);
+            var pixels = await reader.ReadFrameRgbaAsync(frame.SourceFrameIndex, cancellationToken).ConfigureAwait(false);
             await writer.WriteFrameAsync(project.CanvasSize, pixels, frame.DurationMilliseconds, cancellationToken).ConfigureAwait(false);
         }
 
+        // Release the source handle before replacing the archive in place. Windows can reject
+        // the atomic rename while the source ZIP is still open, even when delete sharing is set.
+        await reader.DisposeAsync().ConfigureAwait(false);
         return await writer.CompleteAsync(cancellationToken).ConfigureAwait(false);
     }
 
@@ -249,6 +353,7 @@ public static class FrameProjectArchiveEditor
         if (frames.Count is < 1 or > 100_000)
             throw new ArgumentOutOfRangeException(nameof(frames), "An edited project must contain between 1 and 100,000 frames.");
 
+        await using var reader = await FrameProjectArchiveReader.OpenAsync(sourcePath, project, cancellationToken).ConfigureAwait(false);
         await using var writer = await FrameProjectArchiveWriter.CreateAsync(destinationPath, project.Name, outputSize, cancellationToken)
             .ConfigureAwait(false);
         foreach (var frame in frames)
@@ -259,12 +364,14 @@ public static class FrameProjectArchiveEditor
             if (frame.DurationMilliseconds <= 0)
                 throw new ArgumentOutOfRangeException(nameof(frames), "Edited frame durations must be positive.");
 
-            var pixels = await FrameProjectArchiveReader.ReadFrameRgbaAsync(sourcePath, project, frame.SourceFrameIndex, cancellationToken)
-                .ConfigureAwait(false);
+            var pixels = await reader.ReadFrameRgbaAsync(frame.SourceFrameIndex, cancellationToken).ConfigureAwait(false);
             var transformed = transform(pixels);
             await writer.WriteFrameAsync(outputSize, transformed, frame.DurationMilliseconds, cancellationToken).ConfigureAwait(false);
         }
 
+        // Release the source handle before replacing the archive in place. Windows can reject
+        // the atomic rename while the source ZIP is still open, even when delete sharing is set.
+        await reader.DisposeAsync().ConfigureAwait(false);
         return await writer.CompleteAsync(cancellationToken).ConfigureAwait(false);
     }
 }

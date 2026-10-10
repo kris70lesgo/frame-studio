@@ -50,6 +50,26 @@ public sealed class MedianCutQuantizerTests
         Assert.Equal(FrameStudio.Core.Models.Rgba32.FromRgb(133, 0, 0), quantizer.ColorTable[1]);
         Assert.Equal(transparent, quantizer.ColorTable[2]);
         Assert.Equal((byte)2, indexes[^1]);
+        Assert.Equal((byte)2, quantizer.TransparentColorIndex);
+    }
+
+    [Fact]
+    public void TransparentColorIndex_UsesTheActualPalettePositionWhenPaletteHasFewerThanMaxColors()
+    {
+        var transparent = FrameStudio.Core.Models.Rgba32.FromArgb(0, 9, 8, 7);
+        var quantizer = new MedianCutQuantizer
+        {
+            MaxColors = 16,
+            TransparentColor = transparent
+        };
+
+        quantizer.Quantize(Rgba(
+            (10, 20, 30, 255),
+            (90, 80, 70, 255),
+            (0, 0, 0, 0)));
+
+        Assert.Equal(3, quantizer.ColorTable.Count);
+        Assert.Equal((byte)2, quantizer.TransparentColorIndex);
     }
 
     [Fact]

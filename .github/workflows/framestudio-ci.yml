@@ -27,8 +27,8 @@ jobs:
         os: [macos-latest, windows-latest]
 
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v6
         with:
           global-json-file: global.json
       - run: dotnet restore FrameStudio.sln
@@ -38,22 +38,62 @@ jobs:
         run: >-
           dotnet test FrameStudio.sln --configuration Release --no-build
           --filter "FullyQualifiedName!~WindowsCaptureIntegrationTests"
+      - name: Run native Windows capture integration tests
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: >-
+          dotnet test FrameStudio.sln --configuration Release --no-build
+          --filter "FullyQualifiedName~WindowsCaptureIntegrationTests"
 
   windows-package:
     name: Windows x64 publish check
     runs-on: windows-latest
 
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v6
         with:
           global-json-file: global.json
-      - run: >-
-          dotnet publish FrameStudio.Avalonia/FrameStudio.Avalonia.csproj
-          --configuration Release --runtime win-x64 --self-contained true
-          --output artifacts/FrameStudio-win-x64
-      - uses: actions/upload-artifact@v4
+      - run: python scripts/package-windows-candidate.py
+      - name: Smoke-launch packaged Windows app
+        shell: pwsh
+        run: |
+          $application = Join-Path $PWD "dist/FrameStudio-win-x64/FrameStudio.Avalonia.exe"
+          $process = Start-Process -FilePath $application -PassThru
+          try {
+            $startupDeadline = [DateTime]::UtcNow.AddSeconds(10)
+            $mainWindowHandle = [IntPtr]::Zero
+            while ([DateTime]::UtcNow -lt $startupDeadline) {
+              $process.Refresh()
+              if ($process.HasExited) {
+                throw "The packaged app exited during startup with code $($process.ExitCode)."
+              }
+              if ($process.MainWindowHandle -ne [IntPtr]::Zero) {
+                $mainWindowHandle = $process.MainWindowHandle
+                break
+              }
+              Start-Sleep -Milliseconds 250
+            }
+            if ($mainWindowHandle -eq [IntPtr]::Zero) {
+              throw "The packaged app stayed running but did not create its main window within 10 seconds."
+            }
+            if ($process.MainWindowTitle -ne "Frame Studio") {
+              throw "Unexpected packaged app window title: '$($process.MainWindowTitle)'."
+            }
+            Write-Host "The packaged app created its '$($process.MainWindowTitle)' window on the hosted Windows runner."
+          }
+          finally {
+            if (-not $process.WaitForExit(5000)) {
+              Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
+              if (-not $process.WaitForExit(5000)) {
+                throw "The packaged app process did not exit after cleanup."
+              }
+            }
+          }
+      - uses: actions/upload-artifact@v7
         with:
           name: FrameStudio-win-x64
-          path: artifacts/FrameStudio-win-x64
+          path: |
+            dist/FrameStudio-win-x64.zip
+            dist/FrameStudio-win-x64.zip.sha256
           if-no-files-found: error

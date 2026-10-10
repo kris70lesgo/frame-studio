@@ -184,6 +184,14 @@ public sealed class FrameProjectTests
             var loadedPixels = await FrameProjectArchiveReader.ReadFrameRgbaAsync(projectPath, loadedProject, 1);
             Assert.Equal(blueFrame, loadedPixels);
 
+            await using (var reader = await FrameProjectArchiveReader.OpenAsync(projectPath))
+            {
+                Assert.Equal(loadedProject.Frames.Count, reader.Project.Frames.Count);
+                Assert.Equal(blueFrame, await reader.ReadFrameRgbaAsync(1));
+                Assert.Equal(redFrame, await reader.ReadFrameRgbaAsync(0));
+                Assert.Equal(blueFrame, await reader.ReadFrameRgbaAsync(1));
+            }
+
             var editedProject = await FrameProjectArchiveEditor.RewriteAsync(projectPath, projectPath, loadedProject,
             [
                 new ProjectFrameReference(1, 90),
