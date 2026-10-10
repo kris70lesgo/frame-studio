@@ -2,14 +2,14 @@
 
 Fill this out while running the current Windows candidate. Replace each `TBD` with the observed result; write `not tested` when a check cannot be run. Keep failures and limitations visible.
 
-The native capture service passes its Windows integration suite in [hosted run 38026224608](https://github.com/kris70lesgo/frame-studio/actions/runs/38026224608). This record is for the separate interactive app, desktop, and screenshot checks.
+Hosted run [38027260796](https://github.com/kris70lesgo/frame-studio/actions/runs/38027260796) passed the native capture suite and launched the packaged app for a non-interactive 10-second smoke check. This record is for the separate interactive app, desktop, and screenshot checks.
 
 ## Test environment
 
-- App source revision: `b429e65ff96f2c3564446985b60386182a020a18`
-- Package revision from bundled README: `b429e65`
-- Candidate ZIP SHA-256: `1ed998d21940d72caa329888fe950da5602d1041ef5dd92548e18f4791524cc4`
-- Candidate download: [FrameStudio-win-x64 artifact](https://github.com/kris70lesgo/frame-studio/actions/runs/38026224608/artifacts/11660630394)
+- App/package source revision: `521cfb9ad429098b4974a52fb6c71225f0128387`
+- Package revision from bundled README: `521cfb9`
+- Candidate ZIP SHA-256: `2bd86c1a8bc0cc0d94af0ad67710be3c779240e6678b34ebc6b2014b0d5fb834`
+- Candidate download: [FrameStudio-win-x64 artifact](https://github.com/kris70lesgo/frame-studio/actions/runs/38027260796/artifacts/11661030597)
 - Windows edition and build: TBD
 - PC / CPU architecture: TBD
 - Display resolution and scale: TBD
