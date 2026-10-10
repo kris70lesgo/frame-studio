@@ -61,10 +61,26 @@ jobs:
           $application = Join-Path $PWD "dist/FrameStudio-win-x64/FrameStudio.Avalonia.exe"
           $process = Start-Process -FilePath $application -PassThru
           try {
-            if ($process.WaitForExit(10000)) {
-              throw "The packaged app exited during startup with code $($process.ExitCode)."
+            $startupDeadline = [DateTime]::UtcNow.AddSeconds(10)
+            $mainWindowHandle = [IntPtr]::Zero
+            while ([DateTime]::UtcNow -lt $startupDeadline) {
+              $process.Refresh()
+              if ($process.HasExited) {
+                throw "The packaged app exited during startup with code $($process.ExitCode)."
+              }
+              if ($process.MainWindowHandle -ne [IntPtr]::Zero) {
+                $mainWindowHandle = $process.MainWindowHandle
+                break
+              }
+              Start-Sleep -Milliseconds 250
             }
-            Write-Host "The packaged app stayed running for the 10-second startup smoke window."
+            if ($mainWindowHandle -eq [IntPtr]::Zero) {
+              throw "The packaged app stayed running but did not create its main window within 10 seconds."
+            }
+            if ($process.MainWindowTitle -ne "Frame Studio") {
+              throw "Unexpected packaged app window title: '$($process.MainWindowTitle)'."
+            }
+            Write-Host "The packaged app created its '$($process.MainWindowTitle)' window on the hosted Windows runner."
           }
           finally {
             if (-not $process.WaitForExit(5000)) {
