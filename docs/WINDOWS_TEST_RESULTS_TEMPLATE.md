@@ -2,13 +2,13 @@
 
 Fill this out while running the current Windows candidate. Replace each `TBD` with the observed result; write `not tested` when a check cannot be run. Keep failures and limitations visible.
 
-The native capture service already passes 6 Windows integration tests in [hosted run 37980913612](https://github.com/kris70lesgo/frame-studio/actions/runs/37980913612). This record is for the separate interactive app, desktop, and screenshot checks.
+The native capture service already passes 6 Windows integration tests in [hosted run 37981332433](https://github.com/kris70lesgo/frame-studio/actions/runs/37981332433). This record is for the separate interactive app, desktop, and screenshot checks.
 
 ## Test environment
 
-- App source revision: `4b39179a3d587a3d0ba94244a3da9d4802cc0c40` (app implementation unchanged from `408babf6`)
-- Package revision from bundled README: `f7fc082` (GitHub's synthetic pull-request merge revision)
-- Candidate ZIP SHA-256: `a8b3813ac4532d676c617877d7e18d8882e118ad077e67b2b10fe8d517d45e14`
+- App source revision: `60e97d11dfcf01469880ab0ecab65b979cdeb40e` (app implementation unchanged from `408babf6`)
+- Package revision from bundled README: `66b942f` (GitHub's synthetic pull-request merge revision)
+- Candidate ZIP SHA-256: `1ce102ce20e73918a313d7a71d9fb8944538fe316df9006b3226de1ae238ac4b`
 - Windows edition and build: TBD
 - PC / CPU architecture: TBD
 - Display resolution and scale: TBD
