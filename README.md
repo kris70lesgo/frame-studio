@@ -45,16 +45,15 @@ Two surprises shaped the port. The legacy model and utility projects carry WPF t
 
 The first Frame Studio shell commit and latest capture-backend fix span about **6 hours 20 minutes** in the Git timestamps on 3 October 2026 (India time). That is elapsed time between commits, not measured hands-on effort; we did not keep a work timer, so the final labor cost is still unknown. The write-up needs Windows results, comparable screenshots, and a better effort estimate before submission.
 
-## Shell preview
+## UI previews
 
-This macOS capture documents an early Avalonia shell only. It is not a Windows before/after comparison, and it predates the recording and editor workflow shown in the status table.
-The [capture notes](docs/before-after/README.md) link to the upstream screenshots and list the fresh Windows pairs still needed for submission.
+These macOS captures show the current Avalonia home workspace and editor with a synthetic sample project. They are useful for reviewing the redesigned UI, but they are not Windows before-and-after comparisons and do not validate native screen recording. The [capture notes](docs/before-after/README.md) describe the remaining Windows screenshot pairs.
 
-![Frame Studio early home shell on macOS](docs/before-after/after-home-shell-macos.png)
+![Frame Studio home workspace preview on macOS](docs/before-after/after-home-current-macos.png)
 
-The editor screenshot predates the text annotation and MP4 export tools and records a macOS UI smoke check with a local sample project. It shows the earlier editor shell only; the current dialogs and export controls still need a fresh visual check, and capture still requires Windows validation.
+![Frame Studio editor preview on macOS](docs/before-after/after-editor-current-macos.png)
 
-![Frame Studio editor preview on macOS](docs/before-after/after-editor-preview-macos.jpg)
+Older shell captures remain in the folder as historical UI checks; they predate the current editor workflow.
 
 ## Build and run
 
