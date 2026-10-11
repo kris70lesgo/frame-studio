@@ -225,6 +225,7 @@ public sealed class WindowsCaptureIntegrationTests
             if (handle == IntPtr.Zero)
                 throw new System.ComponentModel.Win32Exception(Marshal.GetLastWin32Error(), "Could not create the capture pixel marker.");
 
+            _ = NativeMethods.ShowWindow(handle, NativeMethods.SwShowNoActivate);
             _ = NativeMethods.UpdateWindow(handle);
             return new NativeTestWindow(handle);
         }
@@ -245,6 +246,7 @@ public sealed class WindowsCaptureIntegrationTests
             if (handle == IntPtr.Zero)
                 throw new System.ComponentModel.Win32Exception(Marshal.GetLastWin32Error(), "Could not create the native capture test marker.");
 
+            _ = NativeMethods.ShowWindow(handle, NativeMethods.SwShowNoActivate);
             _ = NativeMethods.UpdateWindow(handle);
             return new NativeTestWindow(handle);
         }
@@ -256,6 +258,7 @@ public sealed class WindowsCaptureIntegrationTests
     {
         // COLOR_WINDOW is the color used by the SS_WHITERECT test marker.
         internal const int ColorWindow = 5;
+        internal const int SwShowNoActivate = 4;
 
         [DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
         internal static extern nint CreateWindowEx(uint extendedStyle, string className, string windowName, uint style,
@@ -271,6 +274,9 @@ public sealed class WindowsCaptureIntegrationTests
         [DllImport("user32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool DestroyWindow(nint window);
+
+        [DllImport("user32.dll")]
+        internal static extern bool ShowWindow(nint window, int command);
 
         [DllImport("user32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]
