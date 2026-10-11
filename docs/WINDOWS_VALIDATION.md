@@ -4,15 +4,15 @@ The Windows native capture backend now passes its integration suite on a hosted 
 
 ## Current Windows candidate (2026-10-11)
 
-- The current candidate is attached to the unpublished [Preview 4 draft release](https://github.com/kris70lesgo/frame-studio/releases/tag/untagged-2fc6da4212fcf12834c2). It contains app-code commit `8871a3ecc29ac2bfbace7cf82bb02b83dc995b1c`, including the software sketchboard and direct `.fsp` recording. The release remains unpublished until the interactive Windows workflow and screenshot comparison are complete.
-- [CI run 38123652608](https://github.com/kris70lesgo/frame-studio/actions/runs/38123652608) passed the macOS and Windows build/test jobs, native Windows capture checks, and packaged-app startup smoke.
-- Local package: [dist/FrameStudio-win-x64.zip](/Users/agastya/Documents/alvonia/ScreenToGif/dist/FrameStudio-win-x64.zip) (self-contained `win-x64`; package directory is ignored by Git). Package revision: `8871a3e`; ZIP SHA-256: `1e7021ca4a2a20aeadbd83c98052a409f978d1626d01673f357de435dba42950`. The checksum sidecar matches and ZIP integrity passed.
-- The latest local macOS Release test run passed 53 tests and skipped four Windows-only desktop checks, including the screen and window desktop integrations.
-- Hosted CI verifies the native backend and package startup only. It does not verify interactive controls, app-window exclusion in real recordings, mixed-DPI selection, or the full record → edit → export workflow on your desktop. This is not yet a verified capture release.
+- The current candidate is attached to the unpublished [Preview 4 draft release](https://github.com/kris70lesgo/frame-studio/releases/tag/untagged-de6181b6f1e45addf0d1). It contains app-code commit `7df7c6e0bba7f1892810e3f4d63a2b450b8cdd25`, including the Windows MediaCapture webcam workflow and software Sketchboard. The release remains unpublished until the interactive Windows workflow and screenshot comparison are complete.
+- [CI run 38142554754](https://github.com/kris70lesgo/frame-studio/actions/runs/38142554754) passed macOS and Windows builds/tests, seven native Windows capture checks, and the packaged-app startup smoke.
+- Local CI artifact: [dist/FrameStudio-win-x64.zip](/Users/agastya/Documents/alvonia/ScreenToGif/dist/FrameStudio-win-x64.zip) (self-contained `win-x64`; package directory is ignored by Git). Package revision: `7df7c6e`; ZIP SHA-256: `d2c71afe9b7f358912979dd672379fa778f104c9c83bb190c29b345d05c59944`. The sidecar matches, ZIP integrity passed, and the included README identifies the hosted Windows build.
+- The latest local Release build completed with zero warnings/errors; 55 tests passed and four Windows-only desktop tests skipped on macOS. Hosted CI verifies the Windows-targeted webcam build, screen/window backend, and package startup, but no physical camera was available to CI.
+- Interactive camera/privacy behavior, recorder controls, app-window exclusion in real recordings, mixed-DPI selection, and the full record → edit → export workflow still need your Windows desktop run. This is not yet a verified capture release.
 
 ## Download, verify, and launch
 
-1. Download `FrameStudio-win-x64.zip` and its `.sha256` sidecar from the [Preview 4 draft release](https://github.com/kris70lesgo/frame-studio/releases/tag/untagged-2fc6da4212fcf12834c2). The current package identifies source revision `8871a3e` in its `README.txt`.
+1. Download `FrameStudio-win-x64.zip` and its `.sha256` sidecar from the [Preview 4 draft release](https://github.com/kris70lesgo/frame-studio/releases/tag/untagged-de6181b6f1e45addf0d1). The current package identifies source revision `7df7c6e` in its `README.txt`.
 2. In PowerShell, from the folder containing that inner ZIP, verify its hash:
 
    ```powershell

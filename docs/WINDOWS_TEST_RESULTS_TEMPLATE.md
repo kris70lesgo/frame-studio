@@ -2,13 +2,13 @@
 
 Fill this out while running the current Windows candidate. Replace each `TBD` with the observed result; write `not tested` when a check cannot be run. Keep failures and limitations visible.
 
-Hosted run [38123652608](https://github.com/kris70lesgo/frame-studio/actions/runs/38123652608) passed the macOS and Windows build/test jobs, native Windows capture checks, and the packaged-app startup smoke. This record is for the separate interactive app, desktop, and screenshot checks.
+Hosted run [38142554754](https://github.com/kris70lesgo/frame-studio/actions/runs/38142554754) passed the macOS and Windows build/test jobs, seven native Windows capture checks, and the packaged-app startup smoke. This record is for the separate interactive app, physical camera, desktop, and screenshot checks.
 
 ## Test environment
 
-- App-code commit: `8871a3ecc29ac2bfbace7cf82bb02b83dc995b1c`
-- Package revision: `8871a3e`; ZIP SHA-256: `1e7021ca4a2a20aeadbd83c98052a409f978d1626d01673f357de435dba42950`
-- Candidate download: [Preview 4 draft release](https://github.com/kris70lesgo/frame-studio/releases/tag/untagged-2fc6da4212fcf12834c2)
+- App-code commit: `7df7c6e0bba7f1892810e3f4d63a2b450b8cdd25`
+- Package revision: `7df7c6e`; ZIP SHA-256: `d2c71afe9b7f358912979dd672379fa778f104c9c83bb190c29b345d05c59944`
+- Candidate download: [Preview 4 draft release](https://github.com/kris70lesgo/frame-studio/releases/tag/untagged-de6181b6f1e45addf0d1)
 - Windows edition and build: TBD
 - PC / CPU architecture: TBD
 - Display resolution and scale: TBD
