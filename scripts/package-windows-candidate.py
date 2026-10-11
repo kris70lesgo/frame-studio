@@ -73,6 +73,8 @@ MP4 export requires a separately installed FFmpeg build with the libx264 encoder
 
 GIF export offers palette and color-count controls, dithering, loop behavior, fixed frame rate, and custom dimensions. MP4 export offers H.264 quality, fixed frame rate, and custom dimensions. Both formats default to the source frame timing and retain saved export defaults from Preferences.
 
+The software Sketchboard provides fixed-size drawing canvases with brush controls and records the canvas into an editable .fsp project. Webcam capture is not implemented.
+
 Frame Studio is an independent Avalonia port based on ScreenToGif. It is not the official ScreenToGif application and is not affiliated with Nicke Manarin or N-Tech. The complete upstream license and attribution are included in LICENSE.txt.
 """,
             encoding="utf-8",

@@ -115,6 +115,36 @@ public partial class MainWindow : Window
         }
     }
 
+    private async void Sketchboard_OnClick(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is not MainViewModel viewModel || !viewModel.IsSketchboardAvailable)
+            return;
+
+        try
+        {
+            var projectFile = await StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
+            {
+                Title = "Save sketchboard project",
+                SuggestedFileName = $"Sketch {DateTime.Now:yyyy-MM-dd HH-mm}.fsp",
+                DefaultExtension = "fsp",
+                ShowOverwritePrompt = true,
+                FileTypeChoices = [FrameProjectFileType]
+            });
+            var projectPath = projectFile?.TryGetLocalPath();
+            if (string.IsNullOrWhiteSpace(projectPath))
+                return;
+
+            var completedPath = await new SketchboardWindow(projectPath, viewModel.DefaultFramesPerSecond)
+                .ShowDialog<string?>(this);
+            if (!string.IsNullOrWhiteSpace(completedPath))
+                await OpenEditorAsync(completedPath);
+        }
+        catch (Exception ex)
+        {
+            viewModel.ReportCaptureStatus($"Could not start or save the sketchboard: {ex.Message}");
+        }
+    }
+
     private async Task StartRecordingAsync(MainViewModel viewModel, string projectPath, PixelSize canvasSize,
         int framesPerSecond, Func<ValueTask<IRecordingSession>> startSession, bool excludeApplicationWindows)
     {

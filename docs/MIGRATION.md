@@ -343,6 +343,12 @@ This log records the independent Avalonia port of ScreenToGif. The port uses new
 - Published the [Frame Studio repository](https://github.com/kris70lesgo/frame-studio) and [Preview 3](https://github.com/kris70lesgo/frame-studio/releases/tag/v0.1.0-preview.3), including the ZIP and its checksum. The release notes and bundled README preserve the unverified Windows-runtime status.
 - The new hosted CI workflow builds/tests Frame Studio on macOS and Windows and checks Windows self-contained publishing; all three [jobs passed](https://github.com/kris70lesgo/frame-studio/actions/runs/37146520922) for `5184f661`. It deliberately excludes desktop-capture tests, which require an interactive Windows session. The preview remains unverified for native capture until the desktop validation checklist passes.
 
+## 2026-10-11 — Software sketchboard recording
+
+- Added a fixed-size Avalonia drawing board with canvas-size and frame-rate controls, color and brush-size selection, undo, clear, and record/pause/resume/stop controls.
+- The board renders its canvas to RGBA frames and sends them through the existing recording consumer and `.fsp` writer, so the result opens in the normal editor. The frame session copies buffers, validates frame size/duration, and omits paused frames.
+- Added session tests for ordered frames, buffer ownership, pause/resume, stop, and invalid frames. The Release solution build passed with zero warnings or errors; 53 tests passed and the four Windows desktop checks skipped on macOS. An interactive window review and the Windows recorder workflow are still pending.
+
 ## Ongoing log
 
 Add dated entries here as migrations reveal framework differences, platform constraints, or performance fixes.

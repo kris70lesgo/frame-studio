@@ -33,6 +33,8 @@ public partial class MainViewModel : ObservableObject
         capability.Source == CaptureSource.Screen && capability.Readiness == FeatureReadiness.Ready);
     public bool IsWindowCaptureAvailable => WindowCaptureService is not null && CaptureCapabilities.Any(capability =>
         capability.Source == CaptureSource.Window && capability.Readiness == FeatureReadiness.Ready);
+    public bool IsSketchboardAvailable => CaptureCapabilities.Any(capability =>
+        capability.Source == CaptureSource.Sketchboard && capability.Readiness == FeatureReadiness.Ready);
     public ObservableCollection<RecentProjectViewModel> RecentProjects { get; } = [];
     public bool IsRecentProjectsEmpty => RecentProjects.Count == 0;
     public string RecentProjectsCountLabel => RecentProjects.Count == 1 ? "1 PROJECT" : $"{RecentProjects.Count} PROJECTS";

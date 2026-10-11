@@ -13,6 +13,7 @@ public partial class RecordingViewModel : ObservableObject
     private readonly IRecordingSession _session;
     private readonly FrameProjectArchiveWriter _writer;
     private readonly string _destinationPath;
+    private readonly string _recordingSource;
     private readonly Task _consumerTask;
     private readonly Stopwatch _elapsed = Stopwatch.StartNew();
     private readonly DispatcherTimer _elapsedTimer;
@@ -46,16 +47,19 @@ public partial class RecordingViewModel : ObservableObject
 
     public event EventHandler<string>? RecordingCompleted;
 
-    public RecordingViewModel(IRecordingSession session, FrameProjectArchiveWriter writer, string destinationPath, int framesPerSecond)
+    public RecordingViewModel(IRecordingSession session, FrameProjectArchiveWriter writer, string destinationPath,
+        int framesPerSecond, string recordingSource = "screen region")
     {
         _session = session;
         _writer = writer;
         _destinationPath = destinationPath;
+        _recordingSource = string.IsNullOrWhiteSpace(recordingSource) ? "screen region" : recordingSource.Trim();
         FrameRateLabel = $"{framesPerSecond} FPS";
 
         _elapsedTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(250) };
         _elapsedTimer.Tick += (_, _) => ElapsedLabel = _elapsed.Elapsed.ToString(@"mm\:ss");
         _elapsedTimer.Start();
+        Status = $"Recording {_recordingSource}";
 
         // Do not let the reader race the rest of construction. Early capture failures update
         // the timer from the dispatcher, so every dependency must exist before the worker starts.
@@ -76,7 +80,7 @@ public partial class RecordingViewModel : ObservableObject
             _elapsed.Start();
             IsPaused = false;
             PauseResumeLabel = "Pause";
-            Status = "Recording screen region";
+            Status = $"Recording {_recordingSource}";
         }
         else
         {
