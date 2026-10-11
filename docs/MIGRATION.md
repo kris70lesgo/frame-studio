@@ -2,6 +2,13 @@
 
 This log records the independent Avalonia port of ScreenToGif. The port uses new branding and is not an official ScreenToGif application. The upstream app remains the reference implementation.
 
+## 2026-10-11 — Recorder startup safety and refreshed Windows candidate
+
+- Initialized the recorder's elapsed timer before starting its background frame reader, preventing early capture failures from racing object construction. Added a regression test that verifies failure before the first frame reports a capture error, cleans up the session, and does not leave a project file.
+- Release build completed with zero warnings/errors. The local suite passed 51 tests; four Windows-only capture checks skipped on macOS. [CI run 38122649761](https://github.com/kris70lesgo/frame-studio/actions/runs/38122649761) passed 47 deterministic tests (one FFmpeg-dependent skip) on Windows, all 7 native Windows capture checks, package startup smoke, and 47 deterministic tests (one FFmpeg-dependent skip) on macOS.
+- Downloaded [artifact 11696445117](https://github.com/kris70lesgo/frame-studio/actions/runs/38122649761/artifacts/11696445117) from app commit `223e710d4125bbaae40460cc441c8ada6ea84974`. Its SHA-256 `0c0e4e33ee6a27187c92f3f6148d6b3f469dbbcfb4124eb9252b40acdcc89123` matches the sidecar; ZIP integrity passed, and the embedded README records the Windows build host and source revision. The Preview 4 draft now points to this candidate and remains unpublished.
+- The interactive Windows record/edit/save/reopen/export workflow and the four same-content WPF/Avalonia screenshot pairs are still required before challenge submission.
+
 ## 2026-10-11 — Per-export format controls
 
 - Added a format-specific export dialog before the destination picker. GIF controls include source/fixed frame rate, palette/quantizer, color count, optional Floyd–Steinberg dithering, loop behavior, and scale/custom dimensions. MP4 controls include H.264 quality, source/fixed frame rate, and scale/custom dimensions. The preview reports final dimensions, output frame count, and duration; byte size is not estimated because it depends on content and encoding.
