@@ -2,6 +2,13 @@
 
 This log records the independent Avalonia port of ScreenToGif. The port uses new branding and is not an official ScreenToGif application. The upstream app remains the reference implementation.
 
+## 2026-10-11 — Hosted Windows verification and candidate refresh
+
+- The screen-capture integration check verifies frame shape and pause/resume/stop behavior without relying on pixels from the hosted desktop compositor. The isolated-window integration check keeps its pixel assertion and verifies `PrintWindow` returns the selected window's content while another window overlaps it.
+- [CI run 38117042135](https://github.com/kris70lesgo/frame-studio/actions/runs/38117042135) passed the macOS and Windows build/test jobs and the Windows x64 package startup check. Hosted Windows passed 44 deterministic tests (one FFmpeg-dependent skip) and all 7 native capture integration checks. Local Release verification passed 48 tests and skipped four Windows-only desktop checks.
+- Refreshed and verified candidate [artifact 11694560277](https://github.com/kris70lesgo/frame-studio/actions/runs/38117042135/artifacts/11694560277) from app commit `cc0aefd8710cd4ff7bdc55783291cc12fd037bf5`. Its SHA-256 is `430ffbfc4877ff103835ed4fb36629121a23296469ace437d52d3d4e20128fc0`; the checksum sidecar matches and `unzip -t` reports no errors. The package includes the app, README, and complete license; the local copy is `dist/FrameStudio-win-x64.zip`.
+- This is a Windows-built validation candidate, not a verified release. An interactive Windows run and same-content WPF/Avalonia screenshots are still required before challenge submission.
+
 ## 2026-10-11 — Persistent preferences
 
 - Added a local JSON preferences store and a preferences window for theme, default recording frame rate, and pointer inclusion. The capture setup now starts with the saved recording defaults; theme changes persist immediately.
@@ -14,8 +21,8 @@ This log records the independent Avalonia port of ScreenToGif. The port uses new
 
 - Connected the existing window enumeration and request contracts to an Avalonia picker and the recording-to-editor workflow. The Win32 adapter now uses `PrintWindow` to request pixels from the chosen window, so a foreground overlapping window is not intentionally copied into the recording. The window toolbar action is enabled on Windows.
 - Window recording keeps the starting dimensions and follows the window if it moves. It stops with a clear capture error if the target closes, is minimized, or changes size. Protected or hardware-accelerated targets may render blank or incomplete frames; the UI offers screen-region recording as a fallback.
-- Added a hosted-Windows integration check that captures a test window while another test window overlaps it. Local Release build succeeded with zero warnings/errors; 48 tests passed and four Windows-only desktop checks skipped on macOS. The new integration check still needs its hosted Windows result.
-- Refresh the Windows candidate after the new capture path. Interactive window recording and the same-content screenshot pairs remain required before submission.
+- Added a hosted-Windows integration check that captures a test window while another test window overlaps it. Local Release build succeeded with zero warnings/errors; 48 tests passed and four Windows-only desktop checks skipped on macOS. The hosted check passes in run 38117042135.
+- The refreshed Windows candidate still needs interactive window recording and same-content screenshot pairs before submission.
 
 ## 2026-10-10 — Current UI and Windows candidate check
 

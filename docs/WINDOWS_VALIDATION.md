@@ -4,14 +4,14 @@ The Windows native capture backend now passes its integration suite on a hosted 
 
 ## Current Windows candidate (2026-10-11)
 
-- App-code commit: `087416041e07f0c24ac4deb0eca26ed204e3c002`, built by CI run 38115655012 against PR head `502ea3e4feff3d3218794e37ef43db1fe3d71bd7`; the bundled README records source revision `32a1d72` from GitHub's synthetic pull-request merge checkout.
-- Download: [FrameStudio-win-x64 CI artifact](https://github.com/kris70lesgo/frame-studio/actions/runs/38115655012/artifacts/11693063383), produced by [GitHub Actions run 38115655012](https://github.com/kris70lesgo/frame-studio/actions/runs/38115655012) on Windows AMD64 with .NET SDK `9.0.318`.
+- App-code commit: `cc0aefd8710cd4ff7bdc55783291cc12fd037bf5`, built directly from the `avalonia-port` branch by CI run 38117042135; the bundled README records source revision `cc0aefd`.
+- Download: [FrameStudio-win-x64 CI artifact](https://github.com/kris70lesgo/frame-studio/actions/runs/38117042135/artifacts/11694560277), produced by [GitHub Actions run 38117042135](https://github.com/kris70lesgo/frame-studio/actions/runs/38117042135) on Windows AMD64 with .NET SDK `9.0.318`.
 - Local package: [dist/FrameStudio-win-x64.zip](/Users/agastya/Documents/alvonia/ScreenToGif/dist/FrameStudio-win-x64.zip) (self-contained `win-x64`; package directory is ignored by Git).
-- SHA-256: `392c7575b786189beab160d475107f201541163f2e423000f82cfd47a1a99384`.
+- SHA-256: `430ffbfc4877ff103835ed4fb36629121a23296469ace437d52d3d4e20128fc0`.
 - I downloaded the artifact and verified its SHA-256 against GitHub's checksum file, then verified the ZIP with `unzip -t`. The package includes the executable, README, and complete license. The hosted Windows smoke confirmed a top-level window titled “Frame Studio”; the package README distinguishes that check from the still-unverified interactive workflow.
 - The artifact requires a GitHub account with repository read access. The public Preview 3 release below is older and does not contain the latest UI redesign. The current Windows-built candidate has not been launched in an interactive Windows desktop session and is not a verified capture release.
-- The latest local macOS Release test run passed 48 tests and skipped four Windows-only desktop checks, including the new window-rendering integration check.
-- [GitHub Actions run 38115655012](https://github.com/kris70lesgo/frame-studio/actions/runs/38115655012) passed macOS and Windows builds/tests plus Windows x64 packaging. Both hosted platforms passed 44 deterministic tests and skipped one FFmpeg-dependent MP4 test; Windows passed all 6 `WindowsCaptureIntegrationTests` and confirmed the packaged app created a top-level window titled “Frame Studio” within 10 seconds. This proves backend checks and window creation on a hosted runner only; it does not validate interactive controls, app-window exclusion in recordings, or mixed-DPI selection on your desktop.
+- The latest local macOS Release test run passed 48 tests and skipped four Windows-only desktop checks, including the screen and window desktop integrations.
+- [GitHub Actions run 38117042135](https://github.com/kris70lesgo/frame-studio/actions/runs/38117042135) passed macOS and Windows builds/tests plus Windows x64 packaging. Both hosted platforms passed 44 deterministic tests and skipped one FFmpeg-dependent MP4 test; Windows passed all 7 `WindowsCaptureIntegrationTests` and confirmed the packaged app created a top-level window titled “Frame Studio” within 10 seconds. Native checks cover affinity lifecycle, screen stream shape and pause/resume/stop, and pixel-accurate `PrintWindow` output under an overlapping window. This proves backend checks and window creation on a hosted runner only; it does not validate interactive controls, app-window exclusion in recordings, or mixed-DPI selection on your desktop.
 
 ## Download, verify, and launch
 
@@ -22,7 +22,7 @@ The Windows native capture backend now passes its integration suite on a hosted 
    Get-FileHash .\FrameStudio-win-x64.zip -Algorithm SHA256
    ```
 
-   Confirm the result matches `392c7575b786189beab160d475107f201541163f2e423000f82cfd47a1a99384`.
+   Confirm the result matches `430ffbfc4877ff103835ed4fb36629121a23296469ace437d52d3d4e20128fc0`.
 3. Extract the candidate and launch the app:
 
    ```powershell
@@ -48,7 +48,7 @@ Run from a Windows 10 version 2004+ or Windows 11 desktop session with at least 
 dotnet test FrameStudio.sln --configuration Debug
 ```
 
-`WindowsCaptureIntegrationTests` includes cross-platform checks that malformed screen and window requests fail before native calls. The three desktop tests check capture-window affinity apply/restore, cleanup after a window closes, and monitor enumeration plus a 64 × 64 capture whose expected system-color marker pixel must survive capture, pause, resume, and stop. All six tests in the class passed on hosted Windows in runs 37981332433, 38024427879, 38024903827, 38025703034, 38026224608, 38027260796, and 38027584930; they skip on macOS. The hosted tests and main-window smoke are backend/launch evidence only; they do not replace launching Frame Studio on the target Windows desktop and checking the actual recorder windows, display picker, and mixed-DPI behavior.
+`WindowsCaptureIntegrationTests` includes three request-validation checks that run on every OS. Its four Windows checks cover capture-window affinity apply/restore, cleanup after a window closes, screen-frame dimensions and pause/resume/stop, and pixel-accurate `PrintWindow` output when another window overlaps the target. All 7 checks passed on hosted Windows in [run 38117042135](https://github.com/kris70lesgo/frame-studio/actions/runs/38117042135); the four desktop checks skip on macOS. The hosted tests and main-window smoke are backend/launch evidence only; they do not replace launching Frame Studio on the target Windows desktop and checking the actual recorder windows, display picker, and mixed-DPI behavior.
 
 The MP4 editor-export integration test requires both `ffmpeg` and `ffprobe` on `PATH`. It checks an edited two-frame project with changed durations by reading the emitted MP4 presentation timestamps.
 
