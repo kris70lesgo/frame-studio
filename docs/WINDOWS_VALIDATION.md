@@ -4,14 +4,14 @@ The Windows native capture backend now passes its integration suite on a hosted 
 
 ## Current Windows candidate (2026-10-11)
 
-- PR head: `087416041e07f0c24ac4deb0eca26ed204e3c002`; the bundled README records source revision `0874160`.
-- Download: [FrameStudio-win-x64 CI artifact](https://github.com/kris70lesgo/frame-studio/actions/runs/38115435694/artifacts/11693536840), produced by [GitHub Actions run 38115435694](https://github.com/kris70lesgo/frame-studio/actions/runs/38115435694) on Windows AMD64 with .NET SDK `9.0.318`.
+- PR head: `502ea3e4feff3d3218794e37ef43db1fe3d71bd7`; the bundled README records source revision `32a1d72` from GitHub's synthetic pull-request merge checkout.
+- Download: [FrameStudio-win-x64 CI artifact](https://github.com/kris70lesgo/frame-studio/actions/runs/38115655012/artifacts/11693063383), produced by [GitHub Actions run 38115655012](https://github.com/kris70lesgo/frame-studio/actions/runs/38115655012) on Windows AMD64 with .NET SDK `9.0.318`.
 - Local package: [dist/FrameStudio-win-x64.zip](/Users/agastya/Documents/alvonia/ScreenToGif/dist/FrameStudio-win-x64.zip) (self-contained `win-x64`; package directory is ignored by Git).
-- SHA-256: `fb16d936c399fbc05609764693ff8800bbd9ff0f7ff9b4f7f6a06112f5d62bc5`.
+- SHA-256: `392c7575b786189beab160d475107f201541163f2e423000f82cfd47a1a99384`.
 - I downloaded the artifact and verified its SHA-256 against GitHub's checksum file, then verified the ZIP with `unzip -t`. The package includes the executable, README, and complete license. The hosted Windows smoke confirmed a top-level window titled “Frame Studio”; the package README distinguishes that check from the still-unverified interactive workflow.
 - The artifact requires a GitHub account with repository read access. The public Preview 3 release below is older and does not contain the latest UI redesign. The current Windows-built candidate has not been launched in an interactive Windows desktop session and is not a verified capture release.
 - The latest local macOS Release test run passed 48 tests and skipped three Windows-only desktop checks.
-- [GitHub Actions run 38115435694](https://github.com/kris70lesgo/frame-studio/actions/runs/38115435694) passed macOS and Windows builds/tests plus Windows x64 packaging. Both hosted platforms passed 44 deterministic tests and skipped one FFmpeg-dependent MP4 test; Windows passed all 6 `WindowsCaptureIntegrationTests` and confirmed the packaged app created a top-level window titled “Frame Studio” within 10 seconds. This proves backend checks and window creation on a hosted runner only; it does not validate interactive controls, app-window exclusion in recordings, or mixed-DPI selection on your desktop.
+- [GitHub Actions run 38115655012](https://github.com/kris70lesgo/frame-studio/actions/runs/38115655012) passed macOS and Windows builds/tests plus Windows x64 packaging. Both hosted platforms passed 44 deterministic tests and skipped one FFmpeg-dependent MP4 test; Windows passed all 6 `WindowsCaptureIntegrationTests` and confirmed the packaged app created a top-level window titled “Frame Studio” within 10 seconds. This proves backend checks and window creation on a hosted runner only; it does not validate interactive controls, app-window exclusion in recordings, or mixed-DPI selection on your desktop.
 
 ## Download, verify, and launch
 
@@ -22,7 +22,7 @@ The Windows native capture backend now passes its integration suite on a hosted 
    Get-FileHash .\FrameStudio-win-x64.zip -Algorithm SHA256
    ```
 
-   Confirm the result matches `fb16d936c399fbc05609764693ff8800bbd9ff0f7ff9b4f7f6a06112f5d62bc5`.
+   Confirm the result matches `392c7575b786189beab160d475107f201541163f2e423000f82cfd47a1a99384`.
 3. Extract the candidate and launch the app:
 
    ```powershell
