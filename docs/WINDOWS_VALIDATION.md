@@ -4,15 +4,15 @@ The Windows native capture backend now passes its integration suite on a hosted 
 
 ## Current Windows candidate (2026-10-11)
 
-- PR head: `70ca2ca552d810ec302bfc415c485adaf4122059`; the latest app-code commit is `cc0aefd8710cd4ff7bdc55783291cc12fd037bf5` (later branch commits update documentation only).
-- The bundled README records source revision `d0cce52`, GitHub's synthetic merge checkout of PR head `70ca2ca5` into base `d19c2447`.
-- Download: [FrameStudio-win-x64 CI artifact](https://github.com/kris70lesgo/frame-studio/actions/runs/38117588655/artifacts/11693992445), produced by [GitHub Actions run 38117588655](https://github.com/kris70lesgo/frame-studio/actions/runs/38117588655) on Windows AMD64 with .NET SDK `9.0.318`.
+- PR head used for this candidate: `b30fa220f4959d61bf782a5befed0eafdefc6003`; the latest app-code commit is `cc0aefd8710cd4ff7bdc55783291cc12fd037bf5` (later branch commits update documentation only).
+- The bundled README records source revision `ff0b2cf`, GitHub's synthetic merge checkout of PR head `b30fa220` into base `d19c2447`.
+- Download: [FrameStudio-win-x64 CI artifact](https://github.com/kris70lesgo/frame-studio/actions/runs/38118014644/artifacts/11694457167), produced by [GitHub Actions run 38118014644](https://github.com/kris70lesgo/frame-studio/actions/runs/38118014644) on Windows AMD64 with .NET SDK `9.0.318`.
 - Local package: [dist/FrameStudio-win-x64.zip](/Users/agastya/Documents/alvonia/ScreenToGif/dist/FrameStudio-win-x64.zip) (self-contained `win-x64`; package directory is ignored by Git).
-- SHA-256: `5d1e25c9f4c0b7def2da91a70b82e8970e145fbb5d406cc15dc2f97db8fb4970`.
-- I downloaded this latest PR-head artifact, verified its SHA-256 against the included checksum file, then verified the ZIP with `unzip -t`. The package includes the executable, README, and complete license. The hosted Windows smoke confirmed a top-level window titled “Frame Studio”; the package README distinguishes that check from the still-unverified interactive workflow.
+- SHA-256: `a88fe762f053bb5260ff2e67352882ebb2d9a6cfd46b0609b77b9598411008f9`.
+- I downloaded this PR-head artifact, verified its SHA-256 against the included checksum file, then verified the ZIP with `unzip -t`. The package includes the executable, README, and complete license. The hosted Windows smoke confirmed a top-level window titled “Frame Studio”; the package README distinguishes that check from the still-unverified interactive workflow.
 - The artifact requires a GitHub account with repository read access. The public Preview 3 release below is older and does not contain the latest UI redesign. The current Windows-built candidate has not been launched in an interactive Windows desktop session and is not a verified capture release.
 - The latest local macOS Release test run passed 48 tests and skipped four Windows-only desktop checks, including the screen and window desktop integrations.
-- [GitHub Actions run 38117588655](https://github.com/kris70lesgo/frame-studio/actions/runs/38117588655) passed macOS and Windows builds/tests plus Windows x64 packaging for the latest PR head. Both hosted platforms passed 44 deterministic tests and skipped one FFmpeg-dependent MP4 test; Windows passed all 7 `WindowsCaptureIntegrationTests` and confirmed the packaged app created a top-level window titled “Frame Studio” within 10 seconds. Native checks cover affinity lifecycle, screen stream shape and pause/resume/stop, and pixel-accurate `PrintWindow` output under an overlapping window. This proves backend checks and window creation on a hosted runner only; it does not validate interactive controls, app-window exclusion in recordings, or mixed-DPI selection on your desktop.
+- [GitHub Actions run 38118014644](https://github.com/kris70lesgo/frame-studio/actions/runs/38118014644) passed macOS and Windows builds/tests plus Windows x64 packaging for the PR head used to produce this candidate. Both hosted platforms passed 44 deterministic tests and skipped one FFmpeg-dependent MP4 test; Windows passed all 7 `WindowsCaptureIntegrationTests` and confirmed the packaged app created a top-level window titled “Frame Studio” within 10 seconds. Native checks cover affinity lifecycle, screen stream shape and pause/resume/stop, and pixel-accurate `PrintWindow` output under an overlapping window. This proves backend checks and window creation on a hosted runner only; it does not validate interactive controls, app-window exclusion in recordings, or mixed-DPI selection on your desktop.
 
 ## Download, verify, and launch
 
@@ -23,7 +23,7 @@ The Windows native capture backend now passes its integration suite on a hosted 
    Get-FileHash .\FrameStudio-win-x64.zip -Algorithm SHA256
    ```
 
-   Confirm the result matches `5d1e25c9f4c0b7def2da91a70b82e8970e145fbb5d406cc15dc2f97db8fb4970`.
+   Confirm the result matches `a88fe762f053bb5260ff2e67352882ebb2d9a6cfd46b0609b77b9598411008f9`.
 3. Extract the candidate and launch the app:
 
    ```powershell
@@ -49,7 +49,7 @@ Run from a Windows 10 version 2004+ or Windows 11 desktop session with at least 
 dotnet test FrameStudio.sln --configuration Debug
 ```
 
-`WindowsCaptureIntegrationTests` includes three request-validation checks that run on every OS. Its four Windows checks cover capture-window affinity apply/restore, cleanup after a window closes, screen-frame dimensions and pause/resume/stop, and pixel-accurate `PrintWindow` output when another window overlaps the target. All 7 checks passed on hosted Windows in [run 38117588655](https://github.com/kris70lesgo/frame-studio/actions/runs/38117588655); the four desktop checks skip on macOS. The hosted tests and main-window smoke are backend/launch evidence only; they do not replace launching Frame Studio on the target Windows desktop and checking the actual recorder windows, display picker, and mixed-DPI behavior.
+`WindowsCaptureIntegrationTests` includes three request-validation checks that run on every OS. Its four Windows checks cover capture-window affinity apply/restore, cleanup after a window closes, screen-frame dimensions and pause/resume/stop, and pixel-accurate `PrintWindow` output when another window overlaps the target. All 7 checks passed on hosted Windows in [run 38118014644](https://github.com/kris70lesgo/frame-studio/actions/runs/38118014644); the four desktop checks skip on macOS. The hosted tests and main-window smoke are backend/launch evidence only; they do not replace launching Frame Studio on the target Windows desktop and checking the actual recorder windows, display picker, and mixed-DPI behavior.
 
 The MP4 editor-export integration test requires both `ffmpeg` and `ffprobe` on `PATH`. It checks an edited two-frame project with changed durations by reading the emitted MP4 presentation timestamps.
 
