@@ -52,11 +52,14 @@ public partial class RecordingViewModel : ObservableObject
         _writer = writer;
         _destinationPath = destinationPath;
         FrameRateLabel = $"{framesPerSecond} FPS";
-        _consumerTask = Task.Run(ConsumeFramesAsync);
 
         _elapsedTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(250) };
         _elapsedTimer.Tick += (_, _) => ElapsedLabel = _elapsed.Elapsed.ToString(@"mm\:ss");
         _elapsedTimer.Start();
+
+        // Do not let the reader race the rest of construction. Early capture failures update
+        // the timer from the dispatcher, so every dependency must exist before the worker starts.
+        _consumerTask = Task.Run(ConsumeFramesAsync);
     }
 
     public string FrameRateLabel { get; }
