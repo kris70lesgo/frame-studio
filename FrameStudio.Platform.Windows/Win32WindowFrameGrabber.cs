@@ -23,8 +23,8 @@ internal sealed class Win32WindowFrameGrabber : IFrameGrabber
     {
         if (!OperatingSystem.IsWindows())
             throw new PlatformNotSupportedException("Window capture is available only on Windows.");
-        if (window == IntPtr.Zero || !Win32Native.IsWindow(window) || !Win32Native.IsWindowVisible(window))
-            throw new ArgumentException("Choose a visible application window.", nameof(window));
+        if (window == IntPtr.Zero || !Win32Native.IsWindow(window))
+            throw new ArgumentException("Choose an available application window.", nameof(window));
         if (Win32Native.IsIconic(window))
             throw new InvalidOperationException("Restore the selected window before recording it.");
         if (!Win32Native.GetWindowRect(window, out _lastBounds))
@@ -149,8 +149,8 @@ internal sealed class Win32WindowFrameGrabber : IFrameGrabber
 
     private void UpdateWindowBounds()
     {
-        if (!Win32Native.IsWindow(_window) || !Win32Native.IsWindowVisible(_window))
-            throw new InvalidOperationException("The selected window was closed or hidden during recording.");
+        if (!Win32Native.IsWindow(_window))
+            throw new InvalidOperationException("The selected window was closed during recording.");
         if (Win32Native.IsIconic(_window))
             throw new InvalidOperationException("The selected window was minimized during recording.");
         if (!Win32Native.GetWindowRect(_window, out var bounds))
