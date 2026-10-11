@@ -4,7 +4,7 @@ The Windows native capture backend now passes its integration suite on a hosted 
 
 ## Current Windows candidate (2026-10-11)
 
-- Source revision: PR head `e4a864ada6d8e8fc56142c4dcffb4fc2f15b91de`; the package README records GitHub's synthetic PR merge checkout `1ef2a5c59759114aa6c5ff4b976e977ee7e77389`.
+- Application source revision: `e4a864ada6d8e8fc56142c4dcffb4fc2f15b91de`; the package README records GitHub's synthetic PR merge checkout `1ef2a5c59759114aa6c5ff4b976e977ee7e77389`.
 - Download: [FrameStudio-win-x64 CI artifact](https://github.com/kris70lesgo/frame-studio/actions/runs/38118830518/artifacts/11694438722), produced by [GitHub Actions run 38118830518](https://github.com/kris70lesgo/frame-studio/actions/runs/38118830518) on Windows AMD64 with .NET SDK `9.0.318`.
 - Local package: [dist/FrameStudio-win-x64.zip](/Users/agastya/Documents/alvonia/ScreenToGif/dist/FrameStudio-win-x64.zip) (self-contained `win-x64`; package directory is ignored by Git).
 - SHA-256: `fc19834d7a9cbb13eb03cb29c91fd27885134a637b7be8e5b56b3846d2a63c0b`.

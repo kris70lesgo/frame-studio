@@ -6,7 +6,7 @@ Hosted run [38118830518](https://github.com/kris70lesgo/frame-studio/actions/run
 
 ## Test environment
 
-- Source commit: `e4a864ada6d8e8fc56142c4dcffb4fc2f15b91de`
+- Application source commit: `e4a864ada6d8e8fc56142c4dcffb4fc2f15b91de`
 - Package revision from bundled README: `1ef2a5c59759114aa6c5ff4b976e977ee7e77389` (GitHub PR merge checkout)
 - Candidate ZIP SHA-256: `fc19834d7a9cbb13eb03cb29c91fd27885134a637b7be8e5b56b3846d2a63c0b`
 - Candidate download: [FrameStudio-win-x64 artifact](https://github.com/kris70lesgo/frame-studio/actions/runs/38118830518/artifacts/11694438722)
