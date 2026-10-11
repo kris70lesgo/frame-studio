@@ -37,15 +37,17 @@ Hosted run [38122088760](https://github.com/kris70lesgo/frame-studio/actions/run
 
 ## Before/after screenshots
 
-Use ScreenToGif 2.43.2 and Frame Studio against the same harmless sample content where the mode exists. Save these pairs under `docs/before-after/` and list their filenames here. For webcam and sketchboard, capture the original mode and Frame Studio's clearly marked unavailable state; do not imply the mode was migrated:
+Use ScreenToGif 2.43.2 and Frame Studio against the same harmless scene and project. Save the four challenge comparison pairs under `docs/before-after/`, using comparable window sizes where possible:
 
 - Home: TBD
 - Recorder: TBD
-- Webcam state: TBD
-- Sketchboard state: TBD
 - Editor: TBD
-- Export completion: TBD
-- Settings: TBD
+- Export: TBD
+
+Optional availability evidence (not part of the four same-content pairs):
+
+- Webcam unavailable state: TBD
+- Sketchboard unavailable state: TBD
 
 ## Issues and limitations
 

@@ -16,16 +16,13 @@ These are useful references for the original app's screens and behavior. They ar
 
 The older `after-home-shell-macos.png` and `after-editor-preview-macos.jpg` remain as historical shell checks. They predate the current editor workflow and should not be used as current screenshots.
 
-Capture fresh, consistent Windows screenshots here before challenge submission. The original WPF app should use the same harmless scene and project as Frame Studio wherever the view exists. For webcam and sketchboard, show Frame Studio's clearly labeled unavailable state instead of implying those modes were ported:
+Capture the four challenge comparison pairs with fresh, consistent Windows screenshots. The original WPF app and Frame Studio should use the same harmless scene and project, with comparable window sizes:
 
 - `before-home.png` / `after-home.png`
 - `before-recorder.png` / `after-recorder.png`
-- `before-webcam.png` / `after-webcam-unavailable.png`
-- `before-sketchboard.png` / `after-sketchboard-unavailable.png`
 - `before-editor.png` / `after-editor.png`
 - `before-export.png` / `after-export.png`
-- `before-settings.png` / `after-settings.png`
 
-The Avalonia screenshots should be taken from a runnable Windows build and use the same project/content as the baseline.
+Optional webcam and sketchboard availability screenshots may be added separately. Frame Studio marks both modes unavailable; do not present these as migrated functionality. The Avalonia screenshots should be taken from a runnable Windows build and use the same project/content as the baseline.
 
 For the original WPF application, download the [ScreenToGif 2.43.2 release](https://github.com/NickeManarin/ScreenToGif/releases/tag/2.43.2), which matches the audited source baseline. Use a harmless sample recording and the same captured region/project in both applications. The paired images are evidence of the migration, not a claim that Frame Studio has full ScreenToGif feature parity.
