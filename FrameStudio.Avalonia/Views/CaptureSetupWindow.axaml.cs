@@ -33,13 +33,15 @@ public partial class CaptureSetupWindow : Window
         _captureCursorCheckBox = this.FindControl<CheckBox>("CaptureCursorCheckBox")!;
     }
 
-    public CaptureSetupWindow(IReadOnlyList<MonitorDescriptor> monitors) : this()
+    public CaptureSetupWindow(IReadOnlyList<MonitorDescriptor> monitors, int framesPerSecond = 30, bool captureCursor = true) : this()
     {
         if (monitors.Count == 0)
             throw new InvalidOperationException("Windows did not report any available displays.");
 
         _monitorPicker.ItemsSource = monitors;
         _monitorPicker.SelectedItem = monitors.FirstOrDefault(monitor => monitor.IsPrimary) ?? monitors[0];
+        _frameRateSlider.Value = Math.Clamp(framesPerSecond, 10, 60);
+        _captureCursorCheckBox.IsChecked = captureCursor;
         UpdateRegionToFullDisplay();
         UpdateFrameRateLabel();
     }

@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Styling;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using FrameStudio.Avalonia.Services;
 using FrameStudio.Core.Projects;
 using FrameStudio.Platform.Abstractions;
 using System.Collections.ObjectModel;
@@ -17,6 +18,12 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty]
     private string _themeName = "Light appearance";
 
+    [ObservableProperty]
+    private int _defaultFramesPerSecond = FrameStudioPreferences.Default.DefaultFramesPerSecond;
+
+    [ObservableProperty]
+    private bool _captureCursor = FrameStudioPreferences.Default.CaptureCursor;
+
     public IReadOnlyList<CaptureCapability> CaptureCapabilities { get; }
 
     public IScreenCaptureService? ScreenCaptureService { get; }
@@ -28,15 +35,20 @@ public partial class MainViewModel : ObservableObject
     public string RecentProjectsCountLabel => RecentProjects.Count == 1 ? "1 PROJECT" : $"{RecentProjects.Count} PROJECTS";
 
     private readonly RecentProjectCatalog _recentProjectCatalog;
+    private readonly FrameStudioPreferencesStore _preferencesStore;
+
+    public FrameStudioPreferences Preferences => new(IsDarkTheme, DefaultFramesPerSecond, CaptureCursor);
 
     [ObservableProperty]
     private string _captureStatus = string.Empty;
 
     public MainViewModel(IPlatformCapabilityProvider capabilityProvider, IScreenCaptureService? screenCaptureService = null,
-        ICaptureWindowExclusionService? captureWindowExclusionService = null)
+        ICaptureWindowExclusionService? captureWindowExclusionService = null,
+        FrameStudioPreferencesStore? preferencesStore = null)
     {
         ScreenCaptureService = screenCaptureService;
         CaptureWindowExclusionService = captureWindowExclusionService;
+        _preferencesStore = preferencesStore ?? FrameStudioPreferencesStore.ForCurrentUser();
         var localData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
         if (string.IsNullOrWhiteSpace(localData))
             localData = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".local", "share");
@@ -45,6 +57,11 @@ public partial class MainViewModel : ObservableObject
         CaptureCapabilities = capabilityProvider.GetCaptureCapabilities();
         _captureStatus = CaptureCapabilities.FirstOrDefault()?.Detail
             ?? "No capture sources are configured in this build.";
+
+        var preferences = _preferencesStore.Load();
+        DefaultFramesPerSecond = preferences.DefaultFramesPerSecond;
+        CaptureCursor = preferences.CaptureCursor;
+        ApplyTheme(preferences.IsDarkTheme);
 
         RecentProjects.CollectionChanged += RecentProjects_OnCollectionChanged;
     }
@@ -118,9 +135,32 @@ public partial class MainViewModel : ObservableObject
     [RelayCommand]
     private void ToggleTheme()
     {
-        IsDarkTheme = !IsDarkTheme;
-        ThemeName = IsDarkTheme ? "Dark appearance" : "Light appearance";
+        ApplyPreferences(Preferences with { IsDarkTheme = !IsDarkTheme });
+    }
 
+    public void ApplyPreferences(FrameStudioPreferences preferences)
+    {
+        ArgumentNullException.ThrowIfNull(preferences);
+        var normalized = preferences.Normalize();
+        DefaultFramesPerSecond = normalized.DefaultFramesPerSecond;
+        CaptureCursor = normalized.CaptureCursor;
+        ApplyTheme(normalized.IsDarkTheme);
+
+        try
+        {
+            _preferencesStore.Save(normalized);
+            CaptureStatus = "Preferences saved on this device.";
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            CaptureStatus = $"Preferences changed for this session but could not be saved: {exception.Message}";
+        }
+    }
+
+    private void ApplyTheme(bool isDarkTheme)
+    {
+        IsDarkTheme = isDarkTheme;
+        ThemeName = IsDarkTheme ? "Dark appearance" : "Light appearance";
         if (Application.Current is { } application)
             application.RequestedThemeVariant = IsDarkTheme ? ThemeVariant.Dark : ThemeVariant.Light;
     }

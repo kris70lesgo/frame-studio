@@ -2,6 +2,14 @@
 
 This log records the independent Avalonia port of ScreenToGif. The port uses new branding and is not an official ScreenToGif application. The upstream app remains the reference implementation.
 
+## 2026-10-11 — Persistent preferences
+
+- Added a local JSON preferences store and a preferences window for theme, default recording frame rate, and pointer inclusion. The capture setup now starts with the saved recording defaults; theme changes persist immediately.
+- The implementation is platform-neutral and independently written. The store falls back to defaults for missing, unreadable, malformed, or unsupported preference data.
+- Added focused persistence and fallback tests. Release solution build completed with zero warnings/errors; the test suite passed 48 tests and skipped the three Windows-only desktop checks on macOS.
+- Visually opened the preferences dialog in the local macOS app bundle and checked its General, Recording, and Appearance tabs. Editor, Export, Shortcuts, and Advanced settings remain incomplete. The existing home screenshot predates the added Settings button.
+- Refresh the Windows x64 artifact after this change. Interactive Windows workflow and same-content WPF/Avalonia screenshots remain required before submission.
+
 ## 2026-10-10 — Current UI and Windows candidate check
 
 - The PR-head workflow [run 38114925132](https://github.com/kris70lesgo/frame-studio/actions/runs/38114925132) passed all three jobs on head `9db6589c`. The Windows x64 artifact [11693356722](https://github.com/kris70lesgo/frame-studio/actions/runs/38114925132/artifacts/11693356722) was downloaded; its inner package SHA-256 `a9a5acdead4294d36add75ed238602584d9f895eb20428cdddc54eb8a57f19aa` matches the sidecar, and ZIP integrity passed. The bundled README records GitHub's synthetic PR merge checkout `50158c7`. This still does not replace the interactive Windows workflow or same-content screenshots.

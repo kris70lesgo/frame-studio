@@ -2,6 +2,7 @@ using System.IO;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
+using FrameStudio.Avalonia.Services;
 using FrameStudio.Avalonia.ViewModels;
 using FrameStudio.Core.Models;
 using FrameStudio.Core.Projects;
@@ -46,7 +47,8 @@ public partial class MainWindow : Window
         try
         {
             var monitors = AddAvaloniaScreenScaling(await service.GetMonitorsAsync());
-            var setup = await new CaptureSetupWindow(monitors).ShowDialog<CaptureSetupResult?>(this);
+            var setup = await new CaptureSetupWindow(monitors, viewModel.DefaultFramesPerSecond, viewModel.CaptureCursor)
+                .ShowDialog<CaptureSetupResult?>(this);
             if (setup is null)
                 return;
 
@@ -139,6 +141,16 @@ public partial class MainWindow : Window
         {
             viewModel.ReportCaptureStatus($"Could not open project: {ex.Message}");
         }
+    }
+
+    private async void Preferences_OnClick(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is not MainViewModel viewModel)
+            return;
+
+        var preferences = await new PreferencesWindow(viewModel.Preferences).ShowDialog<FrameStudioPreferences?>(this);
+        if (preferences is not null)
+            viewModel.ApplyPreferences(preferences);
     }
 
     private async void OpenRecentProject_OnClick(object? sender, RoutedEventArgs e)

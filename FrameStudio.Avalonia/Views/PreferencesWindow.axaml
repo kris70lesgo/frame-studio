@@ -1,0 +1,69 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="FrameStudio.Avalonia.Views.PreferencesWindow"
+        Title="Frame Studio Preferences"
+        Width="600" Height="470" MinWidth="540" MinHeight="420"
+        WindowStartupLocation="CenterOwner"
+        CanResize="False"
+        Background="{DynamicResource BackgroundPrimary}"
+        FontFamily="Inter, Segoe UI, sans-serif">
+    <Grid RowDefinitions="Auto,*,Auto" Margin="24" RowSpacing="18">
+        <StackPanel Spacing="5">
+            <TextBlock Text="PREFERENCES" Classes="Caption" />
+            <TextBlock Text="Make Frame Studio yours" Classes="Title" FontSize="22" />
+            <TextBlock Text="Choose how Frame Studio looks and what your next screen recording uses by default."
+                       Classes="Body" FontSize="12" TextWrapping="Wrap" />
+        </StackPanel>
+
+        <TabControl Grid.Row="1">
+            <TabItem Header="General">
+                <Border Padding="18" Background="{DynamicResource Surface}"
+                        BorderBrush="{DynamicResource Border}" BorderThickness="1" CornerRadius="6">
+                    <StackPanel Spacing="8" VerticalAlignment="Top">
+                        <TextBlock Text="Stored on this device" FontSize="13" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource TextPrimary}" />
+                        <TextBlock Text="Preferences are saved locally in your Frame Studio app data. Captures and projects are not uploaded."
+                                   FontSize="11" Foreground="{DynamicResource TextSecondary}"
+                                   TextWrapping="Wrap" MaxWidth="420" />
+                    </StackPanel>
+                </Border>
+            </TabItem>
+            <TabItem Header="Recording">
+                <Border Padding="18" Background="{DynamicResource Surface}"
+                        BorderBrush="{DynamicResource Border}" BorderThickness="1" CornerRadius="6">
+                    <StackPanel Spacing="16" VerticalAlignment="Top">
+                        <StackPanel Spacing="5">
+                            <TextBlock Text="Default frame rate" FontSize="12" FontWeight="SemiBold"
+                                       Foreground="{DynamicResource TextPrimary}" />
+                            <TextBlock Text="You can still change this for each recording."
+                                       FontSize="10" Foreground="{DynamicResource TextSecondary}" />
+                            <ComboBox x:Name="FrameRatePicker" MinWidth="140" HorizontalAlignment="Left" Margin="0,5,0,0" />
+                        </StackPanel>
+                        <CheckBox x:Name="CaptureCursorCheckBox" Content="Include the pointer by default"
+                                  FontSize="11" Foreground="{DynamicResource TextPrimary}" />
+                    </StackPanel>
+                </Border>
+            </TabItem>
+            <TabItem Header="Appearance">
+                <Border Padding="18" Background="{DynamicResource Surface}"
+                        BorderBrush="{DynamicResource Border}" BorderThickness="1" CornerRadius="6">
+                    <StackPanel Spacing="7" VerticalAlignment="Top">
+                        <TextBlock Text="Color theme" FontSize="12" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource TextPrimary}" />
+                        <TextBlock Text="Use the light or dark Frame Studio workspace."
+                                   FontSize="10" Foreground="{DynamicResource TextSecondary}" />
+                        <ComboBox x:Name="ThemePicker" MinWidth="180" HorizontalAlignment="Left" Margin="0,5,0,0">
+                            <ComboBoxItem Content="Light" />
+                            <ComboBoxItem Content="Dark" />
+                        </ComboBox>
+                    </StackPanel>
+                </Border>
+            </TabItem>
+        </TabControl>
+
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="9">
+            <Button Classes="quiet-button" Click="Cancel_OnClick" Content="Cancel" />
+            <Button Classes="primary-button" Click="Save_OnClick" Content="Save preferences" />
+        </StackPanel>
+    </Grid>
+</Window>

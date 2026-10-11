@@ -54,7 +54,7 @@ The MP4 editor-export integration test requires both `ffmpeg` and `ffprobe` on `
 
 ## Manual recording and editing check
 
-1. Launch Frame Studio. Confirm the Screen action is available and the unsupported sources remain disabled.
+1. Launch Frame Studio. Confirm the Screen action is available and the unsupported sources remain disabled. Open Settings, change the theme and recording defaults, restart the app, and confirm those choices persist.
 2. Choose a display and a small region. Record for several seconds, pause, resume, and stop. Verify that neither Frame Studio's home window nor the floating recorder controls appear in the captured frames.
 3. Confirm a `.fsp` project is written and opens in the editor. Check preview, playback, thumbnail rendering, frame durations, duplicate/delete, and move earlier/later.
 4. Drag a crop over the preview and apply it. Resize the project with aspect ratio retained, save, close, reopen, and confirm dimensions and edits persist.
@@ -69,4 +69,4 @@ Run the original WPF app and Frame Studio against the same content. The source b
 
 Use [the Windows result template](WINDOWS_TEST_RESULTS_TEMPLATE.md) to record the run and collect the screenshot names. Do not include the raw recording or project if it contains private desktop content; a harmless test scene is sufficient for the comparison.
 
-The hosted integration suite is backend evidence only. Fill in the environment and results after the interactive Windows app run; do not present the CI result as verification of the app UI, app-window exclusion in recordings, or the full record → edit → export workflow.
+The hosted integration suite is backend evidence only. Fill in the environment and results after the interactive Windows app run; do not present the CI result as verification of the app UI, app-window exclusion in recordings, or the full record → edit → export workflow. Settings currently cover appearance and default FPS/pointer inclusion; the Editor, Export, Shortcuts, and Advanced categories from the project brief are still outstanding.

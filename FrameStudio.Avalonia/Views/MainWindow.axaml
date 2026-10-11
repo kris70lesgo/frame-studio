@@ -16,7 +16,7 @@
     <Grid RowDefinitions="48,*">
         <!-- Jitter-style tool strip: capture and project actions replace layer creation tools. -->
         <Border Grid.Row="0" Background="#1B1A20" BorderBrush="#302E36" BorderThickness="0,0,0,1">
-            <Grid ColumnDefinitions="Auto,Auto,*,Auto,Auto,Auto" Margin="11,0" ColumnSpacing="11" VerticalAlignment="Center">
+            <Grid ColumnDefinitions="Auto,Auto,*,Auto,Auto,Auto,Auto" Margin="11,0" ColumnSpacing="9" VerticalAlignment="Center">
                 <StackPanel Orientation="Horizontal" Spacing="9" VerticalAlignment="Center">
                     <Grid Width="25" Height="25">
                         <Border Width="15" Height="15" CornerRadius="4" BorderThickness="1.6" BorderBrush="#B99CFF"
@@ -58,21 +58,26 @@
                 <TextBlock Grid.Column="2" Text="New capture" FontSize="12" FontWeight="SemiBold"
                            Foreground="#F4F3F6" HorizontalAlignment="Center" VerticalAlignment="Center" />
 
-                <Button Grid.Column="3" Classes="toolbar-save-button" Command="{Binding ToggleThemeCommand}"
+                <Button Grid.Column="3" Classes="header-open-button" Click="Preferences_OnClick"
+                        ToolTip.Tip="Open Frame Studio preferences"
+                        AutomationProperties.Name="Open preferences">
+                    <TextBlock Text="Settings" FontSize="10" />
+                </Button>
+                <Button Grid.Column="4" Classes="toolbar-save-button" Command="{Binding ToggleThemeCommand}"
                         AutomationProperties.Name="Toggle light and dark appearance">
                     <StackPanel Orientation="Horizontal" Spacing="7" VerticalAlignment="Center">
                         <Ellipse Width="11" Height="11" Stroke="#D6D4DD" StrokeThickness="1.4" />
                         <TextBlock Text="{Binding ThemeName}" FontSize="10" />
                     </StackPanel>
                 </Button>
-                <Button Grid.Column="4" Classes="header-open-button" Click="OpenProject_OnClick"
+                <Button Grid.Column="5" Classes="header-open-button" Click="OpenProject_OnClick"
                         ToolTip.Tip="Open a saved Frame Studio project">
                     <StackPanel Orientation="Horizontal" Spacing="7" VerticalAlignment="Center">
                         <TextBlock Text="↗" FontSize="13" />
                         <TextBlock Text="Open project" FontSize="11" />
                     </StackPanel>
                 </Button>
-                <Button Grid.Column="5" Classes="primary-button toolbar-export-button"
+                <Button Grid.Column="6" Classes="primary-button toolbar-export-button"
                         Click="ScreenCapture_OnClick" IsEnabled="{Binding IsScreenCaptureAvailable}"
                         AutomationProperties.Name="Start a screen recording">
                     <StackPanel Orientation="Horizontal" Spacing="7" VerticalAlignment="Center">
