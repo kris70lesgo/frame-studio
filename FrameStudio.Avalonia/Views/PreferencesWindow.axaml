@@ -59,6 +59,83 @@
                     </StackPanel>
                 </Border>
             </TabItem>
+            <TabItem Header="Shortcuts">
+                <Border Padding="18" Background="{DynamicResource Surface}"
+                        BorderBrush="{DynamicResource Border}" BorderThickness="1" CornerRadius="6">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <StackPanel Spacing="12" VerticalAlignment="Top">
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="Editor shortcuts" FontSize="13" FontWeight="SemiBold"
+                                           Foreground="{DynamicResource TextPrimary}" />
+                                <TextBlock Text="Use Control on Windows and Linux, or Command (⌘) on macOS."
+                                           FontSize="10" Foreground="{DynamicResource TextSecondary}"
+                                           TextWrapping="Wrap" />
+                            </StackPanel>
+                            <Grid ColumnDefinitions="*,Auto"
+                                  RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto" RowSpacing="8">
+                            <TextBlock Grid.Row="0" Text="Save project" FontSize="11"
+                                       Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center" />
+                            <Border Grid.Row="0" Grid.Column="1" Padding="7,4" CornerRadius="4"
+                                    Background="{DynamicResource SurfaceRaised}">
+                                <TextBlock Text="Ctrl / ⌘ + S" FontSize="10"
+                                           Foreground="{DynamicResource TextSecondary}" />
+                            </Border>
+
+                            <TextBlock Grid.Row="1" Text="Duplicate selected frame" FontSize="11"
+                                       Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center" />
+                            <Border Grid.Row="1" Grid.Column="1" Padding="7,4" CornerRadius="4"
+                                    Background="{DynamicResource SurfaceRaised}">
+                                <TextBlock Text="Ctrl / ⌘ + D" FontSize="10"
+                                           Foreground="{DynamicResource TextSecondary}" />
+                            </Border>
+
+                            <TextBlock Grid.Row="2" Text="Move frame earlier" FontSize="11"
+                                       Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center" />
+                            <Border Grid.Row="2" Grid.Column="1" Padding="7,4" CornerRadius="4"
+                                    Background="{DynamicResource SurfaceRaised}">
+                                <TextBlock Text="Ctrl / ⌘ + ←" FontSize="10"
+                                           Foreground="{DynamicResource TextSecondary}" />
+                            </Border>
+
+                            <TextBlock Grid.Row="3" Text="Move frame later" FontSize="11"
+                                       Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center" />
+                            <Border Grid.Row="3" Grid.Column="1" Padding="7,4" CornerRadius="4"
+                                    Background="{DynamicResource SurfaceRaised}">
+                                <TextBlock Text="Ctrl / ⌘ + →" FontSize="10"
+                                           Foreground="{DynamicResource TextSecondary}" />
+                            </Border>
+
+                            <TextBlock Grid.Row="4" Text="Delete selected frame" FontSize="11"
+                                       Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center" />
+                            <Border Grid.Row="4" Grid.Column="1" Padding="7,4" CornerRadius="4"
+                                    Background="{DynamicResource SurfaceRaised}">
+                                <TextBlock Text="Delete" FontSize="10"
+                                           Foreground="{DynamicResource TextSecondary}" />
+                            </Border>
+
+                            <TextBlock Grid.Row="5" Text="Play or pause preview" FontSize="11"
+                                       Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center" />
+                            <Border Grid.Row="5" Grid.Column="1" Padding="7,4" CornerRadius="4"
+                                    Background="{DynamicResource SurfaceRaised}">
+                                <TextBlock Text="Space" FontSize="10"
+                                           Foreground="{DynamicResource TextSecondary}" />
+                            </Border>
+
+                            <TextBlock Grid.Row="6" Text="Cancel crop or drawing" FontSize="11"
+                                       Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center" />
+                            <Border Grid.Row="6" Grid.Column="1" Padding="7,4" CornerRadius="4"
+                                    Background="{DynamicResource SurfaceRaised}">
+                                <TextBlock Text="Esc" FontSize="10"
+                                           Foreground="{DynamicResource TextSecondary}" />
+                            </Border>
+                            </Grid>
+                            <TextBlock Text="Delete and Space act in the editor when a text field or button does not have focus."
+                                       FontSize="10" Foreground="{DynamicResource TextSecondary}"
+                                       TextWrapping="Wrap" />
+                        </StackPanel>
+                    </ScrollViewer>
+                </Border>
+            </TabItem>
         </TabControl>
 
         <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="9">

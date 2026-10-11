@@ -16,6 +16,11 @@ This log records the independent Avalonia port of ScreenToGif. The port uses new
 - Re-ran the local Release build and tests: zero warnings/errors, 48 passed, and four Windows-only desktop tests skipped on macOS. The PR-head CI run also passed macOS/Windows build and test jobs, all 7 native Windows checks, and packaged-app startup smoke.
 - Captured the current Release home window on macOS; the new image includes Settings. This supplements the UI preview only. Interactive Windows workflow validation and same-content WPF/Avalonia screenshots remain outstanding.
 
+## 2026-10-11 — Shortcuts reference in preferences
+
+- Added a Shortcuts tab to Preferences that documents the editor's existing save, duplicate, reorder, delete, playback, and cancel gestures. The labels distinguish Control on Windows/Linux from Command on macOS and note the focus behavior for Delete and Space.
+- This closes the shortcuts discovery gap without claiming the still-missing Editor, Export, or Advanced preference categories. A current app build and test run are recorded with this change after verification.
+
 ## 2026-10-11 — Persistent preferences
 
 - Added a local JSON preferences store and a preferences window for theme, default recording frame rate, and pointer inclusion. The capture setup now starts with the saved recording defaults; theme changes persist immediately.
