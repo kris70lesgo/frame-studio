@@ -32,6 +32,9 @@ public partial class EditorViewModel : ObservableObject
     private FrameProject _sourceProject;
     private readonly string _projectPath;
     private string _workingProjectPath;
+    private readonly GifExportOptions _gifExportOptions;
+    private readonly FfmpegMp4ExportOptions _mp4ExportOptions;
+    private readonly string? _ffmpegExecutablePath;
 
     public ObservableCollection<TimelineFrameViewModel> Frames { get; } = [];
     public string ProjectName => _sourceProject.Name;
@@ -61,11 +64,15 @@ public partial class EditorViewModel : ObservableObject
     [NotifyPropertyChangedFor(nameof(CanEdit))]
     private bool _isBusy;
 
-    public EditorViewModel(string projectPath, FrameProject project)
+    public EditorViewModel(string projectPath, FrameProject project, GifExportOptions? gifExportOptions = null,
+        FfmpegMp4ExportOptions? mp4ExportOptions = null, string? ffmpegExecutablePath = null)
     {
         _projectPath = projectPath;
         _workingProjectPath = projectPath;
         _sourceProject = project;
+        _gifExportOptions = gifExportOptions ?? new GifExportOptions();
+        _mp4ExportOptions = (mp4ExportOptions ?? new FfmpegMp4ExportOptions()).Validate();
+        _ffmpegExecutablePath = ffmpegExecutablePath;
         foreach (var frame in project.Frames)
             Frames.Add(new TimelineFrameViewModel { FrameNumber = frame.Index, SourceFrameIndex = frame.Index, DurationMilliseconds = frame.DurationMilliseconds });
         SelectedFrame = Frames.FirstOrDefault();
@@ -232,7 +239,7 @@ public partial class EditorViewModel : ObservableObject
             var references = GetFrameReferences();
             var sourcePath = _workingProjectPath;
             await Task.Run(async () => await new GifExportService().ExportSelectionAsync(sourcePath, destinationPath, references,
-                new GifExportOptions(RepeatCount: 0), cancellationToken).ConfigureAwait(false), cancellationToken);
+                _gifExportOptions, cancellationToken).ConfigureAwait(false), cancellationToken);
             Status = "GIF exported";
         }
         catch (Exception ex)
@@ -256,7 +263,8 @@ public partial class EditorViewModel : ObservableObject
         {
             var references = GetFrameReferences();
             var sourcePath = _workingProjectPath;
-            await Task.Run(async () => await new FfmpegMp4ExportService().ExportSelectionAsync(sourcePath, destinationPath, references,
+            await Task.Run(async () => await new FfmpegMp4ExportService(_ffmpegExecutablePath, _mp4ExportOptions)
+                .ExportSelectionAsync(sourcePath, destinationPath, references,
                 cancellationToken).ConfigureAwait(false), cancellationToken);
             Status = "MP4 exported";
         }

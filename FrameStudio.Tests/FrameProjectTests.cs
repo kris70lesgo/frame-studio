@@ -166,6 +166,7 @@ public sealed class FrameProjectTests
         Directory.CreateDirectory(directory);
         var projectPath = Path.Combine(directory, "capture.fsp");
         var gifPath = Path.Combine(directory, "capture.gif");
+        var scaledGifPath = Path.Combine(directory, "capture-small-once.gif");
         byte[] redFrame = [255, 0, 0, 255, 255, 0, 0, 255];
         byte[] blueFrame = [0, 0, 255, 255, 0, 0, 255, 255];
 
@@ -244,6 +245,17 @@ public sealed class FrameProjectTests
             Assert.Equal(new PixelSize(2, 2), gifMetadata.CanvasSize);
             Assert.Equal(new[] { 120, 70, 90 }, gifMetadata.FrameDurationsMilliseconds);
             Assert.Equal(0, gifMetadata.RepeatCount);
+
+            await new GifExportService().ExportSelectionAsync(projectPath, scaledGifPath, editorSelection,
+                new GifExportOptions(RepeatCount: -1, MaximumColors: 128,
+                    Quantization: ColorQuantizationTypes.MedianCut, ScalePercent: 50));
+            var scaledMetadata = ReadGifMetadata(await File.ReadAllBytesAsync(scaledGifPath));
+            Assert.Equal(new PixelSize(1, 1), scaledMetadata.CanvasSize);
+            Assert.Equal(-1, scaledMetadata.RepeatCount);
+
+            await Assert.ThrowsAsync<ArgumentOutOfRangeException>(async () =>
+                await new GifExportService().ExportSelectionAsync(projectPath, Path.Combine(directory, "invalid.gif"),
+                    editorSelection, new GifExportOptions(ScalePercent: 500)));
         }
         finally
         {
@@ -317,9 +329,9 @@ public sealed class FrameProjectTests
         Directory.CreateDirectory(directory);
         var projectPath = Path.Combine(directory, "timing.fsp");
         var mp4Path = Path.Combine(directory, "timing.mp4");
-        var size = new PixelSize(2, 2);
-        var red = Enumerable.Repeat(new byte[] { 255, 0, 0, 255 }, 4).SelectMany(pixel => pixel).ToArray();
-        var blue = Enumerable.Repeat(new byte[] { 0, 0, 255, 255 }, 4).SelectMany(pixel => pixel).ToArray();
+        var size = new PixelSize(8, 4);
+        var red = Enumerable.Repeat(new byte[] { 255, 0, 0, 255 }, size.Width * size.Height).SelectMany(pixel => pixel).ToArray();
+        var blue = Enumerable.Repeat(new byte[] { 0, 0, 255, 255 }, size.Width * size.Height).SelectMany(pixel => pixel).ToArray();
 
         try
         {
@@ -331,7 +343,8 @@ public sealed class FrameProjectTests
             }
 
             var project = await FrameProjectArchiveReader.ReadProjectAsync(projectPath);
-            var editor = new EditorViewModel(projectPath, project);
+            var editor = new EditorViewModel(projectPath, project,
+                mp4ExportOptions: new FfmpegMp4ExportOptions(Crf: 18, ScalePercent: 50));
             editor.MoveSelectedFrameLaterCommand.Execute(null);
             editor.SelectedFrame = editor.Frames[0];
             editor.DurationText = "120";
@@ -356,7 +369,7 @@ public sealed class FrameProjectTests
             foreach (var argument in new[]
             {
                 "-v", "error", "-select_streams", "v:0", "-show_entries",
-                "frame=best_effort_timestamp_time:stream=duration", "-of", "json", mp4Path
+                "frame=best_effort_timestamp_time:stream=duration,width,height", "-of", "json", mp4Path
             })
                 startInfo.ArgumentList.Add(argument);
 
@@ -366,6 +379,8 @@ public sealed class FrameProjectTests
             await probe.WaitForExitAsync();
             Assert.True(probe.ExitCode == 0, await errorTask);
             using var metadata = System.Text.Json.JsonDocument.Parse(await outputTask);
+            Assert.Equal(4, metadata.RootElement.GetProperty("streams")[0].GetProperty("width").GetInt32());
+            Assert.Equal(2, metadata.RootElement.GetProperty("streams")[0].GetProperty("height").GetInt32());
             var timestamps = metadata.RootElement.GetProperty("frames").EnumerateArray()
                 .Select(frame => double.Parse(frame.GetProperty("best_effort_timestamp_time").GetString()!, CultureInfo.InvariantCulture))
                 .ToArray();

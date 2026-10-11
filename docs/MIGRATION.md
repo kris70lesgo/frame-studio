@@ -2,6 +2,13 @@
 
 This log records the independent Avalonia port of ScreenToGif. The port uses new branding and is not an official ScreenToGif application. The upstream app remains the reference implementation.
 
+## 2026-10-11 — Expanded preferences and configurable export
+
+- Completed the seven requested preferences categories: General, Recording, Editor, Export, Shortcuts, Appearance, and Advanced. The settings persist locally, including editor preview looping, GIF repeat/palette/quantization/scale, MP4 quality/scale, and an optional FFmpeg executable path.
+- GIF and MP4 exporters now apply configured output scaling; MP4 also accepts a CRF quality value while preserving edited frame timing. Added export regression coverage for GIF scaling/palette/loop metadata and MP4 scaling/quality.
+- The median-cut quantizer is independently written from the general algorithmic concept. Its source documents that no code was copied or translated from the unlicensed repository.
+- Opened the preferences window in the local macOS app bundle to inspect category navigation and Export/Advanced controls. This is a UI smoke check only; native Windows recording and challenge comparison screenshots remain pending.
+
 ## 2026-10-11 — Hosted Windows verification and candidate refresh
 
 - The screen-capture integration check verifies frame shape and pause/resume/stop behavior without relying on pixels from the hosted desktop compositor. The isolated-window integration check keeps its pixel assertion and verifies `PrintWindow` returns the selected window's content while another window overlaps it.
@@ -19,7 +26,7 @@ This log records the independent Avalonia port of ScreenToGif. The port uses new
 ## 2026-10-11 — Shortcuts reference in preferences
 
 - Added a Shortcuts tab to Preferences that documents the editor's existing save, duplicate, reorder, delete, playback, and cancel gestures. The labels distinguish Control on Windows/Linux from Command on macOS and note the focus behavior for Delete and Space.
-- This closes the shortcuts discovery gap without claiming the still-missing Editor, Export, or Advanced preference categories. A current app build and test run are recorded with this change after verification.
+- At this point, the Editor, Export, and Advanced preference categories were still missing. The later settings entry above records their implementation.
 - Updated the self-contained Windows candidate in [CI run 38118604355](https://github.com/kris70lesgo/frame-studio/actions/runs/38118604355), source `ea84159c`. [Artifact 11694413309](https://github.com/kris70lesgo/frame-studio/actions/runs/38118604355/artifacts/11694413309) had SHA-256 `72490eeab62e812474d135ff8cf84fd37ad2a7dafffbcbf95f13bb8a3fc795e2` and passed ZIP integrity validation.
 - Refreshed the validation candidate from PR head `d8bd3605` in [CI run 38119222955](https://github.com/kris70lesgo/frame-studio/actions/runs/38119222955). [Artifact 11694219636](https://github.com/kris70lesgo/frame-studio/actions/runs/38119222955/artifacts/11694219636) records GitHub's synthetic PR merge revision `7ec6cf1`; SHA-256 `33f113ec30d3b6a61263a44f3da4f036209d917c6d58910b60a8f6b9c6d641b9` matches the sidecar and `unzip -t` reports no errors. The Preview 4 draft now contains this current candidate and remains unpublished pending the Windows interactive run.
 

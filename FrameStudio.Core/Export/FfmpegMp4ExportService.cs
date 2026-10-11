@@ -12,8 +12,13 @@ namespace FrameStudio.Core.Export;
 public sealed class FfmpegMp4ExportService
 {
     private readonly string? _ffmpegExecutablePath;
+    private readonly FfmpegMp4ExportOptions _options;
 
-    public FfmpegMp4ExportService(string? ffmpegExecutablePath = null) => _ffmpegExecutablePath = ffmpegExecutablePath;
+    public FfmpegMp4ExportService(string? ffmpegExecutablePath = null, FfmpegMp4ExportOptions? options = null)
+    {
+        _ffmpegExecutablePath = ffmpegExecutablePath;
+        _options = (options ?? new FfmpegMp4ExportOptions()).Validate();
+    }
 
     public ValueTask ExportAsync(string projectPath, string destinationPath, CancellationToken cancellationToken = default) =>
         ExportCoreAsync(projectPath, destinationPath, null, cancellationToken);
@@ -60,10 +65,11 @@ public sealed class FfmpegMp4ExportService
         try
         {
             var manifestPath = Path.Combine(workingDirectory, "frames.ffconcat");
-            await WriteFramesAndManifestAsync(reader, frames, workingDirectory, manifestPath, cancellationToken)
+            await WriteFramesAndManifestAsync(reader, frames, workingDirectory, manifestPath, _options.ScalePercent, cancellationToken)
                 .ConfigureAwait(false);
 
-            await RunFfmpegAsync(ffmpegPath, workingDirectory, Path.GetFileName(manifestPath), partialPath, cancellationToken)
+            await RunFfmpegAsync(ffmpegPath, workingDirectory, Path.GetFileName(manifestPath), partialPath,
+                    _options.Crf, cancellationToken)
                 .ConfigureAwait(false);
 
             cancellationToken.ThrowIfCancellationRequested();
@@ -81,10 +87,11 @@ public sealed class FfmpegMp4ExportService
     }
 
     private static async Task WriteFramesAndManifestAsync(FrameProjectArchiveReadSession reader,
-        IReadOnlyList<ProjectFrameReference> frames, string workingDirectory, string manifestPath,
+        IReadOnlyList<ProjectFrameReference> frames, string workingDirectory, string manifestPath, int scalePercent,
         CancellationToken cancellationToken)
     {
         var project = reader.Project;
+        var outputSize = ScaleSize(project.CanvasSize, scalePercent);
         await using var manifest = new StreamWriter(manifestPath, append: false, Encoding.ASCII);
         await manifest.WriteLineAsync("ffconcat version 1.0".AsMemory(), cancellationToken).ConfigureAwait(false);
         var terminalSampleNeeded = frames[^1].DurationMilliseconds > 1;
@@ -94,7 +101,9 @@ public sealed class FfmpegMp4ExportService
             cancellationToken.ThrowIfCancellationRequested();
             var imageName = $"frame-{index:D8}.png";
             var pixels = await reader.ReadFrameRgbaAsync(frames[index].SourceFrameIndex, cancellationToken).ConfigureAwait(false);
-            await WritePngAsync(Path.Combine(workingDirectory, imageName), project.CanvasSize, pixels, cancellationToken)
+            if (outputSize != project.CanvasSize)
+                pixels = RgbaFrameTransform.ResizeNearestNeighbor(pixels, project.CanvasSize, outputSize);
+            await WritePngAsync(Path.Combine(workingDirectory, imageName), outputSize, pixels, cancellationToken)
                 .ConfigureAwait(false);
 
             await manifest.WriteLineAsync($"file {imageName}".AsMemory(), cancellationToken).ConfigureAwait(false);
@@ -130,7 +139,7 @@ public sealed class FfmpegMp4ExportService
     }
 
     private static async Task RunFfmpegAsync(string ffmpegPath, string workingDirectory, string manifestName,
-        string outputPath, CancellationToken cancellationToken)
+        string outputPath, int crf, CancellationToken cancellationToken)
     {
         var startInfo = new ProcessStartInfo(ffmpegPath)
         {
@@ -145,7 +154,7 @@ public sealed class FfmpegMp4ExportService
             "-f", "concat", "-safe", "0", "-i", manifestName,
             "-fps_mode", "vfr",
             "-vf", "pad=ceil(iw/2)*2:ceil(ih/2)*2:0:0:black",
-            "-c:v", "libx264", "-preset", "fast", "-crf", "23", "-pix_fmt", "yuv420p",
+            "-c:v", "libx264", "-preset", "fast", "-crf", crf.ToString(CultureInfo.InvariantCulture), "-pix_fmt", "yuv420p",
             "-movflags", "+faststart", "-f", "mp4", outputPath
         })
             startInfo.ArgumentList.Add(argument);
@@ -186,6 +195,18 @@ public sealed class FfmpegMp4ExportService
 
         if (!File.Exists(outputPath) || new FileInfo(outputPath).Length == 0)
             throw new InvalidDataException("FFmpeg reported success but did not produce an MP4 file.");
+    }
+
+    private static PixelSize ScaleSize(PixelSize source, int scalePercent)
+    {
+        if (scalePercent == 100)
+            return source;
+
+        var width = Math.Max(1, (int)Math.Round(source.Width * scalePercent / 100d, MidpointRounding.AwayFromZero));
+        var height = Math.Max(1, (int)Math.Round(source.Height * scalePercent / 100d, MidpointRounding.AwayFromZero));
+        var output = new PixelSize(width, height);
+        FrameProjectArchiveWriter.ValidateCanvasSize(output);
+        return output;
     }
 
     private string ResolveFfmpegPath()

@@ -54,13 +54,13 @@ The MP4 editor-export integration test requires both `ffmpeg` and `ffprobe` on `
 
 ## Manual recording and editing check
 
-1. Launch Frame Studio. Confirm Screen and Window actions are available while Webcam and Sketchboard remain disabled. Open Settings, change the theme and recording defaults, restart the app, and confirm those choices persist.
+1. Launch Frame Studio. Confirm Screen and Window actions are available while Webcam and Sketchboard remain disabled. In Settings, change the theme, recording defaults, preview loop, GIF palette/loop/scale, and MP4 quality/scale. Save, restart, and confirm those choices persist. Check that the Advanced page can open the app data folder and configure a local FFmpeg executable when available.
 2. Choose a display and a small region. Record for several seconds, pause, resume, and stop. Verify that neither Frame Studio's home window nor the floating recorder controls appear in the captured frames.
 3. Confirm a `.fsp` project is written and opens in the editor. Check preview, playback, thumbnail rendering, frame durations, duplicate/delete, and move earlier/later.
 4. Drag a crop over the preview and apply it. Resize the project with aspect ratio retained, save, close, reopen, and confirm dimensions and edits persist.
 5. Add a text overlay and confirm it appears in every frame. Save and reopen the project, then verify the overlay remains in the preview.
-6. Export a looping GIF. In the completion window, verify Open GIF, Show in folder, and Copy path; then check the GIF in a separate viewer for animation, edited ordering, overlay, timing, and expected canvas dimensions.
-7. Export an MP4 with FFmpeg and `libx264` installed. Confirm the file opens in a media player and check that edited ordering, text overlay, variable frame timing, and padded even dimensions are correct. Also verify the app explains the FFmpeg requirement when FFmpeg is absent.
+6. Export a GIF using the saved loop, palette, color-count, and scale options. In the completion window, verify Open GIF, Show in folder, and Copy path; then check the GIF in a separate viewer for animation, edited ordering, overlay, timing, and expected dimensions.
+7. Export an MP4 with FFmpeg and `libx264` installed, using the saved quality and scale options. Confirm the file opens in a media player and check that edited ordering, text overlay, variable frame timing, and padded even dimensions are correct. Also verify the app explains the FFmpeg requirement when FFmpeg is absent.
 8. Repeat with a full display. On a multi-monitor setup, test a non-primary display and a mixed-DPI display if available.
 9. Record a window while another window overlaps it. Confirm the recording shows the selected window's content rather than the covering window; note any blank or incomplete output from hardware-accelerated or protected apps.
 
@@ -70,4 +70,4 @@ Run the original WPF app and Frame Studio against the same harmless content wher
 
 Use [the Windows result template](WINDOWS_TEST_RESULTS_TEMPLATE.md) to record the run and collect the screenshot names. Do not include the raw recording or project if it contains private desktop content; a harmless test scene is sufficient for the comparison.
 
-The hosted integration suite is backend evidence only. Fill in the environment and results after the interactive Windows app run; do not present the CI result as verification of the app UI, app-window exclusion in recordings, or the full record → edit → export workflow. Settings currently cover appearance and default FPS/pointer inclusion, with a Shortcuts reference for implemented editor keys; the Editor, Export, and Advanced preference categories from the project brief are still outstanding.
+The hosted integration suite is backend evidence only. Fill in the environment and results after the interactive Windows app run; do not present the CI result as verification of the app UI, app-window exclusion in recordings, or the full record → edit → export workflow. Preferences now provide all seven requested categories and persist editor/export defaults. GIF dithering and arbitrary output dimensions remain unsupported; MP4 preserves variable frame timing.

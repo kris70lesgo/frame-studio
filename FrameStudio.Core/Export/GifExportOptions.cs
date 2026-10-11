@@ -5,4 +5,5 @@ namespace FrameStudio.Core.Export;
 public sealed record GifExportOptions(
     int RepeatCount = 0,
     int MaximumColors = 256,
-    ColorQuantizationTypes Quantization = ColorQuantizationTypes.Octree);
+    ColorQuantizationTypes Quantization = ColorQuantizationTypes.Octree,
+    int ScalePercent = 100);

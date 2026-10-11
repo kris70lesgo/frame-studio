@@ -6,7 +6,9 @@ using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
+using FrameStudio.Avalonia.Services;
 using FrameStudio.Avalonia.ViewModels;
+using FrameStudio.Core.Export;
 using CorePixelRect = FrameStudio.Core.Models.PixelRect;
 using CorePixelSize = FrameStudio.Core.Models.PixelSize;
 using CorePixelPoint = FrameStudio.Core.Models.PixelCoordinate;
@@ -38,6 +40,7 @@ public partial class EditorWindow : Window
     private WriteableBitmap? _previewBitmap;
     private bool _isLoadingPreview;
     private bool _isPlaying;
+    private bool _loopPreview = true;
     private TimelineFrameViewModel? _lastPreviewSelection;
     private bool _isDraggingCrop;
     private bool _allowClose;
@@ -77,16 +80,23 @@ public partial class EditorWindow : Window
         };
     }
 
-    private EditorWindow(EditorViewModel viewModel) : this()
+    private EditorWindow(EditorViewModel viewModel, bool loopPreview) : this()
     {
         _viewModel = viewModel;
+        _loopPreview = loopPreview;
         DataContext = viewModel;
     }
 
-    public static async Task<EditorWindow> CreateAsync(string projectPath)
+    public static async Task<EditorWindow> CreateAsync(string projectPath, FrameStudioPreferences? preferences = null)
     {
         var project = await FrameStudio.Core.Projects.FrameProjectArchiveReader.ReadProjectAsync(projectPath);
-        return new EditorWindow(new EditorViewModel(projectPath, project));
+        var normalized = (preferences ?? FrameStudioPreferences.Default).Normalize();
+        var gifOptions = new GifExportOptions(normalized.GifRepeatCount, normalized.GifMaximumColors,
+            normalized.GifQuantization, normalized.GifScalePercent);
+        var mp4Options = new FfmpegMp4ExportOptions(normalized.Mp4Crf, normalized.Mp4ScalePercent);
+        var viewModel = new EditorViewModel(projectPath, project, gifOptions, mp4Options,
+            normalized.FfmpegExecutablePath);
+        return new EditorWindow(viewModel, normalized.LoopEditorPreview);
     }
 
     private async void EditorWindow_OnClosing(object? sender, WindowClosingEventArgs e)
@@ -649,6 +659,14 @@ public partial class EditorWindow : Window
             return;
 
         var currentIndex = _viewModel.SelectedFrame is null ? 0 : _viewModel.Frames.IndexOf(_viewModel.SelectedFrame);
+        if (currentIndex >= _viewModel.Frames.Count - 1 && !_loopPreview)
+        {
+            _isPlaying = false;
+            _playButton.Content = "▶ Play";
+            _playTimer.Stop();
+            return;
+        }
+
         var nextIndex = (currentIndex + 1) % _viewModel.Frames.Count;
         _timelineList.SelectedItem = _viewModel.Frames[nextIndex];
         await LoadPreviewAsync();

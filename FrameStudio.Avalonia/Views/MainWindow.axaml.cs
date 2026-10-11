@@ -238,7 +238,8 @@ public partial class MainWindow : Window
 
     private async Task OpenEditorAsync(string projectPath)
     {
-        var editor = await EditorWindow.CreateAsync(projectPath);
+        var preferences = (DataContext as MainViewModel)?.Preferences ?? FrameStudioPreferences.Default;
+        var editor = await EditorWindow.CreateAsync(projectPath, preferences);
         if (DataContext is MainViewModel viewModel)
         {
             try

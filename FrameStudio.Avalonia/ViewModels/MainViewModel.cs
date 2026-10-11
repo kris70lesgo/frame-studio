@@ -39,8 +39,14 @@ public partial class MainViewModel : ObservableObject
 
     private readonly RecentProjectCatalog _recentProjectCatalog;
     private readonly FrameStudioPreferencesStore _preferencesStore;
+    private FrameStudioPreferences _preferences = FrameStudioPreferences.Default;
 
-    public FrameStudioPreferences Preferences => new(IsDarkTheme, DefaultFramesPerSecond, CaptureCursor);
+    public FrameStudioPreferences Preferences => _preferences with
+    {
+        IsDarkTheme = IsDarkTheme,
+        DefaultFramesPerSecond = DefaultFramesPerSecond,
+        CaptureCursor = CaptureCursor
+    };
 
     [ObservableProperty]
     private string _captureStatus = string.Empty;
@@ -54,16 +60,15 @@ public partial class MainViewModel : ObservableObject
         WindowCaptureService = windowCaptureService;
         CaptureWindowExclusionService = captureWindowExclusionService;
         _preferencesStore = preferencesStore ?? FrameStudioPreferencesStore.ForCurrentUser();
-        var localData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-        if (string.IsNullOrWhiteSpace(localData))
-            localData = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".local", "share");
-        _recentProjectCatalog = new RecentProjectCatalog(Path.Combine(localData, "FrameStudio", "recent-projects.json"));
+        _recentProjectCatalog = new RecentProjectCatalog(
+            Path.Combine(FrameStudioPreferencesStore.UserDataDirectoryPath, "recent-projects.json"));
 
         CaptureCapabilities = capabilityProvider.GetCaptureCapabilities();
         _captureStatus = CaptureCapabilities.FirstOrDefault()?.Detail
             ?? "No capture sources are configured in this build.";
 
         var preferences = _preferencesStore.Load();
+        _preferences = preferences;
         DefaultFramesPerSecond = preferences.DefaultFramesPerSecond;
         CaptureCursor = preferences.CaptureCursor;
         ApplyTheme(preferences.IsDarkTheme);
@@ -147,6 +152,7 @@ public partial class MainViewModel : ObservableObject
     {
         ArgumentNullException.ThrowIfNull(preferences);
         var normalized = preferences.Normalize();
+        _preferences = normalized;
         DefaultFramesPerSecond = normalized.DefaultFramesPerSecond;
         CaptureCursor = normalized.CaptureCursor;
         ApplyTheme(normalized.IsDarkTheme);

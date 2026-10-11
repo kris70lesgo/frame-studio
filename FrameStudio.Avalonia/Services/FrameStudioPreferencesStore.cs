@@ -1,13 +1,25 @@
 using System.Text.Json;
+using FrameStudio.Core.Codification.Gif.Encoder;
 
 namespace FrameStudio.Avalonia.Services;
 
 public sealed record FrameStudioPreferences(
     bool IsDarkTheme = false,
     int DefaultFramesPerSecond = 30,
-    bool CaptureCursor = true)
+    bool CaptureCursor = true,
+    bool LoopEditorPreview = true,
+    int GifRepeatCount = 0,
+    int GifMaximumColors = 256,
+    ColorQuantizationTypes GifQuantization = ColorQuantizationTypes.Octree,
+    int GifScalePercent = 100,
+    int Mp4Crf = 23,
+    int Mp4ScalePercent = 100,
+    string? FfmpegExecutablePath = null)
 {
     public static IReadOnlyList<int> FrameRateOptions { get; } = [10, 20, 30, 40, 50, 60];
+    public static IReadOnlyList<int> GifColorCountOptions { get; } = [64, 128, 256];
+    public static IReadOnlyList<int> OutputScaleOptions { get; } = [50, 75, 100];
+    public static IReadOnlyList<int> Mp4CrfOptions { get; } = [18, 23, 28];
 
     public static FrameStudioPreferences Default { get; } = new();
 
@@ -15,7 +27,19 @@ public sealed record FrameStudioPreferences(
     {
         DefaultFramesPerSecond = FrameRateOptions.Contains(DefaultFramesPerSecond)
             ? DefaultFramesPerSecond
-            : Default.DefaultFramesPerSecond
+            : Default.DefaultFramesPerSecond,
+        GifRepeatCount = GifRepeatCount is -1 or 0 ? GifRepeatCount : Default.GifRepeatCount,
+        GifMaximumColors = GifColorCountOptions.Contains(GifMaximumColors)
+            ? GifMaximumColors
+            : Default.GifMaximumColors,
+        GifQuantization = GifQuantization is ColorQuantizationTypes.Octree or
+            ColorQuantizationTypes.MedianCut or ColorQuantizationTypes.MostUsed
+            ? GifQuantization
+            : Default.GifQuantization,
+        GifScalePercent = OutputScaleOptions.Contains(GifScalePercent) ? GifScalePercent : Default.GifScalePercent,
+        Mp4Crf = Mp4CrfOptions.Contains(Mp4Crf) ? Mp4Crf : Default.Mp4Crf,
+        Mp4ScalePercent = OutputScaleOptions.Contains(Mp4ScalePercent) ? Mp4ScalePercent : Default.Mp4ScalePercent,
+        FfmpegExecutablePath = string.IsNullOrWhiteSpace(FfmpegExecutablePath) ? null : FfmpegExecutablePath.Trim()
     };
 }
 
@@ -33,12 +57,21 @@ public sealed class FrameStudioPreferencesStore
 
     public static FrameStudioPreferencesStore ForCurrentUser()
     {
-        var localData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-        if (string.IsNullOrWhiteSpace(localData))
-            localData = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".local", "share");
-
-        return new FrameStudioPreferencesStore(Path.Combine(localData, "FrameStudio", "preferences.json"));
+        return new FrameStudioPreferencesStore(Path.Combine(UserDataDirectoryPath, "preferences.json"));
     }
+
+    public static string UserDataDirectoryPath
+    {
+        get
+        {
+            var localData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            if (string.IsNullOrWhiteSpace(localData))
+                localData = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".local", "share");
+            return Path.Combine(localData, "FrameStudio");
+        }
+    }
+
+    public string DataDirectoryPath => Path.GetDirectoryName(_path)!;
 
     public FrameStudioPreferences Load()
     {

@@ -31,9 +31,12 @@ public sealed class GifExportService
             throw new ArgumentOutOfRangeException(nameof(options), "GIF palette size must be between 2 and 256 colors.");
         if (options.RepeatCount is < -1 or > ushort.MaxValue)
             throw new ArgumentOutOfRangeException(nameof(options), "Repeat count must be -1 (no loop), 0 (forever), or at most 65,535.");
+        if (options.ScalePercent is < 1 or > 400)
+            throw new ArgumentOutOfRangeException(nameof(options), "GIF output scale must be between 1% and 400%.");
 
         await using var reader = await FrameProjectArchiveReader.OpenAsync(projectPath, cancellationToken).ConfigureAwait(false);
         var project = reader.Project;
+        var outputSize = ScaleSize(project.CanvasSize, options.ScalePercent);
         var frames = frameSelection ?? project.Frames
             .Select(frame => new ProjectFrameReference(frame.Index, frame.DurationMilliseconds)).ToArray();
         if (frames.Count is < 1 or > 100_000)
@@ -67,8 +70,10 @@ public sealed class GifExportService
                         cancellationToken.ThrowIfCancellationRequested();
                         var frame = frames[index];
                         var pixels = await reader.ReadFrameRgbaAsync(frame.SourceFrameIndex, cancellationToken).ConfigureAwait(false);
+                        if (outputSize != project.CanvasSize)
+                            pixels = RgbaFrameTransform.ResizeNearestNeighbor(pixels, project.CanvasSize, outputSize);
                         var boundedDelay = Math.Clamp(frame.DurationMilliseconds, 10, 655_350);
-                        encoder.AddFrame(pixels, new PixelRect(0, 0, project.CanvasSize.Width, project.CanvasSize.Height),
+                        encoder.AddFrame(pixels, new PixelRect(0, 0, outputSize.Width, outputSize.Height),
                             boundedDelay, index == frames.Count - 1);
                     }
                 }
@@ -89,5 +94,17 @@ public sealed class GifExportService
             catch (UnauthorizedAccessException) { }
             throw;
         }
+    }
+
+    private static PixelSize ScaleSize(PixelSize source, int scalePercent)
+    {
+        if (scalePercent == 100)
+            return source;
+
+        var width = Math.Max(1, (int)Math.Round(source.Width * scalePercent / 100d, MidpointRounding.AwayFromZero));
+        var height = Math.Max(1, (int)Math.Round(source.Height * scalePercent / 100d, MidpointRounding.AwayFromZero));
+        var output = new PixelSize(width, height);
+        FrameProjectArchiveWriter.ValidateCanvasSize(output);
+        return output;
     }
 }

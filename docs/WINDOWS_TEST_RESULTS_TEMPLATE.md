@@ -31,7 +31,8 @@ Hosted run [38119222955](https://github.com/kris70lesgo/frame-studio/actions/run
 | Crop, resize, text overlay, save, and reopen | TBD | |
 | GIF export plays with expected order/timing/dimensions | TBD | Output dimensions: ; file size: |
 | MP4 export (optional) | TBD | FFmpeg/libx264 result: |
-| Theme and recording defaults persist after restart | TBD | |
+| Theme, recording, editor, and export defaults persist after restart | TBD | |
+| Advanced FFmpeg path and app-data folder controls work | TBD | |
 | Webcam and Sketchboard availability states are clear | TBD | These modes are not implemented in this port |
 | Full display / secondary display (if available) | TBD | |
 
