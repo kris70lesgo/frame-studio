@@ -8,7 +8,7 @@ This log records the independent Avalonia port of ScreenToGif. The port uses new
 - The implementation is platform-neutral and independently written. The store falls back to defaults for missing, unreadable, malformed, or unsupported preference data.
 - Added focused persistence and fallback tests. Release solution build completed with zero warnings/errors; the test suite passed 48 tests and skipped the three Windows-only desktop checks on macOS.
 - Visually opened the preferences dialog in the local macOS app bundle and checked its General, Recording, and Appearance tabs. Editor, Export, Shortcuts, and Advanced settings remain incomplete. The existing home screenshot predates the added Settings button.
-- Refresh the Windows x64 artifact after this change. Interactive Windows workflow and same-content WPF/Avalonia screenshots remain required before submission.
+- Rebuilt the Windows x64 candidate in [CI run 38115435694](https://github.com/kris70lesgo/frame-studio/actions/runs/38115435694); all three CI jobs passed. Downloaded [artifact 11693536840](https://github.com/kris70lesgo/frame-studio/actions/runs/38115435694/artifacts/11693536840), verified its inner package SHA-256 `fb16d936c399fbc05609764693ff8800bbd9ff0f7ff9b4f7f6a06112f5d62bc5` against the sidecar, and confirmed ZIP integrity. Windows passed 44 deterministic tests (one FFmpeg-dependent skip), all 6 native capture tests, and the package startup smoke. Interactive Windows workflow and same-content WPF/Avalonia screenshots remain required before submission.
 
 ## 2026-10-10 — Current UI and Windows candidate check
 

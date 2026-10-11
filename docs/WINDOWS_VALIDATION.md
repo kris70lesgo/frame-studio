@@ -2,16 +2,16 @@
 
 The Windows native capture backend now passes its integration suite on a hosted Windows runner. The app itself has not yet been launched in an interactive Windows desktop session; this checklist records the remaining evidence needed before claiming the record → edit → export workflow is verified. Screen recording requires Windows 10 version 2004 (build 19041) or later because the app excludes its own windows using [`WDA_EXCLUDEFROMCAPTURE`](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setwindowdisplayaffinity). MP4 export also needs an installed FFmpeg build with `libx264` available on `PATH`.
 
-## Current Windows candidate (2026-10-10)
+## Current Windows candidate (2026-10-11)
 
-- PR head: `9db6589c93c3fbbda839c8d7147befd68535df37`; the bundled README records GitHub's synthetic pull-request merge checkout `50158c7`.
-- Download: [FrameStudio-win-x64 CI artifact](https://github.com/kris70lesgo/frame-studio/actions/runs/38114925132/artifacts/11693356722), produced by [GitHub Actions run 38114925132](https://github.com/kris70lesgo/frame-studio/actions/runs/38114925132) on Windows AMD64 with .NET SDK `9.0.318`.
+- PR head: `087416041e07f0c24ac4deb0eca26ed204e3c002`; the bundled README records source revision `0874160`.
+- Download: [FrameStudio-win-x64 CI artifact](https://github.com/kris70lesgo/frame-studio/actions/runs/38115435694/artifacts/11693536840), produced by [GitHub Actions run 38115435694](https://github.com/kris70lesgo/frame-studio/actions/runs/38115435694) on Windows AMD64 with .NET SDK `9.0.318`.
 - Local package: [dist/FrameStudio-win-x64.zip](/Users/agastya/Documents/alvonia/ScreenToGif/dist/FrameStudio-win-x64.zip) (self-contained `win-x64`; package directory is ignored by Git).
-- SHA-256: `a9a5acdead4294d36add75ed238602584d9f895eb20428cdddc54eb8a57f19aa`.
+- SHA-256: `fb16d936c399fbc05609764693ff8800bbd9ff0f7ff9b4f7f6a06112f5d62bc5`.
 - I downloaded the artifact and verified its SHA-256 against GitHub's checksum file, then verified the ZIP with `unzip -t`. The package includes the executable, README, and complete license. The hosted Windows smoke confirmed a top-level window titled “Frame Studio”; the package README distinguishes that check from the still-unverified interactive workflow.
 - The artifact requires a GitHub account with repository read access. The public Preview 3 release below is older and does not contain the latest UI redesign. The current Windows-built candidate has not been launched in an interactive Windows desktop session and is not a verified capture release.
-- The latest local macOS Release test run passed 44 tests and skipped three Windows-only desktop checks.
-- [GitHub Actions run 38114925132](https://github.com/kris70lesgo/frame-studio/actions/runs/38114925132) for this PR head passed macOS and Windows builds/tests plus Windows x64 packaging. Hosted Windows ran 40 deterministic tests, skipped one FFmpeg-dependent MP4 test, passed all 6 `WindowsCaptureIntegrationTests`, and confirmed the packaged app created a top-level window titled “Frame Studio” within 10 seconds. This proves window creation on a hosted runner only; it does not validate interactive controls, app-window exclusion in recordings, or mixed-DPI selection on your desktop.
+- The latest local macOS Release test run passed 48 tests and skipped three Windows-only desktop checks.
+- [GitHub Actions run 38115435694](https://github.com/kris70lesgo/frame-studio/actions/runs/38115435694) passed macOS and Windows builds/tests plus Windows x64 packaging. Both hosted platforms passed 44 deterministic tests and skipped one FFmpeg-dependent MP4 test; Windows passed all 6 `WindowsCaptureIntegrationTests` and confirmed the packaged app created a top-level window titled “Frame Studio” within 10 seconds. This proves backend checks and window creation on a hosted runner only; it does not validate interactive controls, app-window exclusion in recordings, or mixed-DPI selection on your desktop.
 
 ## Download, verify, and launch
 
@@ -22,7 +22,7 @@ The Windows native capture backend now passes its integration suite on a hosted 
    Get-FileHash .\FrameStudio-win-x64.zip -Algorithm SHA256
    ```
 
-   Confirm the result matches `a9a5acdead4294d36add75ed238602584d9f895eb20428cdddc54eb8a57f19aa`.
+   Confirm the result matches `fb16d936c399fbc05609764693ff8800bbd9ff0f7ff9b4f7f6a06112f5d62bc5`.
 3. Extract the candidate and launch the app:
 
    ```powershell
