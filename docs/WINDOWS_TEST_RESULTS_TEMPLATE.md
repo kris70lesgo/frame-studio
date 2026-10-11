@@ -2,14 +2,14 @@
 
 Fill this out while running the current Windows candidate. Replace each `TBD` with the observed result; write `not tested` when a check cannot be run. Keep failures and limitations visible.
 
-Hosted run [38029272323](https://github.com/kris70lesgo/frame-studio/actions/runs/38029272323) passed the native capture suite and confirmed the packaged app created its “Frame Studio” main window. This record is for the separate interactive app, desktop, and screenshot checks.
+Hosted run [38114925132](https://github.com/kris70lesgo/frame-studio/actions/runs/38114925132) passed the native capture suite and confirmed the packaged app created its “Frame Studio” main window. This record is for the separate interactive app, desktop, and screenshot checks.
 
 ## Test environment
 
-- PR head: `faed006a6b7ff0f6c3850102f3dd717b0b9928ea`
-- Package revision from bundled README: `faed006`
-- Candidate ZIP SHA-256: `2c88bda27eda8814189d4bee891e6c686a88a656ba1e0e7a8ed3412bf081aec9`
-- Candidate download: [FrameStudio-win-x64 artifact](https://github.com/kris70lesgo/frame-studio/actions/runs/38029272323/artifacts/11661262812)
+- PR head: `9db6589c93c3fbbda839c8d7147befd68535df37`
+- Package revision from bundled README: `50158c7` (GitHub pull-request merge checkout)
+- Candidate ZIP SHA-256: `a9a5acdead4294d36add75ed238602584d9f895eb20428cdddc54eb8a57f19aa`
+- Candidate download: [FrameStudio-win-x64 artifact](https://github.com/kris70lesgo/frame-studio/actions/runs/38114925132/artifacts/11693356722)
 - Windows edition and build: TBD
 - PC / CPU architecture: TBD
 - Display resolution and scale: TBD
