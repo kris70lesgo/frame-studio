@@ -33,17 +33,25 @@ The Avalonia app connects Windows screen-region recording to a native `.fsp` pro
 
 The original WPF application remains in this repository as the baseline in `GifRecorder.sln`. The new application is in `FrameStudio.sln` and does not reference the WPF UI projects.
 
-## Migration write-up (working draft)
+## Migration write-up — Windows evidence pending
 
-The source baseline is ScreenToGif 2.43.2 at upstream commit `a4d0a67c2131cd048ceec86cd40afc2f1a06f2fd`. I kept its WPF solution intact and built Frame Studio beside it. The WPF application could not run on the macOS development host, so this port began with a source audit and upstream screenshots as references; fresh same-content baseline captures still require Windows.
+### Starting point and design
 
-The byte-oriented GIF encoder and selected quantizers moved into `FrameStudio.Core` after replacing WPF geometry and color boundaries with neutral pixel types. The old model, ViewModels, and UI could not be referenced directly: they depend on WPF media, dispatcher, and input types. I rebuilt the recording/editor shell in Avalonia, added a compressed `.fsp` project archive, and placed capture behind platform interfaces with a Windows GDI implementation. The original MS-PL notices and license remain in the repository.
+The source baseline is ScreenToGif 2.43.2 at upstream commit `a4d0a67c2131cd048ceec86cd40afc2f1a06f2fd`. I kept its WPF solution intact and built Frame Studio in a separate Avalonia solution with no references to the WPF projects. The WPF application could not run on the macOS development host, so the initial comparison used a source audit and upstream screenshots; same-content Windows captures are still outstanding.
 
-Cross-platform tests feed deterministic fake frames through recording, edit/reorder, text/freehand raster edits, save/reopen, and GIF export, then decode and check the GIF pixels and timing. They establish the workflow between the capture-service boundary and export. Separate hosted Windows integration tests verify native screen capture, pause/resume/stop, isolated-window rendering, and display-affinity lifecycle. They do not launch the actual Avalonia recorder or verify that its windows disappear from a screen recording. The [Windows validation checklist](docs/WINDOWS_VALIDATION.md) records the remaining interactive checks. Webcam, sketchboard, and macOS/Linux capture are not complete.
+### What moved and what changed
 
-Two surprises shaped the port. The legacy model and utility projects carry WPF types far beyond the visible UI, so a neutral core boundary proved more practical than referencing those assemblies. Windows GDI's common desktop DC must also be released by the thread that acquired it; a source review caught and fixed that lifetime issue before the Windows runtime check. The [audit](docs/MIGRATION_AUDIT.md) and [journal](docs/MIGRATION.md) record the source classification and implementation decisions.
+The raw-byte GIF encoder and selected quantizers fit behind a neutral RGBA/pixel-geometry boundary and moved into `FrameStudio.Core`. The median-cut quantizer was independently rewritten from the general algorithm after the previously linked code was found to have no discoverable license; the neural quantizer was omitted because its source has a separate GPLv3 notice. The old model, ViewModels, and UI could not be referenced directly because they carry WPF media, dispatcher, geometry, and input types. Frame Studio replaces those layers with neutral frame/project types, a compressed `.fsp` archive, Avalonia MVVM views, and platform service contracts. Windows recording uses GDI for screen regions and `PrintWindow` for isolated windows.
 
-The first Frame Studio shell commit and latest capture-backend fix span about **6 hours 20 minutes** in the Git timestamps on 3 October 2026 (India time). That is elapsed time between commits, not measured hands-on effort; we did not keep a work timer, so the final labor cost is still unknown. The write-up needs Windows results, comparable screenshots, and a better effort estimate before submission.
+### Results and limits
+
+The implemented workflow records frames into a project, edits and reorders frames, applies crop/resize/text/freehand changes, saves and reopens projects, and exports GIF or H.264 MP4 through an installed FFmpeg with `libx264`. Local Release verification passes 48 tests, with four Windows-only desktop checks skipped on macOS. Hosted Windows passes 44 deterministic tests (one FFmpeg-dependent skip), all 7 native capture checks, and the packaged-app startup smoke. These checks do not establish the interactive Avalonia recording workflow, app-window exclusion in real recordings, mixed-DPI behavior, or playback of exported files on a user's desktop.
+
+Webcam and sketchboard capture, macOS/Linux capture, APNG, image-sequence and PSD export, additional video encoders, and the Editor, Export, Shortcuts, and Advanced settings categories are not implemented. Hardware-accelerated or protected windows may produce incomplete `PrintWindow` frames. The project retains ScreenToGif's MS-PL notices and license, uses independent branding, and is not the official ScreenToGif application.
+
+### Migration effort and remaining evidence
+
+No active-work timer was kept, so total hands-on effort is unknown. The first app-shell commit (`207a98fb`, 15:48:04 IST) and the Win32 desktop-DC fix (`d453ff46`, 22:07:59 IST) on 3 October are **6 hours 19 minutes 55 seconds** apart in Git committer timestamps. That is elapsed calendar time, not an estimate of labor, and substantial work continued later. I will not infer total effort from those timestamps. Before submission, run the Windows candidate through recording, editing, save/reopen, and export; capture same-content WPF/Avalonia screenshots; and add those results here. The [Windows checklist](docs/WINDOWS_VALIDATION.md) and [results template](docs/WINDOWS_TEST_RESULTS_TEMPLATE.md) track that work. The [source audit](docs/MIGRATION_AUDIT.md) and [journal](docs/MIGRATION.md) contain the detailed technical history.
 
 ## UI previews
 
