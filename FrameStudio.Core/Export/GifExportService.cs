@@ -26,17 +26,11 @@ public sealed class GifExportService
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(projectPath);
         ArgumentException.ThrowIfNullOrWhiteSpace(destinationPath);
-        options ??= new GifExportOptions();
-        if (options.MaximumColors is < 2 or > 256)
-            throw new ArgumentOutOfRangeException(nameof(options), "GIF palette size must be between 2 and 256 colors.");
-        if (options.RepeatCount is < -1 or > ushort.MaxValue)
-            throw new ArgumentOutOfRangeException(nameof(options), "Repeat count must be -1 (no loop), 0 (forever), or at most 65,535.");
-        if (options.ScalePercent is < 1 or > 400)
-            throw new ArgumentOutOfRangeException(nameof(options), "GIF output scale must be between 1% and 400%.");
+        options = (options ?? new GifExportOptions()).Validate();
 
         await using var reader = await FrameProjectArchiveReader.OpenAsync(projectPath, cancellationToken).ConfigureAwait(false);
         var project = reader.Project;
-        var outputSize = ScaleSize(project.CanvasSize, options.ScalePercent);
+        var outputSize = options.OutputSize ?? ScaleSize(project.CanvasSize, options.ScalePercent);
         var frames = frameSelection ?? project.Frames
             .Select(frame => new ProjectFrameReference(frame.Index, frame.DurationMilliseconds)).ToArray();
         if (frames.Count is < 1 or > 100_000)
@@ -46,6 +40,10 @@ public sealed class GifExportService
             if ((uint)frame.SourceFrameIndex >= (uint)project.Frames.Count || frame.DurationMilliseconds <= 0)
                 throw new ArgumentException("The GIF frame selection contains an invalid source index or duration.", nameof(frameSelection));
         }
+        if (options.FramesPerSecond > 0)
+            frames = ResampleFrames(frames, options.FramesPerSecond);
+        if (frames.Count > 100_000)
+            throw new ArgumentOutOfRangeException(nameof(frameSelection), "The selected GIF frame rate would produce more than 100,000 output frames.");
 
         var fullDestination = Path.GetFullPath(destinationPath);
         var directory = Path.GetDirectoryName(fullDestination)!;
@@ -60,7 +58,8 @@ public sealed class GifExportService
                 {
                     RepeatCount = options.RepeatCount,
                     MaximumNumberColor = options.MaximumColors,
-                    QuantizationType = options.Quantization
+                    QuantizationType = options.Quantization,
+                    UseDithering = options.Dither
                 };
 
                 try
@@ -105,6 +104,44 @@ public sealed class GifExportService
         var height = Math.Max(1, (int)Math.Round(source.Height * scalePercent / 100d, MidpointRounding.AwayFromZero));
         var output = new PixelSize(width, height);
         FrameProjectArchiveWriter.ValidateCanvasSize(output);
+        return output;
+    }
+
+    private static IReadOnlyList<ProjectFrameReference> ResampleFrames(
+        IReadOnlyList<ProjectFrameReference> frames, int framesPerSecond)
+    {
+        var totalDuration = frames.Sum(frame => (long)frame.DurationMilliseconds);
+        var outputFrameCount = Math.Max(1L,
+            (long)Math.Round(totalDuration * framesPerSecond / 1000d, MidpointRounding.AwayFromZero));
+        if (outputFrameCount > 100_000)
+            throw new ArgumentOutOfRangeException(nameof(frames), "The selected GIF frame rate would produce more than 100,000 output frames.");
+
+        var cumulativeDurations = new long[frames.Count];
+        long cumulative = 0;
+        for (var index = 0; index < frames.Count; index++)
+        {
+            cumulative += frames[index].DurationMilliseconds;
+            cumulativeDurations[index] = cumulative;
+        }
+
+        var output = new ProjectFrameReference[(int)outputFrameCount];
+        var previousCentisecondBoundary = 0L;
+        var sourceFrameIndex = 0;
+        for (var index = 0; index < output.Length; index++)
+        {
+            var centerTime = totalDuration * ((index + 0.5d) / output.Length);
+            while (sourceFrameIndex < cumulativeDurations.Length - 1 &&
+                   centerTime >= cumulativeDurations[sourceFrameIndex])
+                sourceFrameIndex++;
+
+            var nextCentisecondBoundary = (long)Math.Round(
+                (index + 1d) * totalDuration / output.Length / 10d,
+                MidpointRounding.AwayFromZero);
+            var durationMilliseconds = Math.Max(10, (int)((nextCentisecondBoundary - previousCentisecondBoundary) * 10));
+            previousCentisecondBoundary = nextCentisecondBoundary;
+            output[index] = new ProjectFrameReference(frames[sourceFrameIndex].SourceFrameIndex, durationMilliseconds);
+        }
+
         return output;
     }
 }

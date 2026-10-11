@@ -38,6 +38,9 @@ public class GifFile : IDisposable
     /// </summary>
     public ColorQuantizationTypes QuantizationType { get; set; } = ColorQuantizationTypes.Octree;
 
+    /// <summary>Enables Floyd–Steinberg error diffusion when mapping pixels to the selected palette.</summary>
+    public bool UseDithering { get; set; }
+
     /// <summary>
     /// True if the gif should use a global color table instead of a local one.
     /// </summary>
@@ -107,7 +110,7 @@ public class GifFile : IDisposable
         if (delay < 0)
             throw new ArgumentOutOfRangeException(nameof(delay));
 
-        ReadPixels(pixels);
+        ReadPixels(pixels, rect.Width);
 
         //For global color table, only generate a new palette if it's the first frame.
         if (!UseGlobalColorTable || IsFirstFrame)
@@ -362,7 +365,7 @@ public class GifFile : IDisposable
 
     #region Helper methods
 
-    private void ReadPixels(byte[] pixels)
+    private void ReadPixels(byte[] pixels, int pixelWidth)
     {
         if (QuantizationType == ColorQuantizationTypes.Octree)
         {
@@ -449,6 +452,9 @@ public class GifFile : IDisposable
         }
         else
             throw new ArgumentOutOfRangeException(nameof(QuantizationType), QuantizationType, "The selected GIF quantizer is not supported.");
+
+        if (UseDithering)
+            IndexedPixels = FloydSteinbergDither.Quantize(pixels, pixelWidth, ColorTable);
 
         //I need to signal the other method that I'll need transparency.
         ColorTableHasTransparency = TransparentColor.HasValue && ColorTable.Contains(TransparentColor.Value);

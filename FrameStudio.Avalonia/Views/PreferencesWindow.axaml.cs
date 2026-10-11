@@ -14,12 +14,15 @@ public partial class PreferencesWindow : Window
     private readonly ComboBox _gifPalettePicker;
     private readonly ComboBox _gifColorCountPicker;
     private readonly ComboBox _gifScalePicker;
+    private readonly ComboBox _gifFrameRatePicker;
     private readonly ComboBox _mp4QualityPicker;
     private readonly ComboBox _mp4ScalePicker;
+    private readonly ComboBox _mp4FrameRatePicker;
     private readonly ComboBox _themePicker;
     private readonly CheckBox _captureCursorCheckBox;
     private readonly CheckBox _loopPreviewCheckBox;
     private readonly CheckBox _loopGifCheckBox;
+    private readonly CheckBox _gifDitherCheckBox;
     private readonly TextBox _ffmpegPathTextBox;
     private readonly TextBlock _advancedStatusText;
 
@@ -35,12 +38,15 @@ public partial class PreferencesWindow : Window
         _gifPalettePicker = this.FindControl<ComboBox>("GifPalettePicker")!;
         _gifColorCountPicker = this.FindControl<ComboBox>("GifColorCountPicker")!;
         _gifScalePicker = this.FindControl<ComboBox>("GifScalePicker")!;
+        _gifFrameRatePicker = this.FindControl<ComboBox>("GifFrameRatePicker")!;
         _mp4QualityPicker = this.FindControl<ComboBox>("Mp4QualityPicker")!;
         _mp4ScalePicker = this.FindControl<ComboBox>("Mp4ScalePicker")!;
+        _mp4FrameRatePicker = this.FindControl<ComboBox>("Mp4FrameRatePicker")!;
         _themePicker = this.FindControl<ComboBox>("ThemePicker")!;
         _captureCursorCheckBox = this.FindControl<CheckBox>("CaptureCursorCheckBox")!;
         _loopPreviewCheckBox = this.FindControl<CheckBox>("LoopPreviewCheckBox")!;
         _loopGifCheckBox = this.FindControl<CheckBox>("LoopGifCheckBox")!;
+        _gifDitherCheckBox = this.FindControl<CheckBox>("GifDitherCheckBox")!;
         _ffmpegPathTextBox = this.FindControl<TextBox>("FfmpegPathTextBox")!;
         _advancedStatusText = this.FindControl<TextBlock>("AdvancedStatusText")!;
 
@@ -52,6 +58,7 @@ public partial class PreferencesWindow : Window
         _captureCursorCheckBox.IsChecked = normalized.CaptureCursor;
         _loopPreviewCheckBox.IsChecked = normalized.LoopEditorPreview;
         _loopGifCheckBox.IsChecked = normalized.GifRepeatCount == 0;
+        _gifDitherCheckBox.IsChecked = normalized.GifDither;
         _gifPalettePicker.SelectedIndex = normalized.GifQuantization switch
         {
             ColorQuantizationTypes.MedianCut => 1,
@@ -60,8 +67,10 @@ public partial class PreferencesWindow : Window
         };
         _gifColorCountPicker.SelectedItem = normalized.GifMaximumColors;
         _gifScalePicker.SelectedIndex = ScaleIndex(normalized.GifScalePercent);
+        SelectTaggedValue(_gifFrameRatePicker, normalized.GifFramesPerSecond);
         _mp4QualityPicker.SelectedIndex = FrameStudioPreferences.Mp4CrfOptions.ToList().IndexOf(normalized.Mp4Crf);
         _mp4ScalePicker.SelectedIndex = ScaleIndex(normalized.Mp4ScalePercent);
+        SelectTaggedValue(_mp4FrameRatePicker, normalized.Mp4FramesPerSecond);
         _ffmpegPathTextBox.Text = normalized.FfmpegExecutablePath;
     }
 
@@ -94,7 +103,10 @@ public partial class PreferencesWindow : Window
             GifScalePercent: SelectedScale(_gifScalePicker),
             Mp4Crf: crf,
             Mp4ScalePercent: SelectedScale(_mp4ScalePicker),
-            FfmpegExecutablePath: _ffmpegPathTextBox.Text));
+            FfmpegExecutablePath: _ffmpegPathTextBox.Text,
+            GifFramesPerSecond: SelectedTag(_gifFrameRatePicker, FrameStudioPreferences.Default.GifFramesPerSecond),
+            GifDither: _gifDitherCheckBox.IsChecked == true,
+            Mp4FramesPerSecond: SelectedTag(_mp4FrameRatePicker, FrameStudioPreferences.Default.Mp4FramesPerSecond)));
     }
 
     private async void BrowseFfmpeg_OnClick(object? sender, RoutedEventArgs e)
@@ -155,4 +167,16 @@ public partial class PreferencesWindow : Window
         2 => 50,
         _ => 100
     };
+
+    private static void SelectTaggedValue(ComboBox picker, int value)
+    {
+        picker.SelectedItem = picker.Items
+            .OfType<ComboBoxItem>()
+            .FirstOrDefault(item => int.TryParse(item.Tag?.ToString(), out var tag) && tag == value);
+    }
+
+    private static int SelectedTag(ComboBox picker, int fallback) =>
+        picker.SelectedItem is ComboBoxItem item && int.TryParse(item.Tag?.ToString(), out var value)
+            ? value
+            : fallback;
 }

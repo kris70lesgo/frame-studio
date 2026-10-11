@@ -23,7 +23,8 @@ public sealed class FrameStudioPreferencesStoreTests
         var expected = new FrameStudioPreferences(IsDarkTheme: true, DefaultFramesPerSecond: 60, CaptureCursor: false,
             LoopEditorPreview: false, GifRepeatCount: -1, GifMaximumColors: 64,
             GifQuantization: FrameStudio.Core.Codification.Gif.Encoder.ColorQuantizationTypes.MedianCut,
-            GifScalePercent: 75, Mp4Crf: 18, Mp4ScalePercent: 50, FfmpegExecutablePath: "/opt/tools/ffmpeg");
+            GifScalePercent: 75, Mp4Crf: 18, Mp4ScalePercent: 50, FfmpegExecutablePath: "/opt/tools/ffmpeg",
+            GifFramesPerSecond: 24, GifDither: true, Mp4FramesPerSecond: 30);
 
         try
         {
@@ -52,7 +53,7 @@ public sealed class FrameStudioPreferencesStoreTests
             File.WriteAllText(path, "{ invalid json");
             Assert.Equal(FrameStudioPreferences.Default, store.Load());
 
-            File.WriteAllText(path, "{\"IsDarkTheme\":true,\"DefaultFramesPerSecond\":25,\"CaptureCursor\":false,\"GifMaximumColors\":17,\"GifScalePercent\":400,\"Mp4Crf\":60,\"FfmpegExecutablePath\":\"  /local/ffmpeg  \"}");
+            File.WriteAllText(path, "{\"IsDarkTheme\":true,\"DefaultFramesPerSecond\":25,\"CaptureCursor\":false,\"GifMaximumColors\":17,\"GifScalePercent\":400,\"Mp4Crf\":60,\"GifFramesPerSecond\":90,\"Mp4FramesPerSecond\":59,\"FfmpegExecutablePath\":\"  /local/ffmpeg  \"}");
             Assert.Equal(new FrameStudioPreferences(IsDarkTheme: true, DefaultFramesPerSecond: 30, CaptureCursor: false,
                 FfmpegExecutablePath: "/local/ffmpeg"), store.Load());
         }

@@ -92,8 +92,10 @@ public partial class EditorWindow : Window
         var project = await FrameStudio.Core.Projects.FrameProjectArchiveReader.ReadProjectAsync(projectPath);
         var normalized = (preferences ?? FrameStudioPreferences.Default).Normalize();
         var gifOptions = new GifExportOptions(normalized.GifRepeatCount, normalized.GifMaximumColors,
-            normalized.GifQuantization, normalized.GifScalePercent);
-        var mp4Options = new FfmpegMp4ExportOptions(normalized.Mp4Crf, normalized.Mp4ScalePercent);
+            normalized.GifQuantization, normalized.GifScalePercent, normalized.GifFramesPerSecond,
+            normalized.GifDither);
+        var mp4Options = new FfmpegMp4ExportOptions(normalized.Mp4Crf, normalized.Mp4ScalePercent,
+            normalized.Mp4FramesPerSecond);
         var viewModel = new EditorViewModel(projectPath, project, gifOptions, mp4Options,
             normalized.FfmpegExecutablePath);
         return new EditorWindow(viewModel, normalized.LoopEditorPreview);
@@ -702,6 +704,13 @@ public partial class EditorWindow : Window
     {
         try
         {
+            var exportOptions = await new ExportOptionsWindow(ExportMediaFormat.Gif, _viewModel.CanvasSize,
+                _viewModel.Frames.Count, _viewModel.TotalDurationMilliseconds,
+                _viewModel.DefaultGifExportOptions, _viewModel.DefaultMp4ExportOptions)
+                .ShowDialog<ExportOptionsResult?>(this);
+            if (exportOptions?.GifOptions is not { } gifOptions)
+                return;
+
             var file = await StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
             {
                 Title = "Export animation as GIF",
@@ -713,7 +722,7 @@ public partial class EditorWindow : Window
             var path = file?.TryGetLocalPath();
             if (!string.IsNullOrWhiteSpace(path))
             {
-                await _viewModel.ExportGifAsync(path);
+                await _viewModel.ExportGifAsync(path, gifOptions);
                 if (string.Equals(_viewModel.Status, "GIF exported", StringComparison.Ordinal))
                     await new ExportCompleteWindow(path, "GIF").ShowDialog(this);
             }
@@ -728,6 +737,13 @@ public partial class EditorWindow : Window
     {
         try
         {
+            var exportOptions = await new ExportOptionsWindow(ExportMediaFormat.Mp4, _viewModel.CanvasSize,
+                _viewModel.Frames.Count, _viewModel.TotalDurationMilliseconds,
+                _viewModel.DefaultGifExportOptions, _viewModel.DefaultMp4ExportOptions)
+                .ShowDialog<ExportOptionsResult?>(this);
+            if (exportOptions?.Mp4Options is not { } mp4Options)
+                return;
+
             var file = await StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
             {
                 Title = "Export animation as MP4",
@@ -739,7 +755,7 @@ public partial class EditorWindow : Window
             var path = file?.TryGetLocalPath();
             if (!string.IsNullOrWhiteSpace(path))
             {
-                await _viewModel.ExportMp4Async(path);
+                await _viewModel.ExportMp4Async(path, mp4Options);
                 if (string.Equals(_viewModel.Status, "MP4 exported", StringComparison.Ordinal))
                     await new ExportCompleteWindow(path, "MP4").ShowDialog(this);
             }

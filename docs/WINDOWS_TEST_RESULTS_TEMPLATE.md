@@ -28,8 +28,8 @@ Hosted run [38120272021](https://github.com/kris70lesgo/frame-studio/actions/run
 | `.fsp` project opens and playback works | TBD | |
 | Reorder, duplicate, delete, and retime frames | TBD | |
 | Crop, resize, text overlay, save, and reopen | TBD | |
-| GIF export plays with expected order/timing/dimensions | TBD | Output dimensions: ; file size: |
-| MP4 export (optional) | TBD | FFmpeg/libx264 result: |
+| GIF export options and output | TBD | FPS: ; palette/colors: ; dithering: ; loop: ; dimensions: ; file size: |
+| MP4 export options and output (optional) | TBD | FPS: ; quality: ; dimensions: ; FFmpeg/libx264 result: |
 | Theme, recording, editor, and export defaults persist after restart | TBD | |
 | Advanced FFmpeg path and app-data folder controls work | TBD | |
 | Webcam and Sketchboard availability states are clear | TBD | These modes are not implemented in this port |

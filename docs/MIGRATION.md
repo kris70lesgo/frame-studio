@@ -2,6 +2,13 @@
 
 This log records the independent Avalonia port of ScreenToGif. The port uses new branding and is not an official ScreenToGif application. The upstream app remains the reference implementation.
 
+## 2026-10-11 — Per-export format controls
+
+- Added a format-specific export dialog before the destination picker. GIF controls include source/fixed frame rate, palette/quantizer, color count, optional Floyd–Steinberg dithering, loop behavior, and scale/custom dimensions. MP4 controls include H.264 quality, source/fixed frame rate, and scale/custom dimensions. The preview reports final dimensions, output frame count, and duration; byte size is not estimated because it depends on content and encoding.
+- Added independently written GIF error diffusion, fixed-rate resampling for GIF and MP4, custom output sizes, and safe option validation. Existing preferences provide persisted defaults for the GIF and MP4 frame-rate options and GIF dithering.
+- Release build completed with zero warnings/errors. The local suite passed 50 tests; four Windows-only capture tests skipped on macOS. Hosted CI for these changes and the refreshed Windows package are pending.
+- The modal compiles with Avalonia XAML but still needs visual interaction review. Windows interactive recording, pause/resume, save/reopen, export playback, and same-content WPF/Avalonia screenshots remain the final submission evidence requested from the user.
+
 ## 2026-10-11 — Expanded preferences and configurable export
 
 - Completed the seven requested preferences categories: General, Recording, Editor, Export, Shortcuts, Appearance, and Advanced. The settings persist locally, including editor preview looping, GIF repeat/palette/quantization/scale, MP4 quality/scale, and an optional FFmpeg executable path.

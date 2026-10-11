@@ -69,7 +69,7 @@
                                 <CheckBox x:Name="LoopGifCheckBox" Content="Loop the GIF continuously"
                                           FontSize="11" Foreground="{DynamicResource TextPrimary}" />
                             </StackPanel>
-                            <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto" RowSpacing="9">
+                            <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="9">
                                 <TextBlock Text="Color palette" FontSize="11" Foreground="{DynamicResource TextPrimary}"
                                            VerticalAlignment="Center" />
                                 <ComboBox x:Name="GifPalettePicker" Grid.Column="1" MinWidth="190" HorizontalAlignment="Right">
@@ -89,12 +89,26 @@
                                     <ComboBoxItem Content="75%" Tag="75" />
                                     <ComboBoxItem Content="50%" Tag="50" />
                                 </ComboBox>
+                                <TextBlock Grid.Row="3" Text="Frame rate" FontSize="11"
+                                           Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center" />
+                                <ComboBox x:Name="GifFrameRatePicker" Grid.Row="3" Grid.Column="1"
+                                          MinWidth="190" HorizontalAlignment="Right">
+                                    <ComboBoxItem Content="Match source timings" Tag="0" />
+                                    <ComboBoxItem Content="10 FPS" Tag="10" />
+                                    <ComboBoxItem Content="15 FPS" Tag="15" />
+                                    <ComboBoxItem Content="24 FPS" Tag="24" />
+                                    <ComboBoxItem Content="30 FPS" Tag="30" />
+                                    <ComboBoxItem Content="60 FPS" Tag="60" />
+                                    <ComboBoxItem Content="100 FPS" Tag="100" />
+                                </ComboBox>
                             </Grid>
+                            <CheckBox x:Name="GifDitherCheckBox" Content="Apply Floyd–Steinberg dithering"
+                                      FontSize="11" Foreground="{DynamicResource TextPrimary}" />
                             <Border Height="1" Background="{DynamicResource Border}" Margin="0,3" />
                             <StackPanel Spacing="4">
                                 <TextBlock Text="MP4 export defaults" FontSize="13" FontWeight="SemiBold"
                                            Foreground="{DynamicResource TextPrimary}" />
-                                <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto" RowSpacing="9">
+                                <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto" RowSpacing="9">
                                     <TextBlock Text="Quality" FontSize="11" Foreground="{DynamicResource TextPrimary}"
                                                VerticalAlignment="Center" />
                                     <ComboBox x:Name="Mp4QualityPicker" Grid.Column="1" MinWidth="190" HorizontalAlignment="Right">
@@ -110,9 +124,18 @@
                                         <ComboBoxItem Content="75%" Tag="75" />
                                         <ComboBoxItem Content="50%" Tag="50" />
                                     </ComboBox>
+                                    <TextBlock Grid.Row="2" Text="Frame rate" FontSize="11"
+                                               Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center" />
+                                    <ComboBox x:Name="Mp4FrameRatePicker" Grid.Row="2" Grid.Column="1"
+                                              MinWidth="190" HorizontalAlignment="Right">
+                                        <ComboBoxItem Content="Match source timings" Tag="0" />
+                                        <ComboBoxItem Content="24 FPS" Tag="24" />
+                                        <ComboBoxItem Content="30 FPS" Tag="30" />
+                                        <ComboBoxItem Content="60 FPS" Tag="60" />
+                                    </ComboBox>
                                 </Grid>
                             </StackPanel>
-                            <TextBlock Text="MP4 keeps edited frame timings and pads to even dimensions for H.264. GIF dithering and arbitrary output dimensions are not available yet."
+                            <TextBlock Text="Custom dimensions are available each time you export. H.264 pads odd dimensions to even values."
                                        FontSize="10" Foreground="{DynamicResource TextSecondary}"
                                        TextWrapping="Wrap" MaxWidth="460" />
                         </StackPanel>

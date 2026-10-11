@@ -65,11 +65,12 @@ public sealed class FfmpegMp4ExportService
         try
         {
             var manifestPath = Path.Combine(workingDirectory, "frames.ffconcat");
-            await WriteFramesAndManifestAsync(reader, frames, workingDirectory, manifestPath, _options.ScalePercent, cancellationToken)
+            await WriteFramesAndManifestAsync(reader, frames, workingDirectory, manifestPath, _options, cancellationToken)
                 .ConfigureAwait(false);
 
             await RunFfmpegAsync(ffmpegPath, workingDirectory, Path.GetFileName(manifestPath), partialPath,
-                    _options.Crf, cancellationToken)
+                    _options.Crf, _options.FramesPerSecond,
+                    frames.Sum(frame => (long)frame.DurationMilliseconds), cancellationToken)
                 .ConfigureAwait(false);
 
             cancellationToken.ThrowIfCancellationRequested();
@@ -87,11 +88,12 @@ public sealed class FfmpegMp4ExportService
     }
 
     private static async Task WriteFramesAndManifestAsync(FrameProjectArchiveReadSession reader,
-        IReadOnlyList<ProjectFrameReference> frames, string workingDirectory, string manifestPath, int scalePercent,
+        IReadOnlyList<ProjectFrameReference> frames, string workingDirectory, string manifestPath,
+        FfmpegMp4ExportOptions options,
         CancellationToken cancellationToken)
     {
         var project = reader.Project;
-        var outputSize = ScaleSize(project.CanvasSize, scalePercent);
+        var outputSize = options.OutputSize ?? ScaleSize(project.CanvasSize, options.ScalePercent);
         await using var manifest = new StreamWriter(manifestPath, append: false, Encoding.ASCII);
         await manifest.WriteLineAsync("ffconcat version 1.0".AsMemory(), cancellationToken).ConfigureAwait(false);
         var terminalSampleNeeded = frames[^1].DurationMilliseconds > 1;
@@ -139,7 +141,8 @@ public sealed class FfmpegMp4ExportService
     }
 
     private static async Task RunFfmpegAsync(string ffmpegPath, string workingDirectory, string manifestName,
-        string outputPath, int crf, CancellationToken cancellationToken)
+        string outputPath, int crf, int framesPerSecond, long durationMilliseconds,
+        CancellationToken cancellationToken)
     {
         var startInfo = new ProcessStartInfo(ffmpegPath)
         {
@@ -148,15 +151,27 @@ public sealed class FfmpegMp4ExportService
             CreateNoWindow = true,
             RedirectStandardError = true
         };
-        foreach (var argument in new[]
+        var videoFilters = new List<string>();
+        if (framesPerSecond > 0)
+            videoFilters.Add($"fps={framesPerSecond}");
+        videoFilters.Add("pad=ceil(iw/2)*2:ceil(ih/2)*2:0:0:black");
+
+        var arguments = new List<string>
         {
             "-hide_banner", "-loglevel", "error", "-y",
             "-f", "concat", "-safe", "0", "-i", manifestName,
             "-fps_mode", "vfr",
-            "-vf", "pad=ceil(iw/2)*2:ceil(ih/2)*2:0:0:black",
+            "-vf", string.Join(",", videoFilters)
+        };
+        if (framesPerSecond > 0)
+            arguments.AddRange(["-t", (durationMilliseconds / 1000d).ToString("0.###", CultureInfo.InvariantCulture)]);
+        arguments.AddRange(
+        [
             "-c:v", "libx264", "-preset", "fast", "-crf", crf.ToString(CultureInfo.InvariantCulture), "-pix_fmt", "yuv420p",
             "-movflags", "+faststart", "-f", "mp4", outputPath
-        })
+        ]);
+
+        foreach (var argument in arguments)
             startInfo.ArgumentList.Add(argument);
 
         using var process = new Process { StartInfo = startInfo };

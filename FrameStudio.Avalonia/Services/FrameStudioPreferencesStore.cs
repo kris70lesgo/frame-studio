@@ -14,12 +14,17 @@ public sealed record FrameStudioPreferences(
     int GifScalePercent = 100,
     int Mp4Crf = 23,
     int Mp4ScalePercent = 100,
-    string? FfmpegExecutablePath = null)
+    string? FfmpegExecutablePath = null,
+    int GifFramesPerSecond = 0,
+    bool GifDither = false,
+    int Mp4FramesPerSecond = 0)
 {
     public static IReadOnlyList<int> FrameRateOptions { get; } = [10, 20, 30, 40, 50, 60];
     public static IReadOnlyList<int> GifColorCountOptions { get; } = [64, 128, 256];
     public static IReadOnlyList<int> OutputScaleOptions { get; } = [50, 75, 100];
     public static IReadOnlyList<int> Mp4CrfOptions { get; } = [18, 23, 28];
+    public static IReadOnlyList<int> GifFrameRateOptions { get; } = [0, 10, 15, 24, 30, 60, 100];
+    public static IReadOnlyList<int> Mp4FrameRateOptions { get; } = [0, 24, 30, 60];
 
     public static FrameStudioPreferences Default { get; } = new();
 
@@ -39,7 +44,13 @@ public sealed record FrameStudioPreferences(
         GifScalePercent = OutputScaleOptions.Contains(GifScalePercent) ? GifScalePercent : Default.GifScalePercent,
         Mp4Crf = Mp4CrfOptions.Contains(Mp4Crf) ? Mp4Crf : Default.Mp4Crf,
         Mp4ScalePercent = OutputScaleOptions.Contains(Mp4ScalePercent) ? Mp4ScalePercent : Default.Mp4ScalePercent,
-        FfmpegExecutablePath = string.IsNullOrWhiteSpace(FfmpegExecutablePath) ? null : FfmpegExecutablePath.Trim()
+        FfmpegExecutablePath = string.IsNullOrWhiteSpace(FfmpegExecutablePath) ? null : FfmpegExecutablePath.Trim(),
+        GifFramesPerSecond = GifFrameRateOptions.Contains(GifFramesPerSecond)
+            ? GifFramesPerSecond
+            : Default.GifFramesPerSecond,
+        Mp4FramesPerSecond = Mp4FrameRateOptions.Contains(Mp4FramesPerSecond)
+            ? Mp4FramesPerSecond
+            : Default.Mp4FramesPerSecond
     };
 }
 
