@@ -8,6 +8,7 @@ This log records the independent Avalonia port of ScreenToGif. The port uses new
 - GIF and MP4 exporters now apply configured output scaling; MP4 also accepts a CRF quality value while preserving edited frame timing. Added export regression coverage for GIF scaling/palette/loop metadata and MP4 scaling/quality.
 - The median-cut quantizer is independently written from the general algorithmic concept. Its source documents that no code was copied or translated from the unlicensed repository.
 - Opened the preferences window in the local macOS app bundle to inspect category navigation and Export/Advanced controls. This is a UI smoke check only; native Windows recording and challenge comparison screenshots remain pending.
+- Local Release verification completed with zero build warnings/errors and 48 passing tests; four Windows-only desktop checks skip on macOS. [CI run 38120272021](https://github.com/kris70lesgo/frame-studio/actions/runs/38120272021) passed on app commit `8934a282`: 44 deterministic Windows tests (one FFmpeg-dependent skip), all 7 native capture checks, Windows package startup smoke, and 44 deterministic macOS tests (one FFmpeg-dependent skip).
 
 ## 2026-10-11 — Hosted Windows verification and candidate refresh
 

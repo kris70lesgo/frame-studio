@@ -4,25 +4,22 @@ The Windows native capture backend now passes its integration suite on a hosted 
 
 ## Current Windows candidate (2026-10-11)
 
-- PR head: `d8bd36059480b4fc926cc32404be01d35d2e37ab`; the package README records GitHub's synthetic PR merge checkout `7ec6cf1`.
-- Download: [FrameStudio-win-x64 CI artifact](https://github.com/kris70lesgo/frame-studio/actions/runs/38119222955/artifacts/11694219636), produced by [GitHub Actions run 38119222955](https://github.com/kris70lesgo/frame-studio/actions/runs/38119222955) on Windows AMD64 with .NET SDK `9.0.318`.
-- Local package: [dist/FrameStudio-win-x64.zip](/Users/agastya/Documents/alvonia/ScreenToGif/dist/FrameStudio-win-x64.zip) (self-contained `win-x64`; package directory is ignored by Git).
-- SHA-256: `33f113ec30d3b6a61263a44f3da4f036209d917c6d58910b60a8f6b9c6d641b9`.
-- I downloaded this PR-merge artifact, verified its SHA-256 against the included checksum file, then verified the ZIP with `unzip -t`. The package includes the executable, README, and complete license. The hosted Windows smoke confirmed a top-level window titled “Frame Studio”; the package README distinguishes that check from the still-unverified interactive workflow.
-- The artifact requires a GitHub account with repository read access. The public Preview 3 release below is older and does not contain the latest UI redesign. The current Windows-built candidate has not been launched in an interactive Windows desktop session and is not a verified capture release.
+- The Windows candidate is attached to the [Preview 4 draft release](https://github.com/kris70lesgo/frame-studio/releases/tag/untagged-5feebd498ca7ff138139). Its notes list the current artifact, SHA-256, and package provenance. The release remains unpublished until the interactive Windows workflow and screenshot comparison are complete.
+- The app changes in that candidate are from commit `8934a282186f0e6648ecf93163023c3d3b393eb6`. [CI run 38120272021](https://github.com/kris70lesgo/frame-studio/actions/runs/38120272021) passed 44 deterministic Windows tests (one FFmpeg-dependent skip), all 7 native capture checks, and packaged-app startup smoke; macOS passed 44 deterministic tests (one FFmpeg-dependent skip).
+- Local package: [dist/FrameStudio-win-x64.zip](/Users/agastya/Documents/alvonia/ScreenToGif/dist/FrameStudio-win-x64.zip) (self-contained `win-x64`; package directory is ignored by Git). Its SHA-256 is recorded in the draft release and sidecar; the ZIP integrity check passed.
 - The latest local macOS Release test run passed 48 tests and skipped four Windows-only desktop checks, including the screen and window desktop integrations.
-- [GitHub Actions run 38119222955](https://github.com/kris70lesgo/frame-studio/actions/runs/38119222955) passed macOS and Windows builds/tests plus Windows x64 packaging for this PR head. Both hosted platforms passed 44 deterministic tests and skipped one FFmpeg-dependent MP4 test; Windows passed all 7 `WindowsCaptureIntegrationTests` and confirmed the packaged app created a top-level window titled “Frame Studio” within 10 seconds. Native checks cover affinity lifecycle, screen stream shape and pause/resume/stop, and pixel-accurate `PrintWindow` output under an overlapping window. This proves backend checks and window creation on a hosted runner only; it does not validate interactive controls, app-window exclusion in recordings, or mixed-DPI selection on your desktop.
+- Hosted CI verifies the native backend and package startup only. It does not verify interactive controls, app-window exclusion in real recordings, mixed-DPI selection, or the full record → edit → export workflow on your desktop. This is not yet a verified capture release.
 
 ## Download, verify, and launch
 
-1. Download the artifact above while signed in to GitHub, then extract the downloaded artifact ZIP. It contains the actual `FrameStudio-win-x64.zip` candidate and its `.sha256` sidecar.
+1. Download `FrameStudio-win-x64.zip` and its `.sha256` sidecar from the [Preview 4 draft release](https://github.com/kris70lesgo/frame-studio/releases/tag/untagged-5feebd498ca7ff138139).
 2. In PowerShell, from the folder containing that inner ZIP, verify its hash:
 
    ```powershell
    Get-FileHash .\FrameStudio-win-x64.zip -Algorithm SHA256
    ```
 
-   Confirm the result matches `33f113ec30d3b6a61263a44f3da4f036209d917c6d58910b60a8f6b9c6d641b9`.
+   Confirm the result matches the SHA-256 in the sidecar and draft release notes.
 3. Extract the candidate and launch the app:
 
    ```powershell
