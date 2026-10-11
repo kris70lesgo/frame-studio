@@ -66,7 +66,7 @@ The MP4 editor-export integration test requires both `ffmpeg` and `ffprobe` on `
 
 ## Challenge evidence to capture
 
-Run the original WPF app and Frame Studio against the same content. The source baseline is [ScreenToGif 2.43.2](https://github.com/NickeManarin/ScreenToGif/releases/tag/2.43.2), built from the audited upstream commit `a4d0a67`. Save paired home, recorder, editor, and export screenshots under `docs/before-after/`. Record the Windows version, display resolution and scale, selected region, frame rate, capture duration, frame count, and GIF dimensions. Include failures and any platform limitations in the migration write-up.
+Run the original WPF app and Frame Studio against the same harmless content where the mode exists. The source baseline is [ScreenToGif 2.43.2](https://github.com/NickeManarin/ScreenToGif/releases/tag/2.43.2), built from the audited upstream commit `a4d0a67`. Save before/after screenshots of the home, recorder, webcam, sketchboard, editor, export, and settings views under `docs/before-after/`. For webcam and sketchboard, show Frame Studio's clearly marked unavailable state and do not present it as migrated functionality. Record the Windows version, display resolution and scale, selected region, frame rate, capture duration, frame count, and GIF dimensions. Include failures and platform limitations in the migration write-up.
 
 Use [the Windows result template](WINDOWS_TEST_RESULTS_TEMPLATE.md) to record the run and collect the screenshot names. Do not include the raw recording or project if it contains private desktop content; a harmless test scene is sufficient for the comparison.
 

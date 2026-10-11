@@ -84,7 +84,7 @@ See [the source audit](docs/MIGRATION_AUDIT.md) for reusable modules, framework 
 
 See [the challenge analysis](docs/CHALLENGE_ANALYSIS.md) for the judging criteria, entry requirements, and the schedule used to prioritize migration work.
 
-The current self-contained Windows x64 candidate and its independently verified checksum are recorded in the [Windows validation checklist](docs/WINDOWS_VALIDATION.md). The hosted runner confirms package startup only. It still needs an interactive Windows launch and capture run before the capture workflow can be claimed as verified.
+The current self-contained Windows x64 candidate and its independently verified checksum are recorded in the [Windows validation checklist](docs/WINDOWS_VALIDATION.md). Hosted Windows CI passes the native capture checks and package startup smoke, but the app still needs an interactive Windows launch and capture run before its workflow can be claimed as verified.
 
 ## Attribution and license
 
