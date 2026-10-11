@@ -12,7 +12,7 @@ The upstream README at baseline commit [`a4d0a67`](https://github.com/NickeManar
 
 These are useful references for the original app's screens and behavior. They are not fresh captures from the exact baseline executable or same-content before/after pairs, so they should not be submitted as the challenge comparisons.
 
-`after-home-current-macos.png` and `after-editor-current-macos.png` are macOS visual-review captures of the Avalonia home workspace and editor using synthetic sample content. They document the redesigned UI, including the recent-project workspace, preview, timeline, drawing panel, and editor controls. They are supplemental UI previews only: they do not verify Windows screen recording or replace same-content WPF/Avalonia before-and-after pairs.
+`after-home-current-macos.png` and `after-editor-current-macos.png` are macOS visual-review captures of the Avalonia home workspace and editor using synthetic sample content. The home image was refreshed from the current Release build on 2026-10-11 and includes the Settings entry point; the editor image shows the preview, timeline, drawing panel, and editor controls. These are supplemental UI previews only: they do not verify Windows screen recording or replace same-content WPF/Avalonia before-and-after pairs.
 
 The older `after-home-shell-macos.png` and `after-editor-preview-macos.jpg` remain as historical shell checks. They predate the current editor workflow and should not be used as current screenshots.
 

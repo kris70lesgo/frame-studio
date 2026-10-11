@@ -9,6 +9,13 @@ This log records the independent Avalonia port of ScreenToGif. The port uses new
 - Refreshed and verified candidate [artifact 11694560277](https://github.com/kris70lesgo/frame-studio/actions/runs/38117042135/artifacts/11694560277) from app commit `cc0aefd8710cd4ff7bdc55783291cc12fd037bf5`. Its SHA-256 is `430ffbfc4877ff103835ed4fb36629121a23296469ace437d52d3d4e20128fc0`; the checksum sidecar matches and `unzip -t` reports no errors. The package includes the app, README, and complete license; the local copy is `dist/FrameStudio-win-x64.zip`.
 - This is a Windows-built validation candidate, not a verified release. An interactive Windows run and same-content WPF/Avalonia screenshots are still required before challenge submission.
 
+## 2026-10-11 — PR-head candidate and current home preview
+
+- Rebuilt the self-contained Windows candidate from the latest PR-head workflow [run 38117588655](https://github.com/kris70lesgo/frame-studio/actions/runs/38117588655), head `70ca2ca552d810ec302bfc415c485adaf4122059`. The packaged README records `d0cce52`, GitHub's synthetic merge checkout of that PR head into base `d19c2447`; the latest application-code commit remains `cc0aefd`.
+- Downloaded [artifact 11693992445](https://github.com/kris70lesgo/frame-studio/actions/runs/38117588655/artifacts/11693992445). Its SHA-256 `5d1e25c9f4c0b7def2da91a70b82e8970e145fbb5d406cc15dc2f97db8fb4970` matches the bundled checksum, and `unzip -t` reports no errors. The package includes the app, README, and complete license; the local `dist/FrameStudio-win-x64.zip` copy now matches this artifact.
+- Re-ran the local Release build and tests: zero warnings/errors, 48 passed, and four Windows-only desktop tests skipped on macOS. The PR-head CI run also passed macOS/Windows build and test jobs, all 7 native Windows checks, and packaged-app startup smoke.
+- Captured the current Release home window on macOS; the new image includes Settings. This supplements the UI preview only. Interactive Windows workflow validation and same-content WPF/Avalonia screenshots remain outstanding.
+
 ## 2026-10-11 — Persistent preferences
 
 - Added a local JSON preferences store and a preferences window for theme, default recording frame rate, and pointer inclusion. The capture setup now starts with the saved recording defaults; theme changes persist immediately.
