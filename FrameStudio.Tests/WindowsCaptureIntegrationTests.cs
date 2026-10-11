@@ -101,19 +101,21 @@ public sealed class WindowsCaptureIntegrationTests
 
         var width = Math.Min(64, monitor.Bounds.Width);
         var height = Math.Min(64, monitor.Bounds.Height);
+        var regionLeft = monitor.Bounds.X + (monitor.Bounds.Width - width) / 2;
+        var regionTop = monitor.Bounds.Y + (monitor.Bounds.Height - height) / 2;
         const int markerOffset = 2;
         const int markerSize = 8;
         const int sampleOffset = markerOffset + 4;
         using var markerWindow = NativeTestWindow.CreateWhiteMarker(
-            monitor.Bounds.X + markerOffset,
-            monitor.Bounds.Y + markerOffset,
+            regionLeft + markerOffset,
+            regionTop + markerOffset,
             markerSize);
         var expectedMarkerColor = NativeMethods.GetSysColor(NativeMethods.ColorWindow);
-        await Task.Delay(100);
+        await Task.Delay(250);
 
         var session = await service.StartAsync(new ScreenCaptureRequest(
             monitor.Id,
-            new PixelRect(0, 0, width, height),
+            new PixelRect(regionLeft, regionTop, width, height),
             FramesPerSecond: 10,
             CaptureCursor: false));
         using var readTimeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
