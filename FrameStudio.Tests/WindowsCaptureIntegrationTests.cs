@@ -157,6 +157,35 @@ public sealed class WindowsCaptureIntegrationTests
         }
     }
 
+    [WindowsDesktopFact]
+    public async Task WindowCapture_RendersTheSelectedWindowWhenAnotherWindowOverlapsIt()
+    {
+        const int left = 120;
+        const int top = 120;
+        const int size = 64;
+        using var targetWindow = NativeTestWindow.CreateWhiteMarker(left, top, size);
+        using var overlappingWindow = NativeTestWindow.CreateBlackMarker(left, top, size);
+        var expectedColor = NativeMethods.GetSysColor(NativeMethods.ColorWindow);
+        await Task.Delay(100);
+
+        var session = await new WindowsPlatformServices().StartAsync(new WindowCaptureRequest(
+            targetWindow.Handle, FramesPerSecond: 10, CaptureCursor: false));
+        using var readTimeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+        await using var frames = session.ReadFramesAsync(readTimeout.Token).GetAsyncEnumerator();
+
+        try
+        {
+            Assert.True(await frames.MoveNextAsync().AsTask().WaitAsync(readTimeout.Token));
+            AssertCapturedFrame(frames.Current, size, size);
+            AssertPixelColor(frames.Current, size, size / 2, size / 2, expectedColor);
+            await session.StopAsync();
+        }
+        finally
+        {
+            await session.DisposeAsync();
+        }
+    }
+
     private static void AssertCapturedFrame(CapturedFrame frame, int width, int height)
     {
         Assert.Equal(new PixelSize(width, height), frame.Size);
@@ -189,14 +218,25 @@ public sealed class WindowsCaptureIntegrationTests
 
         public static NativeTestWindow CreateWhiteMarker(int x, int y, int size)
         {
-            const uint wsPopupVisible = 0x90000000;
             const uint ssWhiteRect = 0x00000006;
+            return CreateMarkerWindow("Frame Studio capture target", x, y, size, ssWhiteRect);
+        }
+
+        public static NativeTestWindow CreateBlackMarker(int x, int y, int size)
+        {
+            const uint ssBlackRect = 0x00000004;
+            return CreateMarkerWindow("Frame Studio overlapping window", x, y, size, ssBlackRect);
+        }
+
+        private static NativeTestWindow CreateMarkerWindow(string title, int x, int y, int size, uint controlStyle)
+        {
+            const uint wsPopupVisible = 0x90000000;
             const uint wsExTopmostToolNoActivate = 0x08000088;
-            var handle = NativeMethods.CreateWindowEx(wsExTopmostToolNoActivate, "STATIC", "Frame Studio capture pixel test",
-                wsPopupVisible | ssWhiteRect, x, y, size, size, IntPtr.Zero, IntPtr.Zero,
+            var handle = NativeMethods.CreateWindowEx(wsExTopmostToolNoActivate, "STATIC", title,
+                wsPopupVisible | controlStyle, x, y, size, size, IntPtr.Zero, IntPtr.Zero,
                 NativeMethods.GetModuleHandle(null), IntPtr.Zero);
             if (handle == IntPtr.Zero)
-                throw new System.ComponentModel.Win32Exception(Marshal.GetLastWin32Error(), "Could not create the capture pixel marker.");
+                throw new System.ComponentModel.Win32Exception(Marshal.GetLastWin32Error(), "Could not create the native capture test marker.");
 
             _ = NativeMethods.UpdateWindow(handle);
             return new NativeTestWindow(handle);

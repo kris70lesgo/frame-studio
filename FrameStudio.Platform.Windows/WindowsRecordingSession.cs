@@ -7,7 +7,7 @@ namespace FrameStudio.Platform.Windows;
 
 internal sealed class WindowsRecordingSession : IRecordingSession
 {
-    private readonly Win32FrameGrabber _grabber;
+    private readonly IFrameGrabber _grabber;
     private readonly int _framesPerSecond;
     private readonly Channel<CapturedFrame> _frames = Channel.CreateBounded<CapturedFrame>(new BoundedChannelOptions(3)
     {
@@ -24,7 +24,7 @@ internal sealed class WindowsRecordingSession : IRecordingSession
     private int _resetTiming;
     private int _disposed;
 
-    public WindowsRecordingSession(Win32FrameGrabber grabber, int framesPerSecond)
+    public WindowsRecordingSession(IFrameGrabber grabber, int framesPerSecond)
     {
         _grabber = grabber;
         _framesPerSecond = framesPerSecond;

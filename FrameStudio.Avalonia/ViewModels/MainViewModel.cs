@@ -27,9 +27,12 @@ public partial class MainViewModel : ObservableObject
     public IReadOnlyList<CaptureCapability> CaptureCapabilities { get; }
 
     public IScreenCaptureService? ScreenCaptureService { get; }
+    public IWindowCaptureService? WindowCaptureService { get; }
     public ICaptureWindowExclusionService? CaptureWindowExclusionService { get; }
     public bool IsScreenCaptureAvailable => ScreenCaptureService is not null && CaptureCapabilities.Any(capability =>
         capability.Source == CaptureSource.Screen && capability.Readiness == FeatureReadiness.Ready);
+    public bool IsWindowCaptureAvailable => WindowCaptureService is not null && CaptureCapabilities.Any(capability =>
+        capability.Source == CaptureSource.Window && capability.Readiness == FeatureReadiness.Ready);
     public ObservableCollection<RecentProjectViewModel> RecentProjects { get; } = [];
     public bool IsRecentProjectsEmpty => RecentProjects.Count == 0;
     public string RecentProjectsCountLabel => RecentProjects.Count == 1 ? "1 PROJECT" : $"{RecentProjects.Count} PROJECTS";
@@ -44,9 +47,11 @@ public partial class MainViewModel : ObservableObject
 
     public MainViewModel(IPlatformCapabilityProvider capabilityProvider, IScreenCaptureService? screenCaptureService = null,
         ICaptureWindowExclusionService? captureWindowExclusionService = null,
-        FrameStudioPreferencesStore? preferencesStore = null)
+        FrameStudioPreferencesStore? preferencesStore = null,
+        IWindowCaptureService? windowCaptureService = null)
     {
         ScreenCaptureService = screenCaptureService;
+        WindowCaptureService = windowCaptureService;
         CaptureWindowExclusionService = captureWindowExclusionService;
         _preferencesStore = preferencesStore ?? FrameStudioPreferencesStore.ForCurrentUser();
         var localData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);

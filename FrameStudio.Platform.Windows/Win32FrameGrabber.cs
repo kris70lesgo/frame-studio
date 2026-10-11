@@ -5,7 +5,7 @@ using FrameStudio.Core.Models;
 namespace FrameStudio.Platform.Windows;
 
 /// <summary>Owns the GDI resources for one desktop region and returns tightly-packed RGBA frames.</summary>
-internal sealed class Win32FrameGrabber : IDisposable
+internal sealed class Win32FrameGrabber : IFrameGrabber
 {
     private readonly PixelRect _region;
     private readonly bool _captureCursor;

@@ -35,9 +35,10 @@
                         <Path Data="M3,4 L21,4 L21,17 L3,17 Z M8,21 L16,21 M12,17 L12,21"
                               Stroke="#C7B2FF" StrokeThickness="1.5" StrokeLineCap="Round" Width="20" Height="20" />
                     </Button>
-                    <Button Classes="editor-tool-button" IsEnabled="False"
-                            ToolTip.Tip="Window recording isn't available yet; this build records screen regions."
-                            AutomationProperties.Name="Window capture, not available yet">
+                    <Button Classes="editor-tool-button" IsEnabled="{Binding IsWindowCaptureAvailable}"
+                            Click="WindowCapture_OnClick"
+                            ToolTip.Tip="Record a specific application window"
+                            AutomationProperties.Name="Record a specific application window">
                         <Path Data="M4,5 L20,5 L20,19 L4,19 Z M4,9 L20,9"
                               Stroke="#D6D4DD" StrokeThickness="1.5" StrokeLineCap="Round" Width="19" Height="19" />
                     </Button>

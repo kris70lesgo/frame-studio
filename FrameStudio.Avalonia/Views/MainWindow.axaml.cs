@@ -40,10 +40,6 @@ public partial class MainWindow : Window
         if (DataContext is not MainViewModel viewModel || viewModel.ScreenCaptureService is not { } service)
             return;
 
-        IRecordingSession? session = null;
-        FrameProjectArchiveWriter? writer = null;
-        IDisposable? captureWindowExclusion = null;
-        RecorderWindow? recorderWindow = null;
         try
         {
             var monitors = AddAvaloniaScreenScaling(await service.GetMonitorsAsync());
@@ -64,39 +60,104 @@ public partial class MainWindow : Window
             if (string.IsNullOrWhiteSpace(projectPath))
                 return;
 
-            var projectName = Path.GetFileNameWithoutExtension(projectPath);
-            var canvasSize = new PixelSize(setup.Region.Width, setup.Region.Height);
-            writer = await FrameProjectArchiveWriter.CreateAsync(projectPath, projectName, canvasSize);
+            await StartRecordingAsync(viewModel, projectPath,
+                new PixelSize(setup.Region.Width, setup.Region.Height), setup.FramesPerSecond,
+                () => service.StartAsync(new ScreenCaptureRequest(
+                    setup.Monitor.Id, setup.Region, setup.FramesPerSecond, setup.CaptureCursor)),
+                excludeApplicationWindows: true);
+        }
+        catch (Exception ex)
+        {
+            viewModel.ReportCaptureStatus($"Could not start or save the recording: {ex.Message}");
+        }
+    }
 
+    private async void WindowCapture_OnClick(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is not MainViewModel viewModel || viewModel.WindowCaptureService is not { } service)
+            return;
+
+        try
+        {
+            var windows = await service.GetWindowsAsync();
+            if (windows.Count == 0)
+            {
+                viewModel.ReportCaptureStatus("No visible application windows are available to record.");
+                return;
+            }
+
+            var setup = await new WindowCaptureSetupWindow(windows, viewModel.DefaultFramesPerSecond, viewModel.CaptureCursor)
+                .ShowDialog<WindowCaptureSetupResult?>(this);
+            if (setup is null)
+                return;
+
+            var projectFile = await StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
+            {
+                Title = "Save window recording project",
+                SuggestedFileName = $"{SanitizeFileName(setup.Window.Title)} {DateTime.Now:yyyy-MM-dd HH-mm}.fsp",
+                DefaultExtension = "fsp",
+                ShowOverwritePrompt = true,
+                FileTypeChoices = [FrameProjectFileType]
+            });
+            var projectPath = projectFile?.TryGetLocalPath();
+            if (string.IsNullOrWhiteSpace(projectPath))
+                return;
+
+            await StartRecordingAsync(viewModel, projectPath,
+                new PixelSize(setup.Window.Bounds.Width, setup.Window.Bounds.Height), setup.FramesPerSecond,
+                () => service.StartAsync(new WindowCaptureRequest(
+                    setup.Window.Handle, setup.FramesPerSecond, setup.CaptureCursor)),
+                excludeApplicationWindows: false);
+        }
+        catch (Exception ex)
+        {
+            viewModel.ReportCaptureStatus($"Could not start or save the window recording: {ex.Message}");
+        }
+    }
+
+    private async Task StartRecordingAsync(MainViewModel viewModel, string projectPath, PixelSize canvasSize,
+        int framesPerSecond, Func<ValueTask<IRecordingSession>> startSession, bool excludeApplicationWindows)
+    {
+        IRecordingSession? session = null;
+        FrameProjectArchiveWriter? writer = null;
+        IDisposable? captureWindowExclusion = null;
+        RecorderWindow? recorderWindow = null;
+        try
+        {
+            var projectName = Path.GetFileNameWithoutExtension(projectPath);
+            writer = await FrameProjectArchiveWriter.CreateAsync(projectPath, projectName, canvasSize);
             recorderWindow = new RecorderWindow();
             var recorderDialog = recorderWindow.ShowPreparingDialog(this);
             var recorderHandle = await recorderWindow.WaitForWindowHandleAsync();
-            var exclusionService = viewModel.CaptureWindowExclusionService
-                ?? throw new InvalidOperationException("This platform cannot exclude app windows from screen capture.");
-            var mainHandle = TryGetPlatformHandle()?.Handle ?? IntPtr.Zero;
-            if (mainHandle == IntPtr.Zero)
-                throw new InvalidOperationException("Avalonia did not provide the main window handle.");
-            captureWindowExclusion = exclusionService.ExcludeFromCapture([mainHandle, recorderHandle]);
 
-            session = await service.StartAsync(new ScreenCaptureRequest(
-                setup.Monitor.Id, setup.Region, setup.FramesPerSecond, setup.CaptureCursor));
+            if (excludeApplicationWindows)
+            {
+                var exclusionService = viewModel.CaptureWindowExclusionService
+                    ?? throw new InvalidOperationException("This platform cannot exclude app windows from screen capture.");
+                var mainHandle = TryGetPlatformHandle()?.Handle ?? IntPtr.Zero;
+                if (mainHandle == IntPtr.Zero)
+                    throw new InvalidOperationException("Avalonia did not provide the main window handle.");
+                captureWindowExclusion = exclusionService.ExcludeFromCapture([mainHandle, recorderHandle]);
+            }
 
-            var recorderViewModel = new RecordingViewModel(session, writer, projectPath, setup.FramesPerSecond);
+            session = await startSession();
+            var recorderViewModel = new RecordingViewModel(session, writer, projectPath, framesPerSecond);
             session = null;
             writer = null;
             recorderWindow.AttachViewModel(recorderViewModel);
             recorderWindow.ShowRecordingControls();
             var completedPath = await recorderDialog;
-            captureWindowExclusion.Dispose();
+
+            captureWindowExclusion?.Dispose();
             captureWindowExclusion = null;
             if (!string.IsNullOrWhiteSpace(completedPath))
                 await OpenEditorAsync(completedPath);
         }
-        catch (Exception ex)
+        catch
         {
             if (recorderWindow is { IsVisible: true, HasViewModel: false })
                 recorderWindow.Close(null);
-            viewModel.ReportCaptureStatus($"Could not start or save the recording: {ex.Message}");
+            throw;
         }
         finally
         {
@@ -110,6 +171,13 @@ public partial class MainWindow : Window
             if (writer is not null)
                 await writer.DisposeAsync();
         }
+    }
+
+    private static string SanitizeFileName(string fileName)
+    {
+        var invalidCharacters = Path.GetInvalidFileNameChars();
+        var sanitized = new string(fileName.Select(character => invalidCharacters.Contains(character) ? ' ' : character).ToArray()).Trim();
+        return string.IsNullOrWhiteSpace(sanitized) ? "Window capture" : sanitized;
     }
 
     private async void OpenProject_OnClick(object? sender, RoutedEventArgs e)

@@ -10,7 +10,7 @@ The Windows native capture backend now passes its integration suite on a hosted 
 - SHA-256: `392c7575b786189beab160d475107f201541163f2e423000f82cfd47a1a99384`.
 - I downloaded the artifact and verified its SHA-256 against GitHub's checksum file, then verified the ZIP with `unzip -t`. The package includes the executable, README, and complete license. The hosted Windows smoke confirmed a top-level window titled “Frame Studio”; the package README distinguishes that check from the still-unverified interactive workflow.
 - The artifact requires a GitHub account with repository read access. The public Preview 3 release below is older and does not contain the latest UI redesign. The current Windows-built candidate has not been launched in an interactive Windows desktop session and is not a verified capture release.
-- The latest local macOS Release test run passed 48 tests and skipped three Windows-only desktop checks.
+- The latest local macOS Release test run passed 48 tests and skipped four Windows-only desktop checks, including the new window-rendering integration check.
 - [GitHub Actions run 38115655012](https://github.com/kris70lesgo/frame-studio/actions/runs/38115655012) passed macOS and Windows builds/tests plus Windows x64 packaging. Both hosted platforms passed 44 deterministic tests and skipped one FFmpeg-dependent MP4 test; Windows passed all 6 `WindowsCaptureIntegrationTests` and confirmed the packaged app created a top-level window titled “Frame Studio” within 10 seconds. This proves backend checks and window creation on a hosted runner only; it does not validate interactive controls, app-window exclusion in recordings, or mixed-DPI selection on your desktop.
 
 ## Download, verify, and launch
@@ -54,7 +54,7 @@ The MP4 editor-export integration test requires both `ffmpeg` and `ffprobe` on `
 
 ## Manual recording and editing check
 
-1. Launch Frame Studio. Confirm the Screen action is available and the unsupported sources remain disabled. Open Settings, change the theme and recording defaults, restart the app, and confirm those choices persist.
+1. Launch Frame Studio. Confirm Screen and Window actions are available while Webcam and Sketchboard remain disabled. Open Settings, change the theme and recording defaults, restart the app, and confirm those choices persist.
 2. Choose a display and a small region. Record for several seconds, pause, resume, and stop. Verify that neither Frame Studio's home window nor the floating recorder controls appear in the captured frames.
 3. Confirm a `.fsp` project is written and opens in the editor. Check preview, playback, thumbnail rendering, frame durations, duplicate/delete, and move earlier/later.
 4. Drag a crop over the preview and apply it. Resize the project with aspect ratio retained, save, close, reopen, and confirm dimensions and edits persist.
@@ -62,6 +62,7 @@ The MP4 editor-export integration test requires both `ffmpeg` and `ffprobe` on `
 6. Export a looping GIF. In the completion window, verify Open GIF, Show in folder, and Copy path; then check the GIF in a separate viewer for animation, edited ordering, overlay, timing, and expected canvas dimensions.
 7. Export an MP4 with FFmpeg and `libx264` installed. Confirm the file opens in a media player and check that edited ordering, text overlay, variable frame timing, and padded even dimensions are correct. Also verify the app explains the FFmpeg requirement when FFmpeg is absent.
 8. Repeat with a full display. On a multi-monitor setup, test a non-primary display and a mixed-DPI display if available.
+9. Record a window while another window overlaps it. Confirm the recording shows the selected window's content rather than the covering window; note any blank or incomplete output from hardware-accelerated or protected apps.
 
 ## Challenge evidence to capture
 

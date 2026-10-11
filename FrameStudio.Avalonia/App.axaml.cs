@@ -24,7 +24,8 @@ public partial class App : Application
                 string.Equals(Path.GetExtension(argument), ".fsp", StringComparison.OrdinalIgnoreCase) && File.Exists(argument));
             desktop.MainWindow = new MainWindow(projectPath)
             {
-                DataContext = new MainViewModel(new ShellCapabilityProvider(), windowsPlatform, windowsPlatform),
+                DataContext = new MainViewModel(new ShellCapabilityProvider(), windowsPlatform, windowsPlatform,
+                    windowCaptureService: windowsPlatform),
             };
         }
 
