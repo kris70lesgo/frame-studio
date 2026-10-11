@@ -160,15 +160,20 @@ public sealed class WindowsCaptureIntegrationTests
     [WindowsDesktopFact]
     public async Task WindowCapture_RendersTheSelectedWindowWhenAnotherWindowOverlapsIt()
     {
-        const int left = 120;
-        const int top = 120;
         const int size = 64;
+        var service = new WindowsPlatformServices();
+        var monitors = await service.GetMonitorsAsync();
+        var monitor = monitors.FirstOrDefault(candidate => candidate.IsPrimary) ?? monitors[0];
+        Assert.True(monitor.Bounds.Width >= size + 16);
+        Assert.True(monitor.Bounds.Height >= size + 16);
+        var left = monitor.Bounds.Right - size - 16;
+        var top = monitor.Bounds.Bottom - size - 16;
         using var targetWindow = NativeTestWindow.CreateWhiteMarker(left, top, size);
         using var overlappingWindow = NativeTestWindow.CreateBlackMarker(left, top, size);
         var expectedColor = NativeMethods.GetSysColor(NativeMethods.ColorWindow);
         await Task.Delay(100);
 
-        var session = await new WindowsPlatformServices().StartAsync(new WindowCaptureRequest(
+        var session = await service.StartAsync(new WindowCaptureRequest(
             targetWindow.Handle, FramesPerSecond: 10, CaptureCursor: false));
         using var readTimeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
         await using var frames = session.ReadFramesAsync(readTimeout.Token).GetAsyncEnumerator();
@@ -218,8 +223,17 @@ public sealed class WindowsCaptureIntegrationTests
 
         public static NativeTestWindow CreateWhiteMarker(int x, int y, int size)
         {
+            const uint wsPopupVisible = 0x90000000;
             const uint ssWhiteRect = 0x00000006;
-            return CreateMarkerWindow("Frame Studio capture target", x, y, size, ssWhiteRect);
+            const uint wsExTopmostToolNoActivate = 0x08000088;
+            var handle = NativeMethods.CreateWindowEx(wsExTopmostToolNoActivate, "STATIC", "Frame Studio capture pixel test",
+                wsPopupVisible | ssWhiteRect, x, y, size, size, IntPtr.Zero, IntPtr.Zero,
+                NativeMethods.GetModuleHandle(null), IntPtr.Zero);
+            if (handle == IntPtr.Zero)
+                throw new System.ComponentModel.Win32Exception(Marshal.GetLastWin32Error(), "Could not create the capture pixel marker.");
+
+            _ = NativeMethods.UpdateWindow(handle);
+            return new NativeTestWindow(handle);
         }
 
         public static NativeTestWindow CreateBlackMarker(int x, int y, int size)
