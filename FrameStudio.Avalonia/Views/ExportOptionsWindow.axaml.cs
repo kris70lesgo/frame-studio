@@ -20,6 +20,13 @@ public sealed record ExportOptionsResult(GifExportOptions? GifOptions, FfmpegMp4
 
 public partial class ExportOptionsWindow : Window
 {
+    private enum DimensionSyncAxis
+    {
+        None,
+        Width,
+        Height
+    }
+
     private readonly ExportMediaFormat _format;
     private readonly PixelSize _sourceSize;
     private readonly int _sourceFrameCount;
@@ -46,6 +53,7 @@ public partial class ExportOptionsWindow : Window
     private readonly TextBlock _estimateLabel;
     private readonly Button _exportButton;
     private bool _updatingDimensions;
+    private DimensionSyncAxis _dimensionSyncAxis;
 
     public ExportOptionsWindow() : this(ExportMediaFormat.Gif, new PixelSize(640, 360), 1, 1000,
         new GifExportOptions(), new FfmpegMp4ExportOptions())
@@ -142,9 +150,31 @@ public partial class ExportOptionsWindow : Window
             return;
         }
 
+        var expectedHeight = RoundPositiveDimension(width / _aspectRatio);
+        if (_dimensionSyncAxis == DimensionSyncAxis.Height &&
+            int.TryParse(_heightInput.Text, NumberStyles.Integer, CultureInfo.InvariantCulture, out var heightForWidth) &&
+            RoundPositiveDimension(heightForWidth * _aspectRatio) == width)
+        {
+            UpdateEstimate();
+            return;
+        }
+        if (int.TryParse(_heightInput.Text, NumberStyles.Integer, CultureInfo.InvariantCulture, out var currentHeight) &&
+            currentHeight == expectedHeight)
+        {
+            UpdateEstimate();
+            return;
+        }
+
+        _dimensionSyncAxis = DimensionSyncAxis.Width;
         _updatingDimensions = true;
-        _heightInput.Text = Math.Max(1, (int)Math.Round(width / _aspectRatio)).ToString(CultureInfo.InvariantCulture);
-        _updatingDimensions = false;
+        try
+        {
+            _heightInput.Text = expectedHeight.ToString(CultureInfo.InvariantCulture);
+        }
+        finally
+        {
+            _updatingDimensions = false;
+        }
         UpdateEstimate();
     }
 
@@ -158,9 +188,31 @@ public partial class ExportOptionsWindow : Window
             return;
         }
 
+        var expectedWidth = RoundPositiveDimension(height * _aspectRatio);
+        if (_dimensionSyncAxis == DimensionSyncAxis.Width &&
+            int.TryParse(_widthInput.Text, NumberStyles.Integer, CultureInfo.InvariantCulture, out var widthForHeight) &&
+            RoundPositiveDimension(widthForHeight / _aspectRatio) == height)
+        {
+            UpdateEstimate();
+            return;
+        }
+        if (int.TryParse(_widthInput.Text, NumberStyles.Integer, CultureInfo.InvariantCulture, out var currentWidth) &&
+            currentWidth == expectedWidth)
+        {
+            UpdateEstimate();
+            return;
+        }
+
+        _dimensionSyncAxis = DimensionSyncAxis.Height;
         _updatingDimensions = true;
-        _widthInput.Text = Math.Max(1, (int)Math.Round(height * _aspectRatio)).ToString(CultureInfo.InvariantCulture);
-        _updatingDimensions = false;
+        try
+        {
+            _widthInput.Text = expectedWidth.ToString(CultureInfo.InvariantCulture);
+        }
+        finally
+        {
+            _updatingDimensions = false;
+        }
         UpdateEstimate();
     }
 
@@ -188,6 +240,7 @@ public partial class ExportOptionsWindow : Window
 
     private void SetDimensionText(PixelSize size)
     {
+        _dimensionSyncAxis = DimensionSyncAxis.None;
         _updatingDimensions = true;
         _widthInput.Text = size.Width.ToString(CultureInfo.InvariantCulture);
         _heightInput.Text = size.Height.ToString(CultureInfo.InvariantCulture);
@@ -318,6 +371,9 @@ public partial class ExportOptionsWindow : Window
         var height = Math.Max(1, (int)Math.Round(source.Height * percent / 100d, MidpointRounding.AwayFromZero));
         return new PixelSize(width, height);
     }
+
+    private static int RoundPositiveDimension(double value) =>
+        Math.Clamp((int)Math.Min(int.MaxValue, Math.Round(value, MidpointRounding.AwayFromZero)), 1, int.MaxValue);
 
     private static void SelectTaggedValue(ComboBox picker, int value)
     {
