@@ -1,6 +1,7 @@
 using FrameStudio.Core.Models;
 using FrameStudio.Platform.Abstractions;
 using FrameStudio.Platform.Windows;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 
 namespace FrameStudio.Tests;
@@ -151,11 +152,11 @@ public sealed class WindowsCaptureIntegrationTests
     }
 
     [WindowsDesktopFact]
-    public async Task WindowCapture_RendersTheSelectedWindowWhenAnotherWindowOverlapsIt()
+    public void WindowCapture_RendersTheSelectedWindowWhenAnotherWindowOverlapsIt()
     {
         const int size = 64;
         var service = new WindowsPlatformServices();
-        var monitors = await service.GetMonitorsAsync();
+        var monitors = service.GetMonitorsAsync().AsTask().GetAwaiter().GetResult();
         var monitor = monitors.FirstOrDefault(candidate => candidate.IsPrimary) ?? monitors[0];
         Assert.True(monitor.Bounds.Width >= size + 16);
         Assert.True(monitor.Bounds.Height >= size + 16);
@@ -164,24 +165,46 @@ public sealed class WindowsCaptureIntegrationTests
         using var targetWindow = NativeTestWindow.CreateWhiteMarker(left, top, size);
         using var overlappingWindow = NativeTestWindow.CreateBlackMarker(left, top, size);
         var expectedColor = NativeMethods.GetSysColor(NativeMethods.ColorWindow);
-        await Task.Delay(100);
+        Thread.Sleep(100);
 
-        var session = await service.StartAsync(new WindowCaptureRequest(
-            targetWindow.Handle, FramesPerSecond: 10, CaptureCursor: false));
+        var session = service.StartAsync(new WindowCaptureRequest(
+            targetWindow.Handle, FramesPerSecond: 10, CaptureCursor: false)).GetAwaiter().GetResult();
         using var readTimeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
-        await using var frames = session.ReadFramesAsync(readTimeout.Token).GetAsyncEnumerator();
+        var frames = session.ReadFramesAsync(readTimeout.Token).GetAsyncEnumerator();
 
         try
         {
-            Assert.True(await frames.MoveNextAsync().AsTask().WaitAsync(readTimeout.Token));
+            var nextFrame = frames.MoveNextAsync().AsTask();
+            Assert.True(WaitWithMessagePump(nextFrame, readTimeout.Token));
             AssertCapturedFrame(frames.Current, size, size);
             AssertPixelColor(frames.Current, size, size / 2, size / 2, expectedColor);
-            await session.StopAsync();
+            session.StopAsync().GetAwaiter().GetResult();
         }
         finally
         {
-            await session.DisposeAsync();
+            frames.DisposeAsync().AsTask().GetAwaiter().GetResult();
+            session.DisposeAsync().AsTask().GetAwaiter().GetResult();
         }
+    }
+
+    private static T WaitWithMessagePump<T>(Task<T> task, CancellationToken cancellationToken)
+    {
+        var timer = Stopwatch.StartNew();
+        while (!task.IsCompleted)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            while (NativeMethods.PeekMessage(out var message, IntPtr.Zero, 0, 0, NativeMethods.PmRemove))
+            {
+                _ = NativeMethods.TranslateMessage(ref message);
+                _ = NativeMethods.DispatchMessage(ref message);
+            }
+
+            if (timer.Elapsed > TimeSpan.FromSeconds(10))
+                throw new TimeoutException("The window capture frame did not arrive before the test timeout.");
+            Thread.Sleep(1);
+        }
+
+        return task.GetAwaiter().GetResult();
     }
 
     private static void AssertCapturedFrame(CapturedFrame frame, int width, int height)
@@ -259,6 +282,20 @@ public sealed class WindowsCaptureIntegrationTests
         // COLOR_WINDOW is the color used by the SS_WHITERECT test marker.
         internal const int ColorWindow = 5;
         internal const int SwShowNoActivate = 4;
+        internal const uint PmRemove = 0x0001;
+
+        [StructLayout(LayoutKind.Sequential)]
+        internal struct Message
+        {
+            public nint Window;
+            public uint Id;
+            public nuint WParam;
+            public nint LParam;
+            public uint Time;
+            public int X;
+            public int Y;
+            public uint Private;
+        }
 
         [DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
         internal static extern nint CreateWindowEx(uint extendedStyle, string className, string windowName, uint style,
@@ -277,6 +314,17 @@ public sealed class WindowsCaptureIntegrationTests
 
         [DllImport("user32.dll")]
         internal static extern bool ShowWindow(nint window, int command);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool PeekMessage(out Message message, nint window, uint minMessage, uint maxMessage, uint removeMessage);
+
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool TranslateMessage(ref Message message);
+
+        [DllImport("user32.dll")]
+        internal static extern nint DispatchMessage(ref Message message);
 
         [DllImport("user32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]
