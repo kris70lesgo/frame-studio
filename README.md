@@ -47,7 +47,7 @@ The raw-byte GIF encoder and selected quantizers fit behind a neutral RGBA/pixel
 
 The implemented workflow records frames into a project, edits and reorders frames, applies crop/resize/text/freehand changes, saves and reopens projects, and exports GIF or H.264 MP4 through an installed FFmpeg with `libx264`. Local Release verification passes 48 tests, with four Windows-only desktop checks skipped on macOS. Hosted Windows passes 44 deterministic tests (one FFmpeg-dependent skip), all 7 native capture checks, and the packaged-app startup smoke. These checks do not establish the interactive Avalonia recording workflow, app-window exclusion in real recordings, mixed-DPI behavior, or playback of exported files on a user's desktop.
 
-Webcam and sketchboard capture, macOS/Linux capture, APNG, image-sequence and PSD export, additional video encoders, and the Editor, Export, Shortcuts, and Advanced settings categories are not implemented. Hardware-accelerated or protected windows may produce incomplete `PrintWindow` frames. The project retains ScreenToGif's MS-PL notices and license, uses independent branding, and is not the official ScreenToGif application.
+Webcam and sketchboard capture, macOS/Linux capture, APNG, image-sequence and PSD export, additional video encoders, and the Editor, Export, and Advanced settings categories are not implemented. Preferences also includes a Shortcuts reference for the editor keys already supported by the app. Hardware-accelerated or protected windows may produce incomplete `PrintWindow` frames. The project retains ScreenToGif's MS-PL notices and license, uses independent branding, and is not the official ScreenToGif application.
 
 ### Migration effort and remaining evidence
 
