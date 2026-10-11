@@ -16,7 +16,7 @@
                 PointerMoved="SelectionCanvas_OnPointerMoved"
                 PointerReleased="SelectionCanvas_OnPointerReleased">
             <Border x:Name="SelectionVisual" IsVisible="False" BorderBrush="{DynamicResource Accent}"
-                    BorderThickness="2" Background="#2478D8BC" />
+                    BorderThickness="2" Background="#247547E8" />
         </Canvas>
 
         <Border HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,28,0,0" Padding="16,11"

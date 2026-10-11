@@ -6,7 +6,9 @@ using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
+using FrameStudio.Avalonia.Services;
 using FrameStudio.Avalonia.ViewModels;
+using FrameStudio.Core.Export;
 using CorePixelRect = FrameStudio.Core.Models.PixelRect;
 using CorePixelSize = FrameStudio.Core.Models.PixelSize;
 using CorePixelPoint = FrameStudio.Core.Models.PixelCoordinate;
@@ -38,6 +40,8 @@ public partial class EditorWindow : Window
     private WriteableBitmap? _previewBitmap;
     private bool _isLoadingPreview;
     private bool _isPlaying;
+    private bool _loopPreview = true;
+    private TimelineFrameViewModel? _lastPreviewSelection;
     private bool _isDraggingCrop;
     private bool _allowClose;
     private bool _isConfirmingClose;
@@ -76,16 +80,25 @@ public partial class EditorWindow : Window
         };
     }
 
-    private EditorWindow(EditorViewModel viewModel) : this()
+    private EditorWindow(EditorViewModel viewModel, bool loopPreview) : this()
     {
         _viewModel = viewModel;
+        _loopPreview = loopPreview;
         DataContext = viewModel;
     }
 
-    public static async Task<EditorWindow> CreateAsync(string projectPath)
+    public static async Task<EditorWindow> CreateAsync(string projectPath, FrameStudioPreferences? preferences = null)
     {
         var project = await FrameStudio.Core.Projects.FrameProjectArchiveReader.ReadProjectAsync(projectPath);
-        return new EditorWindow(new EditorViewModel(projectPath, project));
+        var normalized = (preferences ?? FrameStudioPreferences.Default).Normalize();
+        var gifOptions = new GifExportOptions(normalized.GifRepeatCount, normalized.GifMaximumColors,
+            normalized.GifQuantization, normalized.GifScalePercent, normalized.GifFramesPerSecond,
+            normalized.GifDither);
+        var mp4Options = new FfmpegMp4ExportOptions(normalized.Mp4Crf, normalized.Mp4ScalePercent,
+            normalized.Mp4FramesPerSecond);
+        var viewModel = new EditorViewModel(projectPath, project, gifOptions, mp4Options,
+            normalized.FfmpegExecutablePath);
+        return new EditorWindow(viewModel, normalized.LoopEditorPreview);
     }
 
     private async void EditorWindow_OnClosing(object? sender, WindowClosingEventArgs e)
@@ -138,19 +151,26 @@ public partial class EditorWindow : Window
     {
         if (_viewModel?.SelectedFrame is not null)
         {
-            _timelineList.SelectedItem = _viewModel.SelectedFrame;
+            _lastPreviewSelection = _viewModel.SelectedFrame;
+            _timelineList.SelectedItem = _lastPreviewSelection;
             await LoadPreviewAsync();
         }
     }
 
     private async void Timeline_OnSelectionChanged(object? sender, SelectionChangedEventArgs e)
     {
-        if (_timelineList.SelectedItem is TimelineFrameViewModel selected)
-        {
+        if (sender is not ListBox list || list.SelectedItem is not TimelineFrameViewModel selected)
+            return;
+
+        if (!ReferenceEquals(_viewModel.SelectedFrame, selected))
             _viewModel.SelectedFrame = selected;
-            await LoadPreviewAsync();
-            UpdatePlaybackInterval();
-        }
+
+        if (ReferenceEquals(_lastPreviewSelection, selected))
+            return;
+
+        _lastPreviewSelection = selected;
+        await LoadPreviewAsync();
+        UpdatePlaybackInterval();
     }
 
     private void CropTool_OnClick(object? sender, RoutedEventArgs e)
@@ -641,6 +661,14 @@ public partial class EditorWindow : Window
             return;
 
         var currentIndex = _viewModel.SelectedFrame is null ? 0 : _viewModel.Frames.IndexOf(_viewModel.SelectedFrame);
+        if (currentIndex >= _viewModel.Frames.Count - 1 && !_loopPreview)
+        {
+            _isPlaying = false;
+            _playButton.Content = "▶ Play";
+            _playTimer.Stop();
+            return;
+        }
+
         var nextIndex = (currentIndex + 1) % _viewModel.Frames.Count;
         _timelineList.SelectedItem = _viewModel.Frames[nextIndex];
         await LoadPreviewAsync();
@@ -676,6 +704,13 @@ public partial class EditorWindow : Window
     {
         try
         {
+            var exportOptions = await new ExportOptionsWindow(ExportMediaFormat.Gif, _viewModel.CanvasSize,
+                _viewModel.Frames.Count, _viewModel.TotalDurationMilliseconds,
+                _viewModel.DefaultGifExportOptions, _viewModel.DefaultMp4ExportOptions)
+                .ShowDialog<ExportOptionsResult?>(this);
+            if (exportOptions?.GifOptions is not { } gifOptions)
+                return;
+
             var file = await StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
             {
                 Title = "Export animation as GIF",
@@ -687,7 +722,7 @@ public partial class EditorWindow : Window
             var path = file?.TryGetLocalPath();
             if (!string.IsNullOrWhiteSpace(path))
             {
-                await _viewModel.ExportGifAsync(path);
+                await _viewModel.ExportGifAsync(path, gifOptions);
                 if (string.Equals(_viewModel.Status, "GIF exported", StringComparison.Ordinal))
                     await new ExportCompleteWindow(path, "GIF").ShowDialog(this);
             }
@@ -702,6 +737,13 @@ public partial class EditorWindow : Window
     {
         try
         {
+            var exportOptions = await new ExportOptionsWindow(ExportMediaFormat.Mp4, _viewModel.CanvasSize,
+                _viewModel.Frames.Count, _viewModel.TotalDurationMilliseconds,
+                _viewModel.DefaultGifExportOptions, _viewModel.DefaultMp4ExportOptions)
+                .ShowDialog<ExportOptionsResult?>(this);
+            if (exportOptions?.Mp4Options is not { } mp4Options)
+                return;
+
             var file = await StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
             {
                 Title = "Export animation as MP4",
@@ -713,7 +755,7 @@ public partial class EditorWindow : Window
             var path = file?.TryGetLocalPath();
             if (!string.IsNullOrWhiteSpace(path))
             {
-                await _viewModel.ExportMp4Async(path);
+                await _viewModel.ExportMp4Async(path, mp4Options);
                 if (string.Equals(_viewModel.Status, "MP4 exported", StringComparison.Ordinal))
                     await new ExportCompleteWindow(path, "MP4").ShowDialog(this);
             }

@@ -2,6 +2,7 @@ using System.IO;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
+using FrameStudio.Avalonia.Services;
 using FrameStudio.Avalonia.ViewModels;
 using FrameStudio.Core.Models;
 using FrameStudio.Core.Projects;
@@ -11,6 +12,12 @@ namespace FrameStudio.Avalonia.Views;
 
 public partial class MainWindow : Window
 {
+    private static readonly FilePickerFileType FrameProjectFileType = new("Frame Studio project")
+    {
+        Patterns = ["*.fsp"],
+        AppleUniformTypeIdentifiers = ["public.data"]
+    };
+
     public MainWindow()
         : this(null)
     {
@@ -33,14 +40,11 @@ public partial class MainWindow : Window
         if (DataContext is not MainViewModel viewModel || viewModel.ScreenCaptureService is not { } service)
             return;
 
-        IRecordingSession? session = null;
-        FrameProjectArchiveWriter? writer = null;
-        IDisposable? captureWindowExclusion = null;
-        RecorderWindow? recorderWindow = null;
         try
         {
             var monitors = AddAvaloniaScreenScaling(await service.GetMonitorsAsync());
-            var setup = await new CaptureSetupWindow(monitors).ShowDialog<CaptureSetupResult?>(this);
+            var setup = await new CaptureSetupWindow(monitors, viewModel.DefaultFramesPerSecond, viewModel.CaptureCursor)
+                .ShowDialog<CaptureSetupResult?>(this);
             if (setup is null)
                 return;
 
@@ -50,45 +54,179 @@ public partial class MainWindow : Window
                 SuggestedFileName = $"Capture {DateTime.Now:yyyy-MM-dd HH-mm}.fsp",
                 DefaultExtension = "fsp",
                 ShowOverwritePrompt = true,
-                FileTypeChoices = [new FilePickerFileType("Frame Studio project") { Patterns = ["*.fsp"] }]
+                FileTypeChoices = [FrameProjectFileType]
             });
             var projectPath = projectFile?.TryGetLocalPath();
             if (string.IsNullOrWhiteSpace(projectPath))
                 return;
 
-            var projectName = Path.GetFileNameWithoutExtension(projectPath);
-            var canvasSize = new PixelSize(setup.Region.Width, setup.Region.Height);
-            writer = await FrameProjectArchiveWriter.CreateAsync(projectPath, projectName, canvasSize);
+            await StartRecordingAsync(viewModel, projectPath,
+                new PixelSize(setup.Region.Width, setup.Region.Height), setup.FramesPerSecond,
+                () => service.StartAsync(new ScreenCaptureRequest(
+                    setup.Monitor.Id, setup.Region, setup.FramesPerSecond, setup.CaptureCursor)),
+                excludeApplicationWindows: true);
+        }
+        catch (Exception ex)
+        {
+            viewModel.ReportCaptureStatus($"Could not start or save the recording: {ex.Message}");
+        }
+    }
 
-            recorderWindow = new RecorderWindow();
-            var recorderDialog = recorderWindow.ShowPreparingDialog(this);
-            var recorderHandle = await recorderWindow.WaitForWindowHandleAsync();
-            var exclusionService = viewModel.CaptureWindowExclusionService
-                ?? throw new InvalidOperationException("This platform cannot exclude app windows from screen capture.");
-            var mainHandle = TryGetPlatformHandle()?.Handle ?? IntPtr.Zero;
-            if (mainHandle == IntPtr.Zero)
-                throw new InvalidOperationException("Avalonia did not provide the main window handle.");
-            captureWindowExclusion = exclusionService.ExcludeFromCapture([mainHandle, recorderHandle]);
+    private async void WindowCapture_OnClick(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is not MainViewModel viewModel || viewModel.WindowCaptureService is not { } service)
+            return;
 
-            session = await service.StartAsync(new ScreenCaptureRequest(
-                setup.Monitor.Id, setup.Region, setup.FramesPerSecond, setup.CaptureCursor));
+        try
+        {
+            var windows = await service.GetWindowsAsync();
+            if (windows.Count == 0)
+            {
+                viewModel.ReportCaptureStatus("No visible application windows are available to record.");
+                return;
+            }
 
-            var recorderViewModel = new RecordingViewModel(session, writer, projectPath, setup.FramesPerSecond);
-            session = null;
-            writer = null;
-            recorderWindow.AttachViewModel(recorderViewModel);
-            recorderWindow.ShowRecordingControls();
-            var completedPath = await recorderDialog;
-            captureWindowExclusion.Dispose();
-            captureWindowExclusion = null;
+            var setup = await new WindowCaptureSetupWindow(windows, viewModel.DefaultFramesPerSecond, viewModel.CaptureCursor)
+                .ShowDialog<WindowCaptureSetupResult?>(this);
+            if (setup is null)
+                return;
+
+            var projectFile = await StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
+            {
+                Title = "Save window recording project",
+                SuggestedFileName = $"{SanitizeFileName(setup.Window.Title)} {DateTime.Now:yyyy-MM-dd HH-mm}.fsp",
+                DefaultExtension = "fsp",
+                ShowOverwritePrompt = true,
+                FileTypeChoices = [FrameProjectFileType]
+            });
+            var projectPath = projectFile?.TryGetLocalPath();
+            if (string.IsNullOrWhiteSpace(projectPath))
+                return;
+
+            await StartRecordingAsync(viewModel, projectPath,
+                new PixelSize(setup.Window.Bounds.Width, setup.Window.Bounds.Height), setup.FramesPerSecond,
+                () => service.StartAsync(new WindowCaptureRequest(
+                    setup.Window.Handle, setup.FramesPerSecond, setup.CaptureCursor)),
+                excludeApplicationWindows: false);
+        }
+        catch (Exception ex)
+        {
+            viewModel.ReportCaptureStatus($"Could not start or save the window recording: {ex.Message}");
+        }
+    }
+
+    private async void WebcamCapture_OnClick(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is not MainViewModel { WebcamCaptureService: { } service, IsWebcamCaptureAvailable: true } viewModel)
+            return;
+
+        try
+        {
+            var devices = await service.GetDevicesAsync();
+            if (devices.Count == 0)
+            {
+                viewModel.ReportCaptureStatus("No compatible color camera is available. Connect a webcam and try again.");
+                return;
+            }
+
+            var setup = await new WebcamCaptureSetupWindow(devices, viewModel.DefaultFramesPerSecond)
+                .ShowDialog<WebcamCaptureSetupResult?>(this);
+            if (setup is null)
+                return;
+
+            var projectFile = await StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
+            {
+                Title = "Save webcam recording project",
+                SuggestedFileName = $"Webcam {DateTime.Now:yyyy-MM-dd HH-mm}.fsp",
+                DefaultExtension = "fsp",
+                ShowOverwritePrompt = true,
+                FileTypeChoices = [FrameProjectFileType]
+            });
+            var projectPath = projectFile?.TryGetLocalPath();
+            if (string.IsNullOrWhiteSpace(projectPath))
+                return;
+
+            await StartWebcamRecordingAsync(viewModel, service, projectPath, setup);
+        }
+        catch (Exception ex)
+        {
+            viewModel.ReportCaptureStatus($"Could not start or save the webcam recording: {ex.Message}");
+        }
+    }
+
+    private async void Sketchboard_OnClick(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is not MainViewModel viewModel || !viewModel.IsSketchboardAvailable)
+            return;
+
+        try
+        {
+            var projectFile = await StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
+            {
+                Title = "Save sketchboard project",
+                SuggestedFileName = $"Sketch {DateTime.Now:yyyy-MM-dd HH-mm}.fsp",
+                DefaultExtension = "fsp",
+                ShowOverwritePrompt = true,
+                FileTypeChoices = [FrameProjectFileType]
+            });
+            var projectPath = projectFile?.TryGetLocalPath();
+            if (string.IsNullOrWhiteSpace(projectPath))
+                return;
+
+            var completedPath = await new SketchboardWindow(projectPath, viewModel.DefaultFramesPerSecond)
+                .ShowDialog<string?>(this);
             if (!string.IsNullOrWhiteSpace(completedPath))
                 await OpenEditorAsync(completedPath);
         }
         catch (Exception ex)
         {
+            viewModel.ReportCaptureStatus($"Could not start or save the sketchboard: {ex.Message}");
+        }
+    }
+
+    private async Task StartRecordingAsync(MainViewModel viewModel, string projectPath, PixelSize canvasSize,
+        int framesPerSecond, Func<ValueTask<IRecordingSession>> startSession, bool excludeApplicationWindows)
+    {
+        IRecordingSession? session = null;
+        FrameProjectArchiveWriter? writer = null;
+        IDisposable? captureWindowExclusion = null;
+        RecorderWindow? recorderWindow = null;
+        try
+        {
+            var projectName = Path.GetFileNameWithoutExtension(projectPath);
+            writer = await FrameProjectArchiveWriter.CreateAsync(projectPath, projectName, canvasSize);
+            recorderWindow = new RecorderWindow();
+            var recorderDialog = recorderWindow.ShowPreparingDialog(this);
+            var recorderHandle = await recorderWindow.WaitForWindowHandleAsync();
+
+            if (excludeApplicationWindows)
+            {
+                var exclusionService = viewModel.CaptureWindowExclusionService
+                    ?? throw new InvalidOperationException("This platform cannot exclude app windows from screen capture.");
+                var mainHandle = TryGetPlatformHandle()?.Handle ?? IntPtr.Zero;
+                if (mainHandle == IntPtr.Zero)
+                    throw new InvalidOperationException("Avalonia did not provide the main window handle.");
+                captureWindowExclusion = exclusionService.ExcludeFromCapture([mainHandle, recorderHandle]);
+            }
+
+            session = await startSession();
+            var recorderViewModel = new RecordingViewModel(session, writer, projectPath, framesPerSecond);
+            session = null;
+            writer = null;
+            recorderWindow.AttachViewModel(recorderViewModel);
+            recorderWindow.ShowRecordingControls();
+            var completedPath = await recorderDialog;
+
+            captureWindowExclusion?.Dispose();
+            captureWindowExclusion = null;
+            if (!string.IsNullOrWhiteSpace(completedPath))
+                await OpenEditorAsync(completedPath);
+        }
+        catch
+        {
             if (recorderWindow is { IsVisible: true, HasViewModel: false })
                 recorderWindow.Close(null);
-            viewModel.ReportCaptureStatus($"Could not start or save the recording: {ex.Message}");
+            throw;
         }
         finally
         {
@@ -104,6 +242,56 @@ public partial class MainWindow : Window
         }
     }
 
+    private async Task StartWebcamRecordingAsync(MainViewModel viewModel, IWebcamService service,
+        string projectPath, WebcamCaptureSetupResult setup)
+    {
+        IWebcamRecordingSession? session = null;
+        FrameProjectArchiveWriter? writer = null;
+        RecorderWindow? recorderWindow = null;
+        try
+        {
+            recorderWindow = new RecorderWindow();
+            var recorderDialog = recorderWindow.ShowPreparingDialog(this);
+            _ = await recorderWindow.WaitForWindowHandleAsync();
+
+            session = await service.StartAsync(setup.Device.Id, setup.FramesPerSecond);
+            writer = await FrameProjectArchiveWriter.CreateAsync(
+                projectPath, Path.GetFileNameWithoutExtension(projectPath), session.FrameSize);
+
+            recorderWindow.AttachWebcamPreview(session, setup.Device.Name);
+            var recorderViewModel = new RecordingViewModel(session, writer, projectPath,
+                setup.FramesPerSecond, $"webcam · {setup.Device.Name}");
+            session = null;
+            writer = null;
+            recorderWindow.AttachViewModel(recorderViewModel);
+            recorderWindow.ShowRecordingControls();
+
+            var completedPath = await recorderDialog;
+            if (!string.IsNullOrWhiteSpace(completedPath))
+                await OpenEditorAsync(completedPath);
+        }
+        catch
+        {
+            if (recorderWindow is { IsVisible: true, HasViewModel: false })
+                recorderWindow.Close(null);
+            throw;
+        }
+        finally
+        {
+            if (session is not null)
+                await session.DisposeAsync();
+            if (writer is not null)
+                await writer.DisposeAsync();
+        }
+    }
+
+    private static string SanitizeFileName(string fileName)
+    {
+        var invalidCharacters = Path.GetInvalidFileNameChars();
+        var sanitized = new string(fileName.Select(character => invalidCharacters.Contains(character) ? ' ' : character).ToArray()).Trim();
+        return string.IsNullOrWhiteSpace(sanitized) ? "Window capture" : sanitized;
+    }
+
     private async void OpenProject_OnClick(object? sender, RoutedEventArgs e)
     {
         if (DataContext is not MainViewModel viewModel)
@@ -115,16 +303,34 @@ public partial class MainWindow : Window
             {
                 Title = "Open Frame Studio project",
                 AllowMultiple = false,
-                FileTypeFilter = [new FilePickerFileType("Frame Studio project") { Patterns = ["*.fsp"] }]
+                FileTypeFilter = [FrameProjectFileType]
             });
             var projectPath = projects.FirstOrDefault()?.TryGetLocalPath();
             if (!string.IsNullOrWhiteSpace(projectPath))
+            {
+                if (!string.Equals(Path.GetExtension(projectPath), ".fsp", StringComparison.OrdinalIgnoreCase))
+                {
+                    viewModel.ReportCaptureStatus("Choose a Frame Studio project with the .fsp extension.");
+                    return;
+                }
+
                 await OpenEditorAsync(projectPath);
+            }
         }
         catch (Exception ex)
         {
             viewModel.ReportCaptureStatus($"Could not open project: {ex.Message}");
         }
+    }
+
+    private async void Preferences_OnClick(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is not MainViewModel viewModel)
+            return;
+
+        var preferences = await new PreferencesWindow(viewModel.Preferences).ShowDialog<FrameStudioPreferences?>(this);
+        if (preferences is not null)
+            viewModel.ApplyPreferences(preferences);
     }
 
     private async void OpenRecentProject_OnClick(object? sender, RoutedEventArgs e)
@@ -144,7 +350,8 @@ public partial class MainWindow : Window
 
     private async Task OpenEditorAsync(string projectPath)
     {
-        var editor = await EditorWindow.CreateAsync(projectPath);
+        var preferences = (DataContext as MainViewModel)?.Preferences ?? FrameStudioPreferences.Default;
+        var editor = await EditorWindow.CreateAsync(projectPath, preferences);
         if (DataContext is MainViewModel viewModel)
         {
             try

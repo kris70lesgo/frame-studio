@@ -175,6 +175,33 @@ public sealed class RecordingViewModelTests
         }
     }
 
+    [Fact]
+    public async Task RecordingViewModel_CaptureFailureBeforeFirstFrameReportsFailureAndCleansUp()
+    {
+        var directory = Path.Combine(Path.GetTempPath(), $"frame-studio-recording-start-failure-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(directory);
+        var projectPath = Path.Combine(directory, "failed-recording.fsp");
+        var size = new PixelSize(1, 1);
+        var session = new FailingBeforeFirstFrameSession();
+
+        try
+        {
+            var writer = await FrameProjectArchiveWriter.CreateAsync(projectPath, "Failed recording", size);
+            var recording = new RecordingViewModel(session, writer, projectPath, framesPerSecond: 12);
+
+            await recording.StopRecordingCommand.ExecuteAsync(null);
+
+            Assert.True(recording.HasFinished);
+            Assert.Equal("Capture failed before a frame was saved: simulated immediate capture failure", recording.Status);
+            Assert.False(File.Exists(projectPath));
+            Assert.True(session.IsDisposed);
+        }
+        finally
+        {
+            Directory.Delete(directory, recursive: true);
+        }
+    }
+
     private sealed class FakeRecordingSession(params CapturedFrame[] frames) : IRecordingSession
     {
         public int PauseCount { get; private set; }
@@ -232,6 +259,34 @@ public sealed class RecordingViewModelTests
             await Task.Yield();
             yield return frame;
             throw new IOException("simulated capture failure");
+        }
+
+        public ValueTask PauseAsync(CancellationToken cancellationToken = default) => ValueTask.CompletedTask;
+
+        public ValueTask ResumeAsync(CancellationToken cancellationToken = default) => ValueTask.CompletedTask;
+
+        public ValueTask StopAsync(CancellationToken cancellationToken = default) => ValueTask.CompletedTask;
+
+        public ValueTask DisposeAsync()
+        {
+            IsDisposed = true;
+            return ValueTask.CompletedTask;
+        }
+    }
+
+    private sealed class FailingBeforeFirstFrameSession : IRecordingSession
+    {
+        public bool IsDisposed { get; private set; }
+
+        public async IAsyncEnumerable<CapturedFrame> ReadFramesAsync(
+            [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            await Task.Yield();
+            if (cancellationToken.IsCancellationRequested)
+                yield break;
+
+            throw new IOException("simulated immediate capture failure");
         }
 
         public ValueTask PauseAsync(CancellationToken cancellationToken = default) => ValueTask.CompletedTask;

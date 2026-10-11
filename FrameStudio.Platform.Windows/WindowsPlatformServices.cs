@@ -7,7 +7,7 @@ using FrameStudio.Platform.Abstractions;
 
 namespace FrameStudio.Platform.Windows;
 
-/// <summary>Windows monitor, window, and desktop-region capture using the original app's GDI path.</summary>
+/// <summary>Windows monitor, isolated-window, and desktop-region capture using Win32 and GDI.</summary>
 public sealed class WindowsPlatformServices : IScreenCaptureService, IWindowCaptureService, IMonitorService,
     ICaptureWindowExclusionService
 {
@@ -81,7 +81,7 @@ public sealed class WindowsPlatformServices : IScreenCaptureService, IWindowCapt
         var windows = new List<WindowDescriptor>();
         Win32Native.EnumWindowsProc callback = (IntPtr handle, IntPtr data) =>
         {
-            if (!Win32Native.IsWindowVisible(handle))
+            if (!Win32Native.IsWindowVisible(handle) || Win32Native.IsIconic(handle))
                 return true;
 
             var titleLength = Win32Native.GetWindowTextLength(handle);
@@ -145,12 +145,8 @@ public sealed class WindowsPlatformServices : IScreenCaptureService, IWindowCapt
         ValidateFramesPerSecond(request.FramesPerSecond);
         EnsureWindows();
 
-        if (!Win32Native.IsWindow(request.WindowHandle) || !Win32Native.GetWindowRect(request.WindowHandle, out var bounds))
-            throw new ArgumentException("The selected window is no longer available.", nameof(request));
-
-        var rectangle = new PixelRect(bounds.Left, bounds.Top, bounds.Right - bounds.Left, bounds.Bottom - bounds.Top);
-        ValidateRegion(rectangle);
-        return ValueTask.FromResult<IRecordingSession>(CreateSession(rectangle, request.FramesPerSecond, request.CaptureCursor));
+        var grabber = new Win32WindowFrameGrabber(request.WindowHandle, request.CaptureCursor);
+        return ValueTask.FromResult<IRecordingSession>(new WindowsRecordingSession(grabber, request.FramesPerSecond));
     }
 
     private static WindowsRecordingSession CreateSession(PixelRect region, int framesPerSecond, bool captureCursor)

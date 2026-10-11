@@ -14,6 +14,7 @@ internal static class Win32Native
     internal const uint DiNormal = 0x0003;
     internal const uint WindowDisplayAffinityNone = 0x00000000;
     internal const uint WindowDisplayAffinityExcludeFromCapture = 0x00000011;
+    internal const uint PrintWindowRenderFullContent = 0x00000002;
 
     [StructLayout(LayoutKind.Sequential)]
     internal struct Rect
@@ -100,6 +101,14 @@ internal static class Win32Native
     [DllImport("user32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
     internal static extern bool IsWindowVisible(IntPtr window);
+
+    [DllImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    internal static extern bool IsIconic(IntPtr window);
+
+    [DllImport("user32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    internal static extern bool PrintWindow(IntPtr window, IntPtr dc, uint flags);
 
     [DllImport("user32.dll", SetLastError = true)]
     internal static extern int GetWindowTextLength(IntPtr window);

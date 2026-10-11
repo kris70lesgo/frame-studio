@@ -1,0 +1,180 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:FrameStudio.Avalonia.ViewModels"
+        x:Class="FrameStudio.Avalonia.Views.SketchboardWindow"
+        x:DataType="vm:RecordingViewModel"
+        Title="Frame Studio · Sketchboard"
+        Width="1260" Height="840" MinWidth="960" MinHeight="680"
+        WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource BackgroundPrimary}"
+        FontFamily="Inter, Segoe UI, sans-serif">
+    <Grid RowDefinitions="58,*,72">
+        <Border Grid.Row="0" Background="#1B1A20" BorderBrush="#302E36" BorderThickness="0,0,0,1">
+            <Grid ColumnDefinitions="Auto,*,Auto,Auto" Margin="18,0" ColumnSpacing="22" VerticalAlignment="Center">
+                <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                    <Border Width="28" Height="28" CornerRadius="7" Background="#30293D">
+                        <Path Data="M4,18 L3,22 L7,21 L19,9 L15,5 Z M13,7 L17,11"
+                              Stroke="#C7B2FF" StrokeThickness="1.6" StrokeLineCap="Round"
+                              Width="18" Height="18" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                    <StackPanel Spacing="2">
+                        <TextBlock Text="SKETCHBOARD" Classes="Caption" Foreground="#F4F3F6" />
+                        <TextBlock Text="Draw as the timeline records" FontSize="10" Foreground="#A29EAA" />
+                    </StackPanel>
+                </StackPanel>
+
+                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                    <TextBlock Text="CANVAS" Classes="Caption" VerticalAlignment="Center" />
+                    <ComboBox x:Name="ResolutionPicker" Width="125" SelectedIndex="1"
+                              SelectionChanged="ResolutionPicker_OnSelectionChanged"
+                              AutomationProperties.Name="Sketchboard canvas size">
+                        <ComboBoxItem Content="640 × 360" Tag="640x360" />
+                        <ComboBoxItem Content="960 × 540" Tag="960x540" />
+                        <ComboBoxItem Content="1280 × 720" Tag="1280x720" />
+                    </ComboBox>
+                </StackPanel>
+
+                <StackPanel Grid.Column="3" Width="170" Spacing="2" VerticalAlignment="Center">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <TextBlock Text="FRAME RATE" Classes="Caption" />
+                        <TextBlock x:Name="FrameRateLabel" Grid.Column="1" Text="30 FPS" Classes="Caption" />
+                    </Grid>
+                    <Slider x:Name="FrameRateSlider" Minimum="10" Maximum="60" Value="30"
+                            TickFrequency="5" IsSnapToTickEnabled="True"
+                            ValueChanged="FrameRateSlider_OnValueChanged"
+                            AutomationProperties.Name="Sketchboard frame rate" />
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <Grid Grid.Row="1" ColumnDefinitions="190,*" ColumnSpacing="18" Margin="18,16,18,12">
+            <Border Grid.Column="0" Padding="15" CornerRadius="9"
+                    Background="{DynamicResource BackgroundSecondary}"
+                    BorderBrush="{DynamicResource Border}" BorderThickness="1">
+                <StackPanel Spacing="13">
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Tools" FontSize="13" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource TextPrimary}" />
+                        <TextBlock Text="Build an animation one stroke at a time."
+                                   FontSize="10" TextWrapping="Wrap"
+                                   Foreground="{DynamicResource TextSecondary}" />
+                    </StackPanel>
+                    <Border Height="1" Background="{DynamicResource Border}" />
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="BRUSH COLOR" Classes="Caption" />
+                        <ComboBox x:Name="BrushColorPicker" SelectedIndex="0"
+                                  SelectionChanged="BrushColorPicker_OnSelectionChanged"
+                                  AutomationProperties.Name="Brush color">
+                            <ComboBoxItem Content="Ink" Tag="#292733" />
+                            <ComboBoxItem Content="Violet" Tag="#8057D5" />
+                            <ComboBoxItem Content="Blue" Tag="#3972D6" />
+                            <ComboBoxItem Content="Coral" Tag="#DF6555" />
+                        </ComboBox>
+                    </StackPanel>
+                    <StackPanel Spacing="6">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <TextBlock Text="BRUSH SIZE" Classes="Caption" />
+                            <TextBlock x:Name="BrushSizeLabel" Grid.Column="1" Text="5 px" Classes="Caption" />
+                        </Grid>
+                        <Slider x:Name="BrushSizeSlider" Minimum="1" Maximum="28" Value="5"
+                                ValueChanged="BrushSizeSlider_OnValueChanged"
+                                AutomationProperties.Name="Brush size" />
+                    </StackPanel>
+                    <Border Height="1" Background="{DynamicResource Border}" />
+                    <Button Classes="quiet-button" Click="Undo_OnClick"
+                            AutomationProperties.Name="Undo last sketch stroke">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBlock Text="↶" FontSize="16" />
+                            <TextBlock Text="Undo stroke" FontSize="11" />
+                        </StackPanel>
+                    </Button>
+                    <Button Classes="quiet-button" Click="Clear_OnClick"
+                            AutomationProperties.Name="Clear sketchboard">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBlock Text="⌫" FontSize="14" />
+                            <TextBlock Text="Clear canvas" FontSize="11" />
+                        </StackPanel>
+                    </Button>
+                    <Border Margin="0,8,0,0" Padding="10" CornerRadius="7"
+                            Background="{DynamicResource SurfaceRaised}">
+                        <StackPanel Spacing="5">
+                            <TextBlock Text="TIP" Classes="Caption" Foreground="{DynamicResource Accent}" />
+                            <TextBlock Text="Start recording, then draw. Pause to plan your next stroke."
+                                       FontSize="10" TextWrapping="Wrap"
+                                       Foreground="{DynamicResource TextSecondary}" />
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </Border>
+
+            <Grid Grid.Column="1" RowDefinitions="Auto,*" RowSpacing="9">
+                <Grid ColumnDefinitions="*,Auto">
+                    <TextBlock Text="Canvas preview" FontSize="12" FontWeight="SemiBold"
+                               Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center" />
+                    <TextBlock x:Name="CanvasSizeLabel" Grid.Column="1" Text="960 × 540 px"
+                               Classes="Caption" VerticalAlignment="Center" />
+                </Grid>
+                <Border Grid.Row="1" Padding="12" CornerRadius="9"
+                        Background="{DynamicResource BackgroundSecondary}"
+                        BorderBrush="{DynamicResource Border}" BorderThickness="1">
+                    <Viewbox Stretch="Uniform">
+                        <Border x:Name="CanvasSurface" Width="960" Height="540" Background="#FFFCFE">
+                            <Canvas x:Name="DrawingCanvas" Width="960" Height="540"
+                                    Background="Transparent" ClipToBounds="True"
+                                    PointerPressed="DrawingCanvas_OnPointerPressed"
+                                    PointerMoved="DrawingCanvas_OnPointerMoved"
+                                    PointerReleased="DrawingCanvas_OnPointerReleased"
+                                    AutomationProperties.Name="Sketchboard drawing canvas" />
+                        </Border>
+                    </Viewbox>
+                </Border>
+            </Grid>
+        </Grid>
+
+        <Border Grid.Row="2" Padding="18,11" Background="{DynamicResource BackgroundSecondary}"
+                BorderBrush="{DynamicResource Border}" BorderThickness="0,1,0,0">
+            <Grid ColumnDefinitions="*,Auto,Auto,Auto" ColumnSpacing="10" VerticalAlignment="Center">
+                <StackPanel Spacing="3" VerticalAlignment="Center">
+                    <TextBlock x:Name="StatusText" Text="Ready when you are · draw, then start recording"
+                               FontSize="11" Foreground="{DynamicResource TextSecondary}" />
+                    <TextBlock Text="{Binding Status}" IsVisible="{Binding HasFinished}"
+                               FontSize="10" Foreground="{DynamicResource TextTertiary}" />
+                </StackPanel>
+                <Border Grid.Column="1" Padding="10,6" CornerRadius="6"
+                        Background="{DynamicResource SurfaceRaised}">
+                    <StackPanel Orientation="Horizontal" Spacing="7" VerticalAlignment="Center">
+                        <TextBlock Text="{Binding FrameCount}" FontFamily="Consolas" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource TextPrimary}" />
+                        <TextBlock Text="FRAMES" Classes="Caption" FontSize="8" />
+                    </StackPanel>
+                </Border>
+                <Button x:Name="StartButton" Grid.Column="2" Classes="primary-button"
+                        Click="StartRecording_OnClick" AutomationProperties.Name="Start sketchboard recording">
+                    <StackPanel Orientation="Horizontal" Spacing="7">
+                        <Ellipse Width="7" Height="7" Fill="#FFFFFF" />
+                        <TextBlock Text="Start recording" FontSize="11" />
+                    </StackPanel>
+                </Button>
+                <StackPanel x:Name="RecordingButtons" Grid.Column="2" Grid.ColumnSpan="2"
+                            Orientation="Horizontal" Spacing="9" IsVisible="False">
+                    <Button Classes="quiet-button" Command="{Binding TogglePauseCommand}"
+                            IsEnabled="{Binding CanPauseRecording}"
+                            AutomationProperties.Name="Pause or resume sketchboard recording">
+                        <StackPanel Orientation="Horizontal" Spacing="7">
+                            <TextBlock Text="Ⅱ" FontSize="12" />
+                            <TextBlock Text="{Binding PauseResumeLabel}" FontSize="11" />
+                        </StackPanel>
+                    </Button>
+                    <Button Classes="primary-button" Command="{Binding StopRecordingCommand}"
+                            IsEnabled="{Binding CanControlRecording}"
+                            AutomationProperties.Name="Stop sketchboard recording and open editor">
+                        <StackPanel Orientation="Horizontal" Spacing="7">
+                            <Border Width="9" Height="9" CornerRadius="2" Background="#071510" />
+                            <TextBlock Text="Stop &amp; open editor" FontSize="11" />
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

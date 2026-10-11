@@ -47,6 +47,8 @@ def main() -> None:
                 "Release",
                 "--runtime",
                 "win-x64",
+                "--framework",
+                "net9.0-windows10.0.19041.0",
                 "--self-contained",
                 "true",
                 "--output",
@@ -67,9 +69,13 @@ Build host: {host}, .NET SDK {sdk_version}
 
 Run {EXECUTABLE} on Windows 10 version 2004 or later, or Windows 11. Screen recording uses Windows GDI and requires an interactive desktop session.
 
-This preview has not been executed on Windows. The capture path, mixed-DPI selection, and end-to-end record → edit → GIF/MP4 workflow are not runtime verified. Do not treat it as a verified capture release.
+The executable passed a non-interactive startup smoke check on a hosted Windows runner. The app has not been validated in an interactive Windows desktop session; capture, mixed-DPI selection, and the end-to-end record → edit → GIF/MP4 workflow are not runtime verified. Do not treat it as a verified capture release.
 
 MP4 export requires a separately installed FFmpeg build with the libx264 encoder available on PATH. FFmpeg is not included in this package.
+
+GIF export offers palette and color-count controls, dithering, loop behavior, fixed frame rate, and custom dimensions. MP4 export offers H.264 quality, fixed frame rate, and custom dimensions. Both formats default to the source frame timing and retain saved export defaults from Preferences.
+
+The software Sketchboard provides fixed-size drawing canvases with brush controls and records the canvas into an editable .fsp project. Webcam capture uses Windows MediaCapture and includes a live preview in the recorder. Windows privacy settings must allow desktop apps to access the camera. The physical camera workflow still requires an interactive Windows check.
 
 Frame Studio is an independent Avalonia port based on ScreenToGif. It is not the official ScreenToGif application and is not affiliated with Nicke Manarin or N-Tech. The complete upstream license and attribution are included in LICENSE.txt.
 """,
@@ -106,7 +112,7 @@ Frame Studio is an independent Avalonia port based on ScreenToGif. It is not the
             temporary_archive.unlink(missing_ok=True)
 
     digest = hashlib.sha256(ARCHIVE.read_bytes()).hexdigest()
-    CHECKSUM_FILE.write_text(f"{digest}  {ARCHIVE.name}\n", encoding="ascii")
+    CHECKSUM_FILE.write_bytes(f"{digest}  {ARCHIVE.name}\n".encode("ascii"))
     print(f"Package: {ARCHIVE}")
     print(f"SHA-256: {digest}")
     print("Status: preview package built; Windows runtime validation is still required.")

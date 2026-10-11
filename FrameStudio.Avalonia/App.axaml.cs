@@ -20,11 +20,17 @@ public partial class App : Application
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             var windowsPlatform = OperatingSystem.IsWindows() ? new WindowsPlatformServices() : null;
+#if WINDOWS
+            var webcamService = OperatingSystem.IsWindows() ? new WindowsWebcamCaptureService() : null;
+#else
+            FrameStudio.Platform.Abstractions.IWebcamService? webcamService = null;
+#endif
             var projectPath = desktop.Args?.FirstOrDefault(argument =>
                 string.Equals(Path.GetExtension(argument), ".fsp", StringComparison.OrdinalIgnoreCase) && File.Exists(argument));
             desktop.MainWindow = new MainWindow(projectPath)
             {
-                DataContext = new MainViewModel(new ShellCapabilityProvider(), windowsPlatform, windowsPlatform),
+                DataContext = new MainViewModel(new ShellCapabilityProvider(), windowsPlatform, windowsPlatform,
+                    windowCaptureService: windowsPlatform, webcamCaptureService: webcamService),
             };
         }
 

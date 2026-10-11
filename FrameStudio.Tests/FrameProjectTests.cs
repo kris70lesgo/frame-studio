@@ -166,6 +166,7 @@ public sealed class FrameProjectTests
         Directory.CreateDirectory(directory);
         var projectPath = Path.Combine(directory, "capture.fsp");
         var gifPath = Path.Combine(directory, "capture.gif");
+        var scaledGifPath = Path.Combine(directory, "capture-small-once.gif");
         byte[] redFrame = [255, 0, 0, 255, 255, 0, 0, 255];
         byte[] blueFrame = [0, 0, 255, 255, 0, 0, 255, 255];
 
@@ -183,6 +184,14 @@ public sealed class FrameProjectTests
             var loadedProject = await FrameProjectArchiveReader.ReadProjectAsync(projectPath);
             var loadedPixels = await FrameProjectArchiveReader.ReadFrameRgbaAsync(projectPath, loadedProject, 1);
             Assert.Equal(blueFrame, loadedPixels);
+
+            await using (var reader = await FrameProjectArchiveReader.OpenAsync(projectPath))
+            {
+                Assert.Equal(loadedProject.Frames.Count, reader.Project.Frames.Count);
+                Assert.Equal(blueFrame, await reader.ReadFrameRgbaAsync(1));
+                Assert.Equal(redFrame, await reader.ReadFrameRgbaAsync(0));
+                Assert.Equal(blueFrame, await reader.ReadFrameRgbaAsync(1));
+            }
 
             var editedProject = await FrameProjectArchiveEditor.RewriteAsync(projectPath, projectPath, loadedProject,
             [
@@ -236,6 +245,91 @@ public sealed class FrameProjectTests
             Assert.Equal(new PixelSize(2, 2), gifMetadata.CanvasSize);
             Assert.Equal(new[] { 120, 70, 90 }, gifMetadata.FrameDurationsMilliseconds);
             Assert.Equal(0, gifMetadata.RepeatCount);
+
+            await new GifExportService().ExportSelectionAsync(projectPath, scaledGifPath, editorSelection,
+                new GifExportOptions(RepeatCount: -1, MaximumColors: 128,
+                    Quantization: ColorQuantizationTypes.MedianCut, ScalePercent: 50));
+            var scaledMetadata = ReadGifMetadata(await File.ReadAllBytesAsync(scaledGifPath));
+            Assert.Equal(new PixelSize(1, 1), scaledMetadata.CanvasSize);
+            Assert.Equal(-1, scaledMetadata.RepeatCount);
+
+            await Assert.ThrowsAsync<ArgumentOutOfRangeException>(async () =>
+                await new GifExportService().ExportSelectionAsync(projectPath, Path.Combine(directory, "invalid.gif"),
+                    editorSelection, new GifExportOptions(ScalePercent: 500)));
+        }
+        finally
+        {
+            Directory.Delete(directory, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task GifExport_ResamplesAtRequestedRateAndUsesCustomDimensions()
+    {
+        var directory = Path.Combine(Path.GetTempPath(), $"frame-studio-gif-options-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(directory);
+        var projectPath = Path.Combine(directory, "source.fsp");
+        var gifPath = Path.Combine(directory, "custom.gif");
+        byte[] red = [255, 0, 0, 255];
+        byte[] green = [0, 255, 0, 255];
+
+        try
+        {
+            await using (var writer = await FrameProjectArchiveWriter.CreateAsync(projectPath, "GIF options", new PixelSize(1, 1)))
+            {
+                await writer.WriteFrameAsync(new PixelSize(1, 1), red, 100);
+                await writer.WriteFrameAsync(new PixelSize(1, 1), green, 100);
+                await writer.CompleteAsync();
+            }
+
+            await new GifExportService().ExportAsync(projectPath, gifPath,
+                new GifExportOptions(FramesPerSecond: 20, OutputSize: new PixelSize(2, 3)));
+
+            var gif = await File.ReadAllBytesAsync(gifPath);
+            var metadata = ReadGifMetadata(gif);
+            Assert.Equal(new PixelSize(2, 3), metadata.CanvasSize);
+            Assert.Equal(new[] { 50, 50, 50, 50 }, metadata.FrameDurationsMilliseconds);
+            var decodedFrames = GifLzwRoundTripTests.DecodeFrameRgba(gif);
+            Assert.Equal(4, decodedFrames.Count);
+            Assert.Equal(Enumerable.Repeat(red, 6).SelectMany(frame => frame), decodedFrames[0]);
+            Assert.Equal(Enumerable.Repeat(red, 6).SelectMany(frame => frame), decodedFrames[1]);
+            Assert.Equal(Enumerable.Repeat(green, 6).SelectMany(frame => frame), decodedFrames[2]);
+            Assert.Equal(Enumerable.Repeat(green, 6).SelectMany(frame => frame), decodedFrames[3]);
+        }
+        finally
+        {
+            Directory.Delete(directory, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task GifExport_FloydSteinbergDitheringChangesDecodedGradientPixels()
+    {
+        var directory = Path.Combine(Path.GetTempPath(), $"frame-studio-gif-dither-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(directory);
+        var projectPath = Path.Combine(directory, "gradient.fsp");
+        var plainGifPath = Path.Combine(directory, "plain.gif");
+        var ditheredGifPath = Path.Combine(directory, "dithered.gif");
+        var shades = new byte[] { 0, 70, 100, 110, 115, 120, 130, 200 };
+        var pixels = shades.SelectMany(shade => new byte[] { shade, shade, shade, byte.MaxValue }).ToArray();
+
+        try
+        {
+            await using (var writer = await FrameProjectArchiveWriter.CreateAsync(projectPath, "Gradient", new PixelSize(8, 1)))
+            {
+                await writer.WriteFrameAsync(new PixelSize(8, 1), pixels, 100);
+                await writer.CompleteAsync();
+            }
+
+            var plainOptions = new GifExportOptions(MaximumColors: 2, Quantization: ColorQuantizationTypes.MedianCut);
+            await new GifExportService().ExportAsync(projectPath, plainGifPath, plainOptions);
+            await new GifExportService().ExportAsync(projectPath, ditheredGifPath, plainOptions with { Dither = true });
+
+            var plain = GifLzwRoundTripTests.DecodeFrameRgba(await File.ReadAllBytesAsync(plainGifPath));
+            var dithered = GifLzwRoundTripTests.DecodeFrameRgba(await File.ReadAllBytesAsync(ditheredGifPath));
+            Assert.Single(plain);
+            Assert.Single(dithered);
+            Assert.NotEqual(plain[0], dithered[0]);
         }
         finally
         {
@@ -309,9 +403,10 @@ public sealed class FrameProjectTests
         Directory.CreateDirectory(directory);
         var projectPath = Path.Combine(directory, "timing.fsp");
         var mp4Path = Path.Combine(directory, "timing.mp4");
-        var size = new PixelSize(2, 2);
-        var red = Enumerable.Repeat(new byte[] { 255, 0, 0, 255 }, 4).SelectMany(pixel => pixel).ToArray();
-        var blue = Enumerable.Repeat(new byte[] { 0, 0, 255, 255 }, 4).SelectMany(pixel => pixel).ToArray();
+        var fixedRateMp4Path = Path.Combine(directory, "fixed-rate.mp4");
+        var size = new PixelSize(8, 4);
+        var red = Enumerable.Repeat(new byte[] { 255, 0, 0, 255 }, size.Width * size.Height).SelectMany(pixel => pixel).ToArray();
+        var blue = Enumerable.Repeat(new byte[] { 0, 0, 255, 255 }, size.Width * size.Height).SelectMany(pixel => pixel).ToArray();
 
         try
         {
@@ -323,7 +418,8 @@ public sealed class FrameProjectTests
             }
 
             var project = await FrameProjectArchiveReader.ReadProjectAsync(projectPath);
-            var editor = new EditorViewModel(projectPath, project);
+            var editor = new EditorViewModel(projectPath, project,
+                mp4ExportOptions: new FfmpegMp4ExportOptions(Crf: 18, ScalePercent: 50));
             editor.MoveSelectedFrameLaterCommand.Execute(null);
             editor.SelectedFrame = editor.Frames[0];
             editor.DurationText = "120";
@@ -348,7 +444,7 @@ public sealed class FrameProjectTests
             foreach (var argument in new[]
             {
                 "-v", "error", "-select_streams", "v:0", "-show_entries",
-                "frame=best_effort_timestamp_time:stream=duration", "-of", "json", mp4Path
+                "frame=best_effort_timestamp_time:stream=duration,width,height", "-of", "json", mp4Path
             })
                 startInfo.ArgumentList.Add(argument);
 
@@ -358,6 +454,8 @@ public sealed class FrameProjectTests
             await probe.WaitForExitAsync();
             Assert.True(probe.ExitCode == 0, await errorTask);
             using var metadata = System.Text.Json.JsonDocument.Parse(await outputTask);
+            Assert.Equal(4, metadata.RootElement.GetProperty("streams")[0].GetProperty("width").GetInt32());
+            Assert.Equal(2, metadata.RootElement.GetProperty("streams")[0].GetProperty("height").GetInt32());
             var timestamps = metadata.RootElement.GetProperty("frames").EnumerateArray()
                 .Select(frame => double.Parse(frame.GetProperty("best_effort_timestamp_time").GetString()!, CultureInfo.InvariantCulture))
                 .ToArray();
@@ -367,6 +465,45 @@ public sealed class FrameProjectTests
             var duration = double.Parse(metadata.RootElement.GetProperty("streams")[0].GetProperty("duration").GetString()!,
                 CultureInfo.InvariantCulture);
             Assert.Equal(200, Math.Round(duration * 1000));
+
+            var fixedRateEditor = new EditorViewModel(projectPath, project,
+                mp4ExportOptions: new FfmpegMp4ExportOptions(Crf: 23, FramesPerSecond: 30,
+                    OutputSize: new PixelSize(5, 3)));
+            await fixedRateEditor.ExportMp4Async(fixedRateMp4Path);
+            Assert.Equal("MP4 exported", fixedRateEditor.Status);
+
+            var fixedRateProbeInfo = new ProcessStartInfo(FfmpegMp4ExportService.FfprobeExecutablePath ?? "ffprobe")
+            {
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                CreateNoWindow = true
+            };
+            foreach (var argument in new[]
+            {
+                "-v", "error", "-select_streams", "v:0", "-show_entries",
+                "frame=best_effort_timestamp_time:stream=duration,width,height", "-of", "json", fixedRateMp4Path
+            })
+                fixedRateProbeInfo.ArgumentList.Add(argument);
+
+            using var fixedRateProbe = Process.Start(fixedRateProbeInfo)
+                ?? throw new InvalidOperationException("Could not start ffprobe.");
+            var fixedOutputTask = fixedRateProbe.StandardOutput.ReadToEndAsync();
+            var fixedErrorTask = fixedRateProbe.StandardError.ReadToEndAsync();
+            await fixedRateProbe.WaitForExitAsync();
+            Assert.True(fixedRateProbe.ExitCode == 0, await fixedErrorTask);
+            using var fixedMetadata = System.Text.Json.JsonDocument.Parse(await fixedOutputTask);
+            Assert.Equal(6, fixedMetadata.RootElement.GetProperty("streams")[0].GetProperty("width").GetInt32());
+            Assert.Equal(4, fixedMetadata.RootElement.GetProperty("streams")[0].GetProperty("height").GetInt32());
+            var fixedTimestamps = fixedMetadata.RootElement.GetProperty("frames").EnumerateArray()
+                .Select(frame => double.Parse(frame.GetProperty("best_effort_timestamp_time").GetString()!, CultureInfo.InvariantCulture))
+                .ToArray();
+            Assert.InRange(fixedTimestamps.Length, 4, 7);
+            foreach (var interval in fixedTimestamps.Zip(fixedTimestamps.Skip(1), (first, next) => next - first))
+                Assert.InRange(interval, 0.025, 0.042);
+            var fixedDuration = double.Parse(fixedMetadata.RootElement.GetProperty("streams")[0].GetProperty("duration").GetString()!,
+                CultureInfo.InvariantCulture);
+            Assert.InRange(Math.Round(fixedDuration * 1000), 150, 230);
         }
         finally
         {

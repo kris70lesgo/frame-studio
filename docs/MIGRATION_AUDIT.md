@@ -77,6 +77,10 @@ Add new, independently named projects beside the upstream projects:
 
 Keep the original ScreenToGif projects and their history as the functional reference. Do not add project references from `FrameStudio.Avalonia` to the WPF projects. Move or link only audited source modules into Core, retaining upstream attribution and the complete MS-PL notice. Build the Avalonia shell first, then connect one working recording → project → editing → GIF export path before adding secondary features.
 
+### Implementation update
+
+The Windows platform project now has both a cross-platform `net9.0` target and a `net9.0-windows10.0.19041.0` target. The latter uses the Windows SDK .NET reference pack for an independently implemented `MediaCapture`/`MediaFrameReader` webcam adapter. It enumerates color camera sources, converts padded BGRA planes to the app's RGBA frame contract, and keeps the existing recording consumer/project writer. The Windows candidate must be published from the Windows TFM to include webcam support. Unpackaged desktop apps use Windows' camera privacy setting rather than an MSIX webcam capability; see Microsoft's [MediaFrameReader camera guidance](https://learn.microsoft.com/en-us/windows/apps/develop/camera/use-opencv-with-mediaframereader). The physical camera, preview, and privacy flow still need a Windows desktop run.
+
 ## Baseline observations and limitations
 
 - The original README documents recording, webcam, sketchboard, frame editing, and GIF/APNG/video/PSD/image export. It links to upstream recorder, start-screen, editor, and settings screenshots/animations, but this clone has no local raster baseline captures. A later macOS shell screenshot is explicitly labeled as a UI check, not a Windows before/after image.

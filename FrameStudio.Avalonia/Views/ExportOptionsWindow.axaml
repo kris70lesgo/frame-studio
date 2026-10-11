@@ -1,0 +1,133 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="FrameStudio.Avalonia.Views.ExportOptionsWindow"
+        Title="Export options"
+        Width="580" Height="650" MinWidth="540" MinHeight="560"
+        CanResize="False"
+        WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource BackgroundPrimary}"
+        FontFamily="Inter, Segoe UI, sans-serif">
+    <Border Padding="22" BorderBrush="{DynamicResource Border}" BorderThickness="1">
+        <Grid RowDefinitions="Auto,*,Auto" RowSpacing="14">
+            <StackPanel Spacing="4">
+                <TextBlock x:Name="EyebrowLabel" Text="GIF EXPORT" Classes="Caption" />
+                <TextBlock x:Name="TitleLabel" Text="Prepare your animation" Classes="Title" FontSize="20" />
+                <TextBlock Text="Choose output quality and size. Your project remains unchanged."
+                           FontSize="11" Foreground="{DynamicResource TextSecondary}" TextWrapping="Wrap" />
+            </StackPanel>
+
+            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                <StackPanel Spacing="12">
+                    <Border Padding="14" Background="{DynamicResource Surface}"
+                            BorderBrush="{DynamicResource Border}" BorderThickness="1" CornerRadius="6">
+                        <Grid>
+                        <StackPanel x:Name="GifSettingsPanel" Spacing="10">
+                            <TextBlock Text="GIF settings" FontSize="13" FontWeight="SemiBold"
+                                       Foreground="{DynamicResource TextPrimary}" />
+                            <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto" RowSpacing="8">
+                                <TextBlock Text="Frame rate" FontSize="11" Foreground="{DynamicResource TextPrimary}"
+                                           VerticalAlignment="Center" />
+                                <ComboBox x:Name="GifFrameRatePicker" Grid.Column="1" MinWidth="190">
+                                    <ComboBoxItem Content="Match source timings" Tag="0" />
+                                    <ComboBoxItem Content="10 FPS" Tag="10" />
+                                    <ComboBoxItem Content="15 FPS" Tag="15" />
+                                    <ComboBoxItem Content="24 FPS" Tag="24" />
+                                    <ComboBoxItem Content="30 FPS" Tag="30" />
+                                    <ComboBoxItem Content="60 FPS" Tag="60" />
+                                    <ComboBoxItem Content="100 FPS" Tag="100" />
+                                </ComboBox>
+                                <TextBlock Grid.Row="1" Text="Palette" FontSize="11" Foreground="{DynamicResource TextPrimary}"
+                                           VerticalAlignment="Center" />
+                                <ComboBox x:Name="GifPalettePicker" Grid.Row="1" Grid.Column="1" MinWidth="190">
+                                    <ComboBoxItem Content="Balanced · Octree" Tag="0" />
+                                    <ComboBoxItem Content="Median cut" Tag="1" />
+                                    <ComboBoxItem Content="Most used colors" Tag="2" />
+                                </ComboBox>
+                                <TextBlock Grid.Row="2" Text="Maximum colors" FontSize="11" Foreground="{DynamicResource TextPrimary}"
+                                           VerticalAlignment="Center" />
+                                <ComboBox x:Name="GifColorCountPicker" Grid.Row="2" Grid.Column="1" MinWidth="190" />
+                            </Grid>
+                            <StackPanel Orientation="Horizontal" Spacing="16">
+                                <CheckBox x:Name="GifLoopCheckBox" Content="Loop continuously" FontSize="11"
+                                          Foreground="{DynamicResource TextPrimary}" />
+                                <CheckBox x:Name="GifDitherCheckBox" Content="Floyd–Steinberg dithering" FontSize="11"
+                                          Foreground="{DynamicResource TextPrimary}" />
+                            </StackPanel>
+                        </StackPanel>
+
+                        <StackPanel x:Name="Mp4SettingsPanel" Spacing="10" IsVisible="False">
+                            <TextBlock Text="MP4 settings" FontSize="13" FontWeight="SemiBold"
+                                       Foreground="{DynamicResource TextPrimary}" />
+                            <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto" RowSpacing="8">
+                                <TextBlock Text="Codec" FontSize="11" Foreground="{DynamicResource TextPrimary}"
+                                           VerticalAlignment="Center" />
+                                <TextBlock Grid.Column="1" Text="H.264 · libx264" FontSize="11"
+                                           Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" />
+                                <TextBlock Grid.Row="1" Text="Quality" FontSize="11" Foreground="{DynamicResource TextPrimary}"
+                                           VerticalAlignment="Center" />
+                                <ComboBox x:Name="Mp4QualityPicker" Grid.Row="1" Grid.Column="1" MinWidth="190">
+                                    <ComboBoxItem Content="High quality · CRF 18" Tag="18" />
+                                    <ComboBoxItem Content="Balanced · CRF 23" Tag="23" />
+                                    <ComboBoxItem Content="Smaller file · CRF 28" Tag="28" />
+                                </ComboBox>
+                                <TextBlock Grid.Row="2" Text="Frame rate" FontSize="11" Foreground="{DynamicResource TextPrimary}"
+                                           VerticalAlignment="Center" />
+                                <ComboBox x:Name="Mp4FrameRatePicker" Grid.Row="2" Grid.Column="1" MinWidth="190">
+                                    <ComboBoxItem Content="Match source timings" Tag="0" />
+                                    <ComboBoxItem Content="24 FPS" Tag="24" />
+                                    <ComboBoxItem Content="30 FPS" Tag="30" />
+                                    <ComboBoxItem Content="60 FPS" Tag="60" />
+                                </ComboBox>
+                            </Grid>
+                        </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <Border Padding="14" Background="{DynamicResource Surface}"
+                            BorderBrush="{DynamicResource Border}" BorderThickness="1" CornerRadius="6">
+                        <StackPanel Spacing="9">
+                            <TextBlock Text="Output dimensions" FontSize="13" FontWeight="SemiBold"
+                                       Foreground="{DynamicResource TextPrimary}" />
+                            <ComboBox x:Name="ScalePicker" HorizontalAlignment="Stretch">
+                                <ComboBoxItem Content="Original size" Tag="100" />
+                                <ComboBoxItem Content="75%" Tag="75" />
+                                <ComboBoxItem Content="50%" Tag="50" />
+                            </ComboBox>
+                            <CheckBox x:Name="CustomDimensionsCheckBox" Content="Choose custom dimensions"
+                                      FontSize="11" Foreground="{DynamicResource TextPrimary}" />
+                            <Grid x:Name="DimensionsInputGrid" ColumnDefinitions="*,*" ColumnSpacing="10">
+                                <StackPanel Spacing="4">
+                                    <TextBlock Text="Width · px" Classes="Caption" />
+                                    <TextBox x:Name="WidthInput" TextChanged="Width_OnTextChanged" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" Spacing="4">
+                                    <TextBlock Text="Height · px" Classes="Caption" />
+                                    <TextBox x:Name="HeightInput" TextChanged="Height_OnTextChanged" />
+                                </StackPanel>
+                            </Grid>
+                            <CheckBox x:Name="KeepAspectRatioCheckBox" Content="Keep source aspect ratio"
+                                      IsChecked="True" FontSize="11" Foreground="{DynamicResource TextSecondary}" />
+                            <TextBlock x:Name="DimensionErrorLabel" Text="Each side is limited to 16,384 px; canvas area is limited to 16 megapixels."
+                                       FontSize="10" Foreground="{DynamicResource TextTertiary}" TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Border>
+
+                    <Border Padding="14" Background="{DynamicResource SurfaceRaised}" CornerRadius="6">
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="OUTPUT PREVIEW" Classes="Caption" Foreground="{DynamicResource TextSecondary}" />
+                            <TextBlock x:Name="EstimateLabel" Text="—" FontSize="12" FontWeight="SemiBold"
+                                       Foreground="{DynamicResource TextPrimary}" />
+                            <TextBlock Text="File size depends on the animation content and compression settings."
+                                       FontSize="10" Foreground="{DynamicResource TextSecondary}" TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
+
+            <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+                <Button Classes="quiet-button" Click="Cancel_OnClick" Content="Cancel" />
+                <Button x:Name="ExportButton" Classes="primary-button" Click="Export_OnClick" Content="Choose file…" />
+            </StackPanel>
+        </Grid>
+    </Border>
+</Window>

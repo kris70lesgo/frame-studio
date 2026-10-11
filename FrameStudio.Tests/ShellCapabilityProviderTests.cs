@@ -24,12 +24,16 @@ public sealed class ShellCapabilityProviderTests
                 Assert.Equal(FeatureReadiness.Unsupported, screen.Readiness);
                 Assert.Contains("Windows 10 version 2004", screen.Detail);
             }
-            Assert.All(capabilities.Where(item => item.Source != CaptureSource.Screen),
-                item => Assert.Equal(FeatureReadiness.Planned, item.Readiness));
+            Assert.Equal(FeatureReadiness.Ready, capabilities.Single(item => item.Source == CaptureSource.Window).Readiness);
+            Assert.Equal(FeatureReadiness.Ready, capabilities.Single(item => item.Source == CaptureSource.Webcam).Readiness);
+            Assert.Equal(FeatureReadiness.Ready, capabilities.Single(item => item.Source == CaptureSource.Sketchboard).Readiness);
         }
         else
         {
-            Assert.All(capabilities, item => Assert.Equal(FeatureReadiness.Unsupported, item.Readiness));
+            Assert.Equal(FeatureReadiness.Unsupported, capabilities.Single(item => item.Source == CaptureSource.Screen).Readiness);
+            Assert.Equal(FeatureReadiness.Unsupported, capabilities.Single(item => item.Source == CaptureSource.Window).Readiness);
+            Assert.Equal(FeatureReadiness.Unsupported, capabilities.Single(item => item.Source == CaptureSource.Webcam).Readiness);
+            Assert.Equal(FeatureReadiness.Ready, capabilities.Single(item => item.Source == CaptureSource.Sketchboard).Readiness);
         }
     }
 }

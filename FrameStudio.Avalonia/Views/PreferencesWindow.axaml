@@ -1,0 +1,230 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="FrameStudio.Avalonia.Views.PreferencesWindow"
+        Title="Frame Studio Preferences"
+        Width="820" Height="610" MinWidth="760" MinHeight="560"
+        WindowStartupLocation="CenterOwner"
+        CanResize="False"
+        Background="{DynamicResource BackgroundPrimary}"
+        FontFamily="Inter, Segoe UI, sans-serif">
+    <Grid RowDefinitions="Auto,*,Auto" Margin="24" RowSpacing="18">
+        <StackPanel Spacing="5">
+            <TextBlock Text="PREFERENCES" Classes="Caption" />
+            <TextBlock Text="Make Frame Studio yours" Classes="Title" FontSize="22" />
+            <TextBlock Text="Set defaults for recording, editing, and export. Changes are saved on this device."
+                       Classes="Body" FontSize="12" TextWrapping="Wrap" />
+        </StackPanel>
+
+        <TabControl Grid.Row="1" TabStripPlacement="Left">
+            <TabItem Header="General">
+                <Border Padding="18" Background="{DynamicResource Surface}"
+                        BorderBrush="{DynamicResource Border}" BorderThickness="1" CornerRadius="6">
+                    <StackPanel Spacing="8" VerticalAlignment="Top">
+                        <TextBlock Text="Stored on this device" FontSize="13" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource TextPrimary}" />
+                        <TextBlock Text="Preferences and recent-project history stay in your local Frame Studio app data. Captures and projects are not uploaded."
+                                   FontSize="11" Foreground="{DynamicResource TextSecondary}"
+                                   TextWrapping="Wrap" MaxWidth="460" />
+                    </StackPanel>
+                </Border>
+            </TabItem>
+            <TabItem Header="Recording">
+                <Border Padding="18" Background="{DynamicResource Surface}"
+                        BorderBrush="{DynamicResource Border}" BorderThickness="1" CornerRadius="6">
+                    <StackPanel Spacing="16" VerticalAlignment="Top">
+                        <StackPanel Spacing="5">
+                            <TextBlock Text="Default frame rate" FontSize="12" FontWeight="SemiBold"
+                                       Foreground="{DynamicResource TextPrimary}" />
+                            <TextBlock Text="You can still change this for each recording."
+                                       FontSize="10" Foreground="{DynamicResource TextSecondary}" />
+                            <ComboBox x:Name="FrameRatePicker" MinWidth="140" HorizontalAlignment="Left" Margin="0,5,0,0" />
+                        </StackPanel>
+                        <CheckBox x:Name="CaptureCursorCheckBox" Content="Include the pointer by default"
+                                  FontSize="11" Foreground="{DynamicResource TextPrimary}" />
+                    </StackPanel>
+                </Border>
+            </TabItem>
+            <TabItem Header="Editor">
+                <Border Padding="18" Background="{DynamicResource Surface}"
+                        BorderBrush="{DynamicResource Border}" BorderThickness="1" CornerRadius="6">
+                    <StackPanel Spacing="8" VerticalAlignment="Top">
+                        <TextBlock Text="Preview playback" FontSize="13" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource TextPrimary}" />
+                        <CheckBox x:Name="LoopPreviewCheckBox" Content="Loop preview when it reaches the last frame"
+                                  FontSize="11" Foreground="{DynamicResource TextPrimary}" />
+                        <TextBlock Text="When disabled, playback stops on the final frame."
+                                   FontSize="10" Foreground="{DynamicResource TextSecondary}"
+                                   TextWrapping="Wrap" MaxWidth="460" />
+                    </StackPanel>
+                </Border>
+            </TabItem>
+            <TabItem Header="Export">
+                <Border Padding="18" Background="{DynamicResource Surface}"
+                        BorderBrush="{DynamicResource Border}" BorderThickness="1" CornerRadius="6">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <StackPanel Spacing="12" VerticalAlignment="Top">
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="GIF export defaults" FontSize="13" FontWeight="SemiBold"
+                                           Foreground="{DynamicResource TextPrimary}" />
+                                <CheckBox x:Name="LoopGifCheckBox" Content="Loop the GIF continuously"
+                                          FontSize="11" Foreground="{DynamicResource TextPrimary}" />
+                            </StackPanel>
+                            <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="9">
+                                <TextBlock Text="Color palette" FontSize="11" Foreground="{DynamicResource TextPrimary}"
+                                           VerticalAlignment="Center" />
+                                <ComboBox x:Name="GifPalettePicker" Grid.Column="1" MinWidth="190" HorizontalAlignment="Right">
+                                    <ComboBoxItem Content="Balanced (Octree)" />
+                                    <ComboBoxItem Content="Median cut" />
+                                    <ComboBoxItem Content="Most used colors" />
+                                </ComboBox>
+                                <TextBlock Grid.Row="1" Text="Maximum colors" FontSize="11"
+                                           Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center" />
+                                <ComboBox x:Name="GifColorCountPicker" Grid.Row="1" Grid.Column="1"
+                                          MinWidth="190" HorizontalAlignment="Right" />
+                                <TextBlock Grid.Row="2" Text="Output size" FontSize="11"
+                                           Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center" />
+                                <ComboBox x:Name="GifScalePicker" Grid.Row="2" Grid.Column="1"
+                                          MinWidth="190" HorizontalAlignment="Right">
+                                    <ComboBoxItem Content="100% · Original size" Tag="100" />
+                                    <ComboBoxItem Content="75%" Tag="75" />
+                                    <ComboBoxItem Content="50%" Tag="50" />
+                                </ComboBox>
+                                <TextBlock Grid.Row="3" Text="Frame rate" FontSize="11"
+                                           Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center" />
+                                <ComboBox x:Name="GifFrameRatePicker" Grid.Row="3" Grid.Column="1"
+                                          MinWidth="190" HorizontalAlignment="Right">
+                                    <ComboBoxItem Content="Match source timings" Tag="0" />
+                                    <ComboBoxItem Content="10 FPS" Tag="10" />
+                                    <ComboBoxItem Content="15 FPS" Tag="15" />
+                                    <ComboBoxItem Content="24 FPS" Tag="24" />
+                                    <ComboBoxItem Content="30 FPS" Tag="30" />
+                                    <ComboBoxItem Content="60 FPS" Tag="60" />
+                                    <ComboBoxItem Content="100 FPS" Tag="100" />
+                                </ComboBox>
+                            </Grid>
+                            <CheckBox x:Name="GifDitherCheckBox" Content="Apply Floyd–Steinberg dithering"
+                                      FontSize="11" Foreground="{DynamicResource TextPrimary}" />
+                            <Border Height="1" Background="{DynamicResource Border}" Margin="0,3" />
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="MP4 export defaults" FontSize="13" FontWeight="SemiBold"
+                                           Foreground="{DynamicResource TextPrimary}" />
+                                <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto" RowSpacing="9">
+                                    <TextBlock Text="Quality" FontSize="11" Foreground="{DynamicResource TextPrimary}"
+                                               VerticalAlignment="Center" />
+                                    <ComboBox x:Name="Mp4QualityPicker" Grid.Column="1" MinWidth="190" HorizontalAlignment="Right">
+                                        <ComboBoxItem Content="High quality · CRF 18" Tag="18" />
+                                        <ComboBoxItem Content="Balanced · CRF 23" Tag="23" />
+                                        <ComboBoxItem Content="Smaller file · CRF 28" Tag="28" />
+                                    </ComboBox>
+                                    <TextBlock Grid.Row="1" Text="Output size" FontSize="11"
+                                               Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center" />
+                                    <ComboBox x:Name="Mp4ScalePicker" Grid.Row="1" Grid.Column="1"
+                                              MinWidth="190" HorizontalAlignment="Right">
+                                        <ComboBoxItem Content="100% · Original size" Tag="100" />
+                                        <ComboBoxItem Content="75%" Tag="75" />
+                                        <ComboBoxItem Content="50%" Tag="50" />
+                                    </ComboBox>
+                                    <TextBlock Grid.Row="2" Text="Frame rate" FontSize="11"
+                                               Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center" />
+                                    <ComboBox x:Name="Mp4FrameRatePicker" Grid.Row="2" Grid.Column="1"
+                                              MinWidth="190" HorizontalAlignment="Right">
+                                        <ComboBoxItem Content="Match source timings" Tag="0" />
+                                        <ComboBoxItem Content="24 FPS" Tag="24" />
+                                        <ComboBoxItem Content="30 FPS" Tag="30" />
+                                        <ComboBoxItem Content="60 FPS" Tag="60" />
+                                    </ComboBox>
+                                </Grid>
+                            </StackPanel>
+                            <TextBlock Text="Custom dimensions are available each time you export. H.264 pads odd dimensions to even values."
+                                       FontSize="10" Foreground="{DynamicResource TextSecondary}"
+                                       TextWrapping="Wrap" MaxWidth="460" />
+                        </StackPanel>
+                    </ScrollViewer>
+                </Border>
+            </TabItem>
+            <TabItem Header="Shortcuts">
+                <Border Padding="18" Background="{DynamicResource Surface}"
+                        BorderBrush="{DynamicResource Border}" BorderThickness="1" CornerRadius="6">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <StackPanel Spacing="12" VerticalAlignment="Top">
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="Editor shortcuts" FontSize="13" FontWeight="SemiBold"
+                                           Foreground="{DynamicResource TextPrimary}" />
+                                <TextBlock Text="Use Control on Windows and Linux, or Command (⌘) on macOS."
+                                           FontSize="10" Foreground="{DynamicResource TextSecondary}"
+                                           TextWrapping="Wrap" />
+                            </StackPanel>
+                            <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto" RowSpacing="8">
+                                <TextBlock Grid.Row="0" Text="Save project" FontSize="11" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center" />
+                                <Border Grid.Row="0" Grid.Column="1" Padding="7,4" CornerRadius="4" Background="{DynamicResource SurfaceRaised}"><TextBlock Text="Ctrl / ⌘ + S" FontSize="10" Foreground="{DynamicResource TextSecondary}" /></Border>
+                                <TextBlock Grid.Row="1" Text="Duplicate selected frame" FontSize="11" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center" />
+                                <Border Grid.Row="1" Grid.Column="1" Padding="7,4" CornerRadius="4" Background="{DynamicResource SurfaceRaised}"><TextBlock Text="Ctrl / ⌘ + D" FontSize="10" Foreground="{DynamicResource TextSecondary}" /></Border>
+                                <TextBlock Grid.Row="2" Text="Move frame earlier" FontSize="11" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center" />
+                                <Border Grid.Row="2" Grid.Column="1" Padding="7,4" CornerRadius="4" Background="{DynamicResource SurfaceRaised}"><TextBlock Text="Ctrl / ⌘ + ←" FontSize="10" Foreground="{DynamicResource TextSecondary}" /></Border>
+                                <TextBlock Grid.Row="3" Text="Move frame later" FontSize="11" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center" />
+                                <Border Grid.Row="3" Grid.Column="1" Padding="7,4" CornerRadius="4" Background="{DynamicResource SurfaceRaised}"><TextBlock Text="Ctrl / ⌘ + →" FontSize="10" Foreground="{DynamicResource TextSecondary}" /></Border>
+                                <TextBlock Grid.Row="4" Text="Delete selected frame" FontSize="11" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center" />
+                                <Border Grid.Row="4" Grid.Column="1" Padding="7,4" CornerRadius="4" Background="{DynamicResource SurfaceRaised}"><TextBlock Text="Delete" FontSize="10" Foreground="{DynamicResource TextSecondary}" /></Border>
+                                <TextBlock Grid.Row="5" Text="Play or pause preview" FontSize="11" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center" />
+                                <Border Grid.Row="5" Grid.Column="1" Padding="7,4" CornerRadius="4" Background="{DynamicResource SurfaceRaised}"><TextBlock Text="Space" FontSize="10" Foreground="{DynamicResource TextSecondary}" /></Border>
+                                <TextBlock Grid.Row="6" Text="Cancel crop or drawing" FontSize="11" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center" />
+                                <Border Grid.Row="6" Grid.Column="1" Padding="7,4" CornerRadius="4" Background="{DynamicResource SurfaceRaised}"><TextBlock Text="Esc" FontSize="10" Foreground="{DynamicResource TextSecondary}" /></Border>
+                            </Grid>
+                            <TextBlock Text="Delete and Space act in the editor when a text field or button does not have focus."
+                                       FontSize="10" Foreground="{DynamicResource TextSecondary}" TextWrapping="Wrap" />
+                        </StackPanel>
+                    </ScrollViewer>
+                </Border>
+            </TabItem>
+            <TabItem Header="Appearance">
+                <Border Padding="18" Background="{DynamicResource Surface}"
+                        BorderBrush="{DynamicResource Border}" BorderThickness="1" CornerRadius="6">
+                    <StackPanel Spacing="7" VerticalAlignment="Top">
+                        <TextBlock Text="Color theme" FontSize="12" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource TextPrimary}" />
+                        <TextBlock Text="Use the light or dark Frame Studio workspace."
+                                   FontSize="10" Foreground="{DynamicResource TextSecondary}" />
+                        <ComboBox x:Name="ThemePicker" MinWidth="180" HorizontalAlignment="Left" Margin="0,5,0,0">
+                            <ComboBoxItem Content="Light" />
+                            <ComboBoxItem Content="Dark" />
+                        </ComboBox>
+                    </StackPanel>
+                </Border>
+            </TabItem>
+            <TabItem Header="Advanced">
+                <Border Padding="18" Background="{DynamicResource Surface}"
+                        BorderBrush="{DynamicResource Border}" BorderThickness="1" CornerRadius="6">
+                    <StackPanel Spacing="14" VerticalAlignment="Top">
+                        <StackPanel Spacing="5">
+                            <TextBlock Text="FFmpeg executable" FontSize="12" FontWeight="SemiBold"
+                                       Foreground="{DynamicResource TextPrimary}" />
+                            <TextBlock Text="Leave blank to find ffmpeg on PATH. The selected program is used for MP4 export on this device."
+                                       FontSize="10" Foreground="{DynamicResource TextSecondary}" TextWrapping="Wrap" />
+                            <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="7" Margin="0,4,0,0">
+                                <TextBox x:Name="FfmpegPathTextBox" PlaceholderText="Find ffmpeg on PATH" />
+                                <Button Grid.Column="1" Classes="quiet-button" Click="BrowseFfmpeg_OnClick" Content="Browse…" />
+                                <Button Grid.Column="2" Classes="quiet-button" Click="ClearFfmpeg_OnClick" Content="Clear" />
+                            </Grid>
+                        </StackPanel>
+                        <Border Height="1" Background="{DynamicResource Border}" />
+                        <StackPanel Spacing="5">
+                            <TextBlock Text="Application data" FontSize="12" FontWeight="SemiBold"
+                                       Foreground="{DynamicResource TextPrimary}" />
+                            <TextBlock Text="Open the local folder containing preferences and recent-project history."
+                                       FontSize="10" Foreground="{DynamicResource TextSecondary}" TextWrapping="Wrap" />
+                            <Button Classes="quiet-button" HorizontalAlignment="Left" Click="OpenDataFolder_OnClick"
+                                    Content="Open application data folder" />
+                            <TextBlock x:Name="AdvancedStatusText" FontSize="10"
+                                       Foreground="{DynamicResource TextSecondary}" TextWrapping="Wrap" />
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+            </TabItem>
+        </TabControl>
+
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="9">
+            <Button Classes="quiet-button" Click="Cancel_OnClick" Content="Cancel" />
+            <Button Classes="primary-button" Click="Save_OnClick" Content="Save preferences" />
+        </StackPanel>
+    </Grid>
+</Window>
