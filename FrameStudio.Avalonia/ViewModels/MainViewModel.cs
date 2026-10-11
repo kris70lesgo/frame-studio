@@ -28,11 +28,14 @@ public partial class MainViewModel : ObservableObject
 
     public IScreenCaptureService? ScreenCaptureService { get; }
     public IWindowCaptureService? WindowCaptureService { get; }
+    public IWebcamService? WebcamCaptureService { get; }
     public ICaptureWindowExclusionService? CaptureWindowExclusionService { get; }
     public bool IsScreenCaptureAvailable => ScreenCaptureService is not null && CaptureCapabilities.Any(capability =>
         capability.Source == CaptureSource.Screen && capability.Readiness == FeatureReadiness.Ready);
     public bool IsWindowCaptureAvailable => WindowCaptureService is not null && CaptureCapabilities.Any(capability =>
         capability.Source == CaptureSource.Window && capability.Readiness == FeatureReadiness.Ready);
+    public bool IsWebcamCaptureAvailable => WebcamCaptureService is not null && CaptureCapabilities.Any(capability =>
+        capability.Source == CaptureSource.Webcam && capability.Readiness == FeatureReadiness.Ready);
     public bool IsSketchboardAvailable => CaptureCapabilities.Any(capability =>
         capability.Source == CaptureSource.Sketchboard && capability.Readiness == FeatureReadiness.Ready);
     public ObservableCollection<RecentProjectViewModel> RecentProjects { get; } = [];
@@ -56,10 +59,12 @@ public partial class MainViewModel : ObservableObject
     public MainViewModel(IPlatformCapabilityProvider capabilityProvider, IScreenCaptureService? screenCaptureService = null,
         ICaptureWindowExclusionService? captureWindowExclusionService = null,
         FrameStudioPreferencesStore? preferencesStore = null,
-        IWindowCaptureService? windowCaptureService = null)
+        IWindowCaptureService? windowCaptureService = null,
+        IWebcamService? webcamCaptureService = null)
     {
         ScreenCaptureService = screenCaptureService;
         WindowCaptureService = windowCaptureService;
+        WebcamCaptureService = webcamCaptureService;
         CaptureWindowExclusionService = captureWindowExclusionService;
         _preferencesStore = preferencesStore ?? FrameStudioPreferencesStore.ForCurrentUser();
         _recentProjectCatalog = new RecentProjectCatalog(

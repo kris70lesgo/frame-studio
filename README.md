@@ -12,7 +12,7 @@ The first challenge entry targets **Windows x64** and is positioned as a legacy 
 
 ## Current status
 
-The Avalonia app connects Windows screen-region recording to a native `.fsp` project, a frame editor, and GIF/MP4 export. The current home and editor UI use a Jitter-inspired workspace layout adapted for Frame Studio's frame workflow. The Win32/GDI capture backend is implemented and wired into the UI; its native integration tests now pass on a hosted Windows runner, while the interactive app workflow still needs a Windows desktop check. macOS builds and core tests work; screen capture is Windows-only.
+The Avalonia app connects Windows screen-region, isolated-window, and webcam recording to `.fsp` projects, a frame editor, and GIF/MP4 export. The current home and editor UI use a Jitter-inspired workspace layout adapted for Frame Studio's frame workflow. Hosted Windows CI verifies the native screen/window backend, while interactive camera and recording workflows still need a Windows desktop check. The editor, project core, and software sketchboard also build on macOS; screen, window, and webcam capture are Windows-only.
 
 | Area | Status |
 | --- | --- |
@@ -21,14 +21,14 @@ The Avalonia app connects Windows screen-region recording to a native `.fsp` pro
 | Neutral frame/project foundation | Frame model and compressed `.fsp` archive read/write implemented |
 | Platform service contracts | Defined |
 | Windows capture | Screen-region capture supports display/area selection, FPS, pointer, pause/stop, and app-window exclusion. Window recording renders the selected app separately from overlapping windows; its pixel-level overlap check passes on hosted Windows. Some hardware-accelerated or protected apps may not render fully. Both capture modes still need an interactive desktop run |
+| Webcam | Windows MediaCapture device enumeration, frame-rate selection, live recorder preview, pause/resume/stop, and direct `.fsp` recording; pixel conversion and Windows-target build checks pass, but a physical camera/privacy workflow still needs a Windows run |
 | End-to-end recording workflow | Records frames into `.fsp` projects and opens the editor when recording stops |
 | Sketchboard | Fixed-size 640×360, 960×540, or 1280×720 drawing canvas with brush color/size, undo, clear, adjustable frame rate, pause/resume, and direct `.fsp` recording; implementation and session tests complete, interactive runtime check pending |
 | Editor | Frame thumbnails, preview/playback, selection, earlier/later ordering, duplicate/delete, duration edits, drag crop, project-wide resize, all-frame text and freehand overlays, save/discard, and GIF export implemented; keyboard shortcuts cover save, duplicate, reorder, delete, playback, and crop cancel |
 | GIF export | Migrated encoder with palette/quantizer, color limit, loop, source or fixed frame rate, dithering, scale or custom dimensions; completion actions open the GIF, show its folder, or copy its path |
 | MP4 export | H.264 MP4 through FFmpeg's `libx264`, with source timing or fixed frame rate, CRF quality, scale or custom dimensions, and even-size padding; requires FFmpeg on `PATH` with `libx264` enabled |
 | Settings and additional formats | Seven sidebar categories cover local preferences, recording, editor preview looping, GIF/MP4 defaults, shortcuts, appearance, and advanced FFmpeg/data-folder tools. APNG, image sequence, PSD, and additional video formats are not migrated |
-| Core workflow checks | The latest local Release build completes with zero warnings/errors; 53 tests pass and four Windows-only desktop checks skip on macOS. [CI run 38123652608](https://github.com/kris70lesgo/frame-studio/actions/runs/38123652608) passed the macOS and Windows build/test jobs, native Windows capture checks, and Windows x64 package startup smoke. These checks do not verify the interactive Avalonia workflow or mixed-DPI desktop behavior. Cross-platform checks cover recording → edit → save/reopen → GIF export, editor commands, text/freehand overlays, recovery, project archives, GIF pixels/timing/dithering, MP4 timing and fixed frame rate, and screen-region scaling logic |
-| Webcam | Not migrated yet; Windows capability is marked planned and the existing DirectShow implementation remains isolated from the Avalonia UI |
+| Core workflow checks | The latest local Release build completes with zero warnings/errors; 55 tests pass and four Windows-only desktop checks skip on macOS. Hosted CI validates the Windows-targeted MediaCapture build separately from the cross-platform Avalonia target; the physical camera path still requires hardware and privacy-setting verification. CI and unit tests do not verify the full interactive workflow or mixed-DPI desktop behavior. Cross-platform checks cover recording → edit → save/reopen → GIF export, editor commands, text/freehand overlays, recovery, project archives, GIF pixels/timing/dithering, MP4 timing and fixed frame rate, screen-region scaling logic, and webcam pixel conversion |
 | Annotations and video export | Rasterized text and freehand overlays plus H.264 MP4 export are implemented; additional video encoders are not migrated yet |
 | Windows platform adapter | Win32 monitor/window enumeration, bounded GDI screen capture, isolated-window rendering, and app-window exclusion implemented; native CI passes. Interactive UI, app-window exclusion in actual recordings, and mixed-DPI validation remain pending |
 
@@ -46,9 +46,9 @@ The raw-byte GIF encoder and selected quantizers fit behind a neutral RGBA/pixel
 
 ### Results and limits
 
-The implemented workflow records frames into a project, edits and reorders frames, applies crop/resize/text/freehand changes, saves and reopens projects, and exports GIF or H.264 MP4 through an installed FFmpeg with `libx264`. GIF supports palette and quantizer choice, color limits, dithering, loop behavior, fixed frame rate, and custom dimensions. MP4 supports quality, fixed frame rate, and custom dimensions while preserving source timings by default. Local Release verification passes 53 tests, with four Windows-only desktop checks skipped on macOS. Hosted CI passes the native Windows checks and package smoke. The interactive Windows workflow is still pending; CI does not establish app-window exclusion in real recordings, mixed-DPI behavior, or playback of exported files on a user's desktop.
+The implemented workflow records frames into a project, edits and reorders frames, applies crop/resize/text/freehand changes, saves and reopens projects, and exports GIF or H.264 MP4 through an installed FFmpeg with `libx264`. GIF supports palette and quantizer choice, color limits, dithering, loop behavior, fixed frame rate, and custom dimensions. MP4 supports quality, fixed frame rate, and custom dimensions while preserving source timings by default. Local Release verification passes 55 tests, with four Windows-only desktop checks skipped on macOS. Hosted CI validates the Windows backend and package startup; interactive Windows behavior remains pending. CI does not establish app-window exclusion in real recordings, mixed-DPI behavior, or playback of exported files on a user's desktop.
 
-Webcam capture, macOS/Linux screen capture, APNG, image-sequence and PSD export, and additional video encoders are not implemented. The sketchboard is a software drawing canvas and does not capture a webcam. Export scale presets are 50%, 75%, or 100%, with custom dimensions also available. The project retains ScreenToGif's MS-PL notices and license, uses independent branding, and is not the official ScreenToGif application.
+macOS/Linux screen, window, and webcam capture, APNG, image-sequence and PSD export, and additional video encoders are not implemented. Windows webcam recording uses the MediaCapture/MediaFrameReader APIs and follows Windows' desktop-app camera privacy setting; its physical-device workflow remains unverified. The sketchboard is a software drawing canvas and records independently of a webcam. Export scale presets are 50%, 75%, or 100%, with custom dimensions also available. The project retains ScreenToGif's MS-PL notices and license, uses independent branding, and is not the official ScreenToGif application.
 
 ### Migration effort and remaining evidence
 
@@ -68,13 +68,15 @@ Older shell captures remain in the folder as historical UI checks; they predate 
 
 Requirements: .NET SDK 9.0.318 or a compatible .NET 9 feature-band SDK, with NuGet access for the Avalonia packages.
 
-The Avalonia UI uses the desktop Avalonia stack. The current self-contained Windows x64 candidate is linked in the [Windows validation checklist](docs/WINDOWS_VALIDATION.md); sign in to GitHub with repository read access to download it. The older [Preview 3 release](https://github.com/kris70lesgo/frame-studio/releases/tag/v0.1.0-preview.3) does not contain the current UI. Only Windows has a capture backend. Screen capture requires Windows 10 version 2004 or later because the app excludes its own windows from captured frames. Core project editing and GIF export are platform-neutral. MP4 export calls the user's FFmpeg installation and needs `libx264`; Frame Studio does not redistribute FFmpeg. The full recording workflow must be exercised on Windows before claiming a verified Windows release; no macOS or Linux capture support is claimed.
+The Avalonia UI uses the desktop Avalonia stack. The current self-contained Windows x64 candidate is linked in the [Windows validation checklist](docs/WINDOWS_VALIDATION.md); sign in to GitHub with repository read access to download it. The older [Preview 3 release](https://github.com/kris70lesgo/frame-studio/releases/tag/v0.1.0-preview.3) does not contain the current UI. Windows-only screen/window/webcam capture is compiled from the Windows target framework; screen capture requires Windows 10 version 2004 or later because the app excludes its own windows from captured frames. Core project editing, GIF export, and sketchboard recording are platform-neutral. MP4 export calls the user's FFmpeg installation and needs `libx264`; Frame Studio does not redistribute FFmpeg. The full capture workflow must be exercised on Windows before claiming a verified Windows release; no macOS or Linux capture support is claimed.
 
 ```sh
 dotnet build FrameStudio.sln
 dotnet test FrameStudio.sln
-dotnet run --project FrameStudio.Avalonia/FrameStudio.Avalonia.csproj
+dotnet run --project FrameStudio.Avalonia/FrameStudio.Avalonia.csproj --framework net9.0
 ```
+
+To run the Windows build with camera capture enabled, use `dotnet run --project FrameStudio.Avalonia/FrameStudio.Avalonia.csproj --framework net9.0-windows10.0.19041.0`. Windows camera use is controlled by Settings > Privacy & security > Camera > Let desktop apps access your camera.
 
 To create a self-contained local Windows x64 candidate, run `python3 scripts/package-windows-candidate.py`. It writes the package, README, full license, and SHA-256 checksum under ignored `dist/`. The package remains a development candidate until its Windows runtime checks pass.
 

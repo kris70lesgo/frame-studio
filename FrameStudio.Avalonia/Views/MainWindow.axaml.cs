@@ -115,6 +115,45 @@ public partial class MainWindow : Window
         }
     }
 
+    private async void WebcamCapture_OnClick(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is not MainViewModel { WebcamCaptureService: { } service, IsWebcamCaptureAvailable: true } viewModel)
+            return;
+
+        try
+        {
+            var devices = await service.GetDevicesAsync();
+            if (devices.Count == 0)
+            {
+                viewModel.ReportCaptureStatus("No compatible color camera is available. Connect a webcam and try again.");
+                return;
+            }
+
+            var setup = await new WebcamCaptureSetupWindow(devices, viewModel.DefaultFramesPerSecond)
+                .ShowDialog<WebcamCaptureSetupResult?>(this);
+            if (setup is null)
+                return;
+
+            var projectFile = await StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
+            {
+                Title = "Save webcam recording project",
+                SuggestedFileName = $"Webcam {DateTime.Now:yyyy-MM-dd HH-mm}.fsp",
+                DefaultExtension = "fsp",
+                ShowOverwritePrompt = true,
+                FileTypeChoices = [FrameProjectFileType]
+            });
+            var projectPath = projectFile?.TryGetLocalPath();
+            if (string.IsNullOrWhiteSpace(projectPath))
+                return;
+
+            await StartWebcamRecordingAsync(viewModel, service, projectPath, setup);
+        }
+        catch (Exception ex)
+        {
+            viewModel.ReportCaptureStatus($"Could not start or save the webcam recording: {ex.Message}");
+        }
+    }
+
     private async void Sketchboard_OnClick(object? sender, RoutedEventArgs e)
     {
         if (DataContext is not MainViewModel viewModel || !viewModel.IsSketchboardAvailable)
@@ -196,6 +235,49 @@ public partial class MainWindow : Window
                 try { captureWindowExclusion.Dispose(); }
                 catch (Exception ex) { viewModel.ReportCaptureStatus($"Could not restore the app's capture visibility: {ex.Message}"); }
             }
+            if (session is not null)
+                await session.DisposeAsync();
+            if (writer is not null)
+                await writer.DisposeAsync();
+        }
+    }
+
+    private async Task StartWebcamRecordingAsync(MainViewModel viewModel, IWebcamService service,
+        string projectPath, WebcamCaptureSetupResult setup)
+    {
+        IWebcamRecordingSession? session = null;
+        FrameProjectArchiveWriter? writer = null;
+        RecorderWindow? recorderWindow = null;
+        try
+        {
+            recorderWindow = new RecorderWindow();
+            var recorderDialog = recorderWindow.ShowPreparingDialog(this);
+            _ = await recorderWindow.WaitForWindowHandleAsync();
+
+            session = await service.StartAsync(setup.Device.Id, setup.FramesPerSecond);
+            writer = await FrameProjectArchiveWriter.CreateAsync(
+                projectPath, Path.GetFileNameWithoutExtension(projectPath), session.FrameSize);
+
+            recorderWindow.AttachWebcamPreview(session, setup.Device.Name);
+            var recorderViewModel = new RecordingViewModel(session, writer, projectPath,
+                setup.FramesPerSecond, $"webcam · {setup.Device.Name}");
+            session = null;
+            writer = null;
+            recorderWindow.AttachViewModel(recorderViewModel);
+            recorderWindow.ShowRecordingControls();
+
+            var completedPath = await recorderDialog;
+            if (!string.IsNullOrWhiteSpace(completedPath))
+                await OpenEditorAsync(completedPath);
+        }
+        catch
+        {
+            if (recorderWindow is { IsVisible: true, HasViewModel: false })
+                recorderWindow.Close(null);
+            throw;
+        }
+        finally
+        {
             if (session is not null)
                 await session.DisposeAsync();
             if (writer is not null)

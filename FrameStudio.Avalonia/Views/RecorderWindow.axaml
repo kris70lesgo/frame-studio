@@ -11,7 +11,7 @@
         FontFamily="Inter, Segoe UI, sans-serif">
     <Border Padding="22" Background="{DynamicResource BackgroundPrimary}"
             BorderBrush="{DynamicResource Border}" BorderThickness="1">
-        <Grid RowDefinitions="Auto,Auto,*,Auto" RowSpacing="13">
+        <Grid RowDefinitions="Auto,Auto,*,Auto,Auto" RowSpacing="13">
             <StackPanel Orientation="Horizontal" Spacing="9" VerticalAlignment="Center">
                 <Border Width="28" Height="28" CornerRadius="8" Background="{DynamicResource SurfaceRaised}">
                     <Ellipse Width="9" Height="9" Fill="{DynamicResource Destructive}"
@@ -19,7 +19,8 @@
                 </Border>
                 <StackPanel Spacing="2">
                     <TextBlock Text="FRAME STUDIO" Classes="Caption" Foreground="{DynamicResource TextPrimary}" />
-                    <TextBlock Text="Screen recording" FontSize="11" Foreground="{DynamicResource TextSecondary}" />
+                    <TextBlock x:Name="RecordingSourceLabel" Text="Screen recording" FontSize="11"
+                               Foreground="{DynamicResource TextSecondary}" />
                 </StackPanel>
                 <TextBlock Grid.Column="1" Text="{Binding FrameRateLabel}" FontFamily="Consolas" FontSize="10"
                            Foreground="{DynamicResource TextTertiary}" VerticalAlignment="Center" />
@@ -43,7 +44,13 @@
 
             <Border Grid.Row="2" Height="1" Background="{DynamicResource Border}" VerticalAlignment="Bottom" />
 
-            <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="9">
+            <Border x:Name="WebcamPreviewBorder" Grid.Row="3" Height="140" CornerRadius="8"
+                    Background="#101014" BorderBrush="{DynamicResource Border}" BorderThickness="1"
+                    IsVisible="False" ClipToBounds="True">
+                <Image x:Name="WebcamPreview" Stretch="Uniform" AutomationProperties.Name="Live webcam preview" />
+            </Border>
+
+            <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="9">
                 <Button Classes="quiet-button" Command="{Binding TogglePauseCommand}" IsEnabled="{Binding CanPauseRecording}"
                         AutomationProperties.Name="Pause or resume recording">
                     <StackPanel Orientation="Horizontal" Spacing="7">

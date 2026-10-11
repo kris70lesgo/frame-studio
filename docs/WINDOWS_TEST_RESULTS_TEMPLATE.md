@@ -32,7 +32,7 @@ Hosted run [38123652608](https://github.com/kris70lesgo/frame-studio/actions/run
 | MP4 export options and output (optional) | TBD | FPS: ; quality: ; dimensions: ; FFmpeg/libx264 result: |
 | Theme, recording, editor, and export defaults persist after restart | TBD | |
 | Advanced FFmpeg path and app-data folder controls work | TBD | |
-| Webcam is clearly marked planned | TBD | Webcam capture is not implemented |
+| Webcam device selection, live preview, record, pause/resume, stop, and project open | TBD | Camera: ; FPS: ; project dimensions: ; privacy access: |
 | Sketchboard drawing, undo/clear, record, pause/resume, stop, and project open | TBD | Canvas size: ; FPS: ; frame count: |
 | Full display / secondary display (if available) | TBD | |
 
@@ -47,7 +47,7 @@ Use ScreenToGif 2.43.2 and Frame Studio against the same harmless scene and proj
 
 Optional feature evidence (not part of the four same-content pairs):
 
-- Webcam planned state: TBD
+- Webcam preview and recorded project: TBD
 - Sketchboard canvas and recorded project: TBD
 
 ## Issues and limitations

@@ -349,6 +349,12 @@ This log records the independent Avalonia port of ScreenToGif. The port uses new
 - The board renders its canvas to RGBA frames and sends them through the existing recording consumer and `.fsp` writer, so the result opens in the normal editor. The frame session copies buffers, validates frame size/duration, and omits paused frames.
 - Added session tests for ordered frames, buffer ownership, pause/resume, stop, and invalid frames. The Release solution build passed with zero warnings or errors; 53 tests passed and the four Windows desktop checks skipped on macOS. An interactive window review and the Windows recorder workflow are still pending.
 
+## 2026-10-11 — Windows webcam capture
+
+- Added a Windows-targeted `MediaCapture`/`MediaFrameReader` adapter that enumerates color-camera sources, applies a requested sampling rate, pauses/resumes/stops through the existing recording contract, and writes camera frames to `.fsp` projects. The webcam flow selects a device, displays a live recorder preview, and reports Windows desktop-app camera privacy denial clearly.
+- The app and platform projects now build both `net9.0` and `net9.0-windows10.0.19041.0`; the Windows candidate must publish the Windows TFM for camera support. This uses the Windows SDK .NET projection pack and does not reuse the legacy DirectShow/WPF implementation. Microsoft documents that unpackaged desktop camera access is controlled through the Windows privacy setting: [MediaFrameReader camera guidance](https://learn.microsoft.com/en-us/windows/apps/develop/camera/use-opencv-with-mediaframereader).
+- Added stride-aware BGRA-to-RGBA conversion tests. Local Release build succeeds for both target frameworks with zero warnings or errors; 55 tests pass and four Windows-only desktop checks skip on macOS. A physical camera/privacy run remains a Windows-only manual check.
+
 ## Ongoing log
 
 Add dated entries here as migrations reveal framework differences, platform constraints, or performance fixes.

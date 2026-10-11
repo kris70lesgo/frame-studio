@@ -1,0 +1,62 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:platform="using:FrameStudio.Platform.Abstractions"
+        x:Class="FrameStudio.Avalonia.Views.WebcamCaptureSetupWindow"
+        Title="Set up webcam recording"
+        Width="520" Height="410" MinWidth="480" MinHeight="390"
+        WindowStartupLocation="CenterOwner"
+        CanResize="False"
+        Background="{DynamicResource BackgroundPrimary}"
+        FontFamily="Inter, Segoe UI, sans-serif">
+    <Border Padding="27">
+        <Grid RowDefinitions="Auto,Auto,Auto,*,Auto" RowSpacing="18">
+            <StackPanel Spacing="5">
+                <TextBlock Text="RECORD A WEBCAM" Classes="Caption" />
+                <TextBlock Text="Choose your camera" Classes="Title" FontSize="22" />
+                <TextBlock Text="Camera video is recorded into an editable Frame Studio project. Windows camera privacy access must be enabled."
+                           Classes="Body" FontSize="12" TextWrapping="Wrap" />
+            </StackPanel>
+
+            <StackPanel Grid.Row="1" Spacing="7">
+                <TextBlock Text="Camera" Classes="Caption" />
+                <ComboBox x:Name="DevicePicker" MinHeight="40"
+                          AutomationProperties.Name="Webcam device">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate x:DataType="platform:WebcamDeviceDescriptor">
+                            <TextBlock Text="{Binding Name}" Foreground="{DynamicResource TextPrimary}" />
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+            </StackPanel>
+
+            <Grid Grid.Row="2" ColumnDefinitions="*,Auto" ColumnSpacing="15" VerticalAlignment="Center">
+                <StackPanel Spacing="4">
+                    <TextBlock Text="Frame rate" Classes="Caption" />
+                    <Slider x:Name="FrameRateSlider" Minimum="10" Maximum="60" Value="30"
+                            TickFrequency="5" IsSnapToTickEnabled="True"
+                            ValueChanged="FrameRateSlider_OnValueChanged"
+                            AutomationProperties.Name="Webcam frame rate" />
+                </StackPanel>
+                <Border Grid.Column="1" Padding="10,7" CornerRadius="7" Background="{DynamicResource SurfaceRaised}"
+                        BorderBrush="{DynamicResource Border}" BorderThickness="1">
+                    <TextBlock x:Name="FrameRateLabel" Text="30 FPS" FontFamily="Consolas" FontSize="11"
+                               Foreground="{DynamicResource TextPrimary}" />
+                </Border>
+            </Grid>
+
+            <Border Grid.Row="3" Padding="13" CornerRadius="9" Background="{DynamicResource Surface}"
+                    BorderBrush="{DynamicResource Border}" BorderThickness="1" VerticalAlignment="Top">
+                <StackPanel Orientation="Horizontal" Spacing="10">
+                    <TextBlock Text="●" Foreground="{DynamicResource Accent}" FontSize="14" />
+                    <TextBlock Text="A live preview appears in the recorder while it captures."
+                               FontSize="11" TextWrapping="Wrap" Foreground="{DynamicResource TextSecondary}" />
+                </StackPanel>
+            </Border>
+
+            <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="9">
+                <Button Classes="quiet-button" Click="Cancel_OnClick" Content="Cancel" />
+                <Button Classes="primary-button" Click="Start_OnClick" Content="Continue to save location" />
+            </StackPanel>
+        </Grid>
+    </Border>
+</Window>

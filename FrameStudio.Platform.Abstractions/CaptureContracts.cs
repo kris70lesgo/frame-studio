@@ -85,7 +85,13 @@ public interface IWindowCaptureService
 public interface IWebcamService
 {
     ValueTask<IReadOnlyList<WebcamDeviceDescriptor>> GetDevicesAsync(CancellationToken cancellationToken = default);
-    ValueTask<IRecordingSession> StartAsync(string deviceId, int framesPerSecond, CancellationToken cancellationToken = default);
+    ValueTask<IWebcamRecordingSession> StartAsync(string deviceId, int framesPerSecond, CancellationToken cancellationToken = default);
+}
+
+public interface IWebcamRecordingSession : IRecordingSession
+{
+    PixelSize FrameSize { get; }
+    event Action<CapturedFrame>? FrameCaptured;
 }
 
 public interface IMonitorService
