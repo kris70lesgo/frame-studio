@@ -14,4 +14,4 @@ The preview shows final dimensions, output frame count, and total duration. It d
 
 ## Verification
 
-Core tests now cover GIF fixed-rate resampling, exact custom dimensions, dithering changing decoded gradient pixels, and MP4 custom dimensions/fixed-rate output when FFmpeg/ffprobe are available. The local Release build succeeds and all 50 runnable tests pass; four Windows-only capture tests skip on macOS. The dialog compiles with the Avalonia XAML, but it still needs a visual open/selection smoke check and a new Windows candidate. Keep the manual Windows checklist explicit.
+Core tests now cover GIF fixed-rate resampling, exact custom dimensions, dithering changing decoded gradient pixels, and MP4 custom dimensions/fixed-rate output when FFmpeg/ffprobe are available. The local Release build succeeds and all 50 runnable tests pass; four Windows-only capture tests skip on macOS. The dialog compiles with the Avalonia XAML. CI run 38121593525 passed both platform jobs and packaged-app smoke; the candidate is in the Preview 4 draft release. Visual export-dialog interaction and the manual Windows workflow remain open.

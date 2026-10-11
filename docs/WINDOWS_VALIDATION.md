@@ -4,15 +4,15 @@ The Windows native capture backend now passes its integration suite on a hosted 
 
 ## Current Windows candidate (2026-10-11)
 
-- The Windows candidate is attached to the [Preview 4 draft release](https://github.com/kris70lesgo/frame-studio/releases/tag/untagged-5feebd498ca7ff138139). Its notes list the current artifact, SHA-256, and package provenance. The release remains unpublished until the interactive Windows workflow and screenshot comparison are complete.
-- The app changes in that candidate are from commit `8934a282186f0e6648ecf93163023c3d3b393eb6`. [CI run 38120272021](https://github.com/kris70lesgo/frame-studio/actions/runs/38120272021) passed 44 deterministic Windows tests (one FFmpeg-dependent skip), all 7 native capture checks, and packaged-app startup smoke; macOS passed 44 deterministic tests (one FFmpeg-dependent skip).
-- Local package: [dist/FrameStudio-win-x64.zip](/Users/agastya/Documents/alvonia/ScreenToGif/dist/FrameStudio-win-x64.zip) (self-contained `win-x64`; package directory is ignored by Git). Its SHA-256 is recorded in the draft release and sidecar; the ZIP integrity check passed.
-- The latest local macOS Release test run passed 48 tests and skipped four Windows-only desktop checks, including the screen and window desktop integrations.
+- The current candidate is attached to the unpublished [Preview 4 draft release](https://github.com/kris70lesgo/frame-studio/releases/tag/untagged-d8d708cea4310c45574d). It contains commit `f5ce93f9d23cfa3ed290f152e1e41e9d6ce8cfab`, including the format-specific GIF/MP4 export dialog. The release remains unpublished until the interactive Windows workflow and screenshot comparison are complete.
+- [CI run 38121593525](https://github.com/kris70lesgo/frame-studio/actions/runs/38121593525) passed 46 deterministic Windows tests (one FFmpeg-dependent skip), all 7 native capture checks, and packaged-app startup smoke; macOS passed 46 deterministic tests (one FFmpeg-dependent skip). The downloadable [CI artifact 11695946312](https://github.com/kris70lesgo/frame-studio/actions/runs/38121593525/artifacts/11695946312) has SHA-256 `795a65d55adf059793db9edaba75abfe13235c7069e36672786293fc5840812f`.
+- Local package: [dist/FrameStudio-win-x64.zip](/Users/agastya/Documents/alvonia/ScreenToGif/dist/FrameStudio-win-x64.zip) (self-contained `win-x64`; package directory is ignored by Git). Its hash matches the sidecar and draft release; ZIP integrity passed.
+- The latest local macOS Release test run passed 50 tests and skipped four Windows-only desktop checks, including the screen and window desktop integrations.
 - Hosted CI verifies the native backend and package startup only. It does not verify interactive controls, app-window exclusion in real recordings, mixed-DPI selection, or the full record → edit → export workflow on your desktop. This is not yet a verified capture release.
 
 ## Download, verify, and launch
 
-1. Download `FrameStudio-win-x64.zip` and its `.sha256` sidecar from the [Preview 4 draft release](https://github.com/kris70lesgo/frame-studio/releases/tag/untagged-5feebd498ca7ff138139).
+1. Download `FrameStudio-win-x64.zip` and its `.sha256` sidecar from the [Preview 4 draft release](https://github.com/kris70lesgo/frame-studio/releases/tag/untagged-d8d708cea4310c45574d).
 2. In PowerShell, from the folder containing that inner ZIP, verify its hash:
 
    ```powershell

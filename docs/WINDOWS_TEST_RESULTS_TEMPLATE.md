@@ -2,13 +2,13 @@
 
 Fill this out while running the current Windows candidate. Replace each `TBD` with the observed result; write `not tested` when a check cannot be run. Keep failures and limitations visible.
 
-Hosted run [38120272021](https://github.com/kris70lesgo/frame-studio/actions/runs/38120272021) passed all 7 native capture checks and confirmed the packaged app created its “Frame Studio” main window. This record is for the separate interactive app, desktop, and screenshot checks.
+Hosted run [38121593525](https://github.com/kris70lesgo/frame-studio/actions/runs/38121593525) passed all 7 native capture checks and confirmed the packaged app created its “Frame Studio” main window. This record is for the separate interactive app, desktop, and screenshot checks.
 
 ## Test environment
 
-- App-code commit: `8934a282186f0e6648ecf93163023c3d3b393eb6`
-- Package revision and ZIP SHA-256: copy from the Preview 4 draft release notes
-- Candidate download: [Preview 4 draft release](https://github.com/kris70lesgo/frame-studio/releases/tag/untagged-5feebd498ca7ff138139)
+- App-code commit: `f5ce93f9d23cfa3ed290f152e1e41e9d6ce8cfab`
+- Package revision: `f5ce93f`; ZIP SHA-256: `795a65d55adf059793db9edaba75abfe13235c7069e36672786293fc5840812f`
+- Candidate download: [Preview 4 draft release](https://github.com/kris70lesgo/frame-studio/releases/tag/untagged-d8d708cea4310c45574d)
 - Windows edition and build: TBD
 - PC / CPU architecture: TBD
 - Display resolution and scale: TBD
