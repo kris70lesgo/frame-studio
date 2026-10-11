@@ -87,8 +87,8 @@ To create a self-contained local Windows x64 candidate, run `python3 scripts/pac
 - `FrameStudio.Avalonia` — Avalonia desktop UI and MVVM.
 - `FrameStudio.Core` — framework-neutral pixel geometry and frame/project models.
 - `FrameStudio.Platform.Abstractions` — capture, monitor, camera, hotkey, clipboard, notification, permission, and file-dialog contracts.
-- `FrameStudio.Platform.Windows` — Win32 monitor/window discovery and bounded GDI screen-region recording sessions.
-- `FrameStudio.Tests` — cross-platform core tests.
+- `FrameStudio.Platform.Windows` — Win32 monitor/window discovery, bounded GDI screen-region and isolated-window recording, plus Windows MediaCapture webcam sessions.
+- `FrameStudio.Tests` — cross-platform core and adapter tests, with Windows desktop integration checks skipped on other operating systems.
 - `ScreenToGif`, `ScreenToGif.Model`, `ScreenToGif.Native`, `ScreenToGif.Util`, and `ScreenToGif.ViewModel` — original WPF implementation retained as the behavior and migration reference.
 
 See [the source audit](docs/MIGRATION_AUDIT.md) for reusable modules, framework coupling, and the proposed architecture. The [migration journal](docs/MIGRATION.md) records decisions and lessons as the port progresses.
