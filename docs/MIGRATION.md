@@ -20,6 +20,7 @@ This log records the independent Avalonia port of ScreenToGif. The port uses new
 
 - Added a Shortcuts tab to Preferences that documents the editor's existing save, duplicate, reorder, delete, playback, and cancel gestures. The labels distinguish Control on Windows/Linux from Command on macOS and note the focus behavior for Delete and Space.
 - This closes the shortcuts discovery gap without claiming the still-missing Editor, Export, or Advanced preference categories. A current app build and test run are recorded with this change after verification.
+- Updated the self-contained Windows candidate in [CI run 38118604355](https://github.com/kris70lesgo/frame-studio/actions/runs/38118604355), source `ea84159c`. [Artifact 11694413309](https://github.com/kris70lesgo/frame-studio/actions/runs/38118604355/artifacts/11694413309) has SHA-256 `72490eeab62e812474d135ff8cf84fd37ad2a7dafffbcbf95f13bb8a3fc795e2`; the sidecar matches, and `unzip -t` reports no errors. The Preview 4 release draft now contains this candidate and remains unpublished pending the Windows interactive run.
 
 ## 2026-10-11 — Persistent preferences
 
